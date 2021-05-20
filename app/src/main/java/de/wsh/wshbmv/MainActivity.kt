@@ -7,6 +7,7 @@ import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import timber.log.Timber
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.ResultSet
@@ -16,6 +17,8 @@ import javax.inject.Named
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    private val TAG = "wshBMV"
 
     @Inject
     lateinit var app: MyApplication
@@ -28,8 +31,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Log.d("MainActivity", "Test String from MainAcitivity: $testString")
-        Log.d("MainActivity", "Testnachricht ${app.getString(R.string.app_name)}")
+        Timber.d("Testeintrag für Timber")
+        Log.d(TAG, "Test String from MainAcitivity: $testString")
+        Log.d(TAG, "Testnachricht ${app.getString(R.string.app_name)}")
 
         startConnSQL()
     }
@@ -43,7 +47,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun startConnSQL() {
         val coroutine = CoroutineScope(Dispatchers.IO)
-        Log.d("Conn", "Wir bauen eine Verbindung zum SQL-Server auf...")
+        Log.d(TAG, "Wir bauen eine Verbindung zum SQL-Server auf...")
 
         val username = "SA"
         val password = "Coca10Cola"
@@ -63,18 +67,18 @@ class MainActivity : AppCompatActivity() {
             conn = DriverManager.getConnection(connString, username, password)
             val stmt: Statement = conn.createStatement()
             // Versuch zur Manipulation eines Datensatzes in MS-SQL:
-             stmt.execute("UPDATE TwshGebBrandschutz SET Zeile = 1 WHERE [ID] = '00000001-0000-0000-0000-000000000000';")
+             stmt.execute("UPDATE TwshGebBrandschutz SET Zeile = Zeile + 1 WHERE [ID] = '00000001-0000-0000-0000-000000000000';")
 
             // wir fragen Daten aus MS-SQL ab...
-            val myResult: ResultSet = stmt.executeQuery("SELECT * FROM TwshGebBrandschutz;")
-            Log.d("Conn", "Hat Super geklappt!")
+            val myResult: ResultSet = stmt.executeQuery("SELECT TOP 10 * FROM TwshGebBrandschutz;")
+            Log.d(TAG, "Hat Super geklappt!")
             while (myResult.next()) {
-                Log.i("Conn", myResult.getString(1))
+                Log.i(TAG, myResult.getString(1))
             }
 
         } catch (e: Exception) {
-            Log.w("Conn", "Mist!!!")
-            Log.w("Conn", e.message.toString())
+            Log.w(TAG, "Mist!!!")
+            Log.w(TAG, e.message.toString())
 //            } finally {
 //                if (Result != null) {
 //                    Log.i("wshBMV", result.toString())
@@ -84,7 +88,7 @@ class MainActivity : AppCompatActivity() {
 //
         }
 
-        Log.d("Conn", "Verbindungsversuch ist abgeschlossen...")
+        Log.d(TAG, "Verbindungsversuch ist abgeschlossen...")
 
     }
 
