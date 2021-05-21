@@ -1,10 +1,12 @@
-package de.wsh.wshbmv
+package de.wsh.wshbmv.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.StrictMode
 import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
+import de.wsh.wshbmv.MyApplication
+import de.wsh.wshbmv.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
