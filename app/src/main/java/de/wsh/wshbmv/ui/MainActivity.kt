@@ -25,16 +25,12 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var app: MyApplication
 
-    @Inject
-    @Named("String1")
-    lateinit var testString: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         Timber.d("Testeintrag für Timber")
-        Log.d(TAG, "Test String from MainAcitivity: $testString")
         Log.d(TAG, "Testnachricht ${app.getString(R.string.app_name)}")
 
         startConnSQL()

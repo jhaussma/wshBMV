@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/setupFragment">
+    <fragment
+        android:id="@+id/setupFragment"
+        android:name="de.wsh.wshbmv.ui.fragments.SetupFragment"
+        android:label="SetupFragment" />
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="de.wsh.wshbmv.ui.fragments.SettingsFragment"
+        android:label="SettingsFragment" />
+    <fragment
+        android:id="@+id/overviewFragment"
+        android:name="de.wsh.wshbmv.ui.fragments.OverviewFragment"
+        android:label="OverviewFragment" >
+        <action
+            android:id="@+id/action_overviewFragment_to_materialFragment"
+            app:destination="@id/materialFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/materialFragment"
+        android:name="de.wsh.wshbmv.ui.fragments.MaterialFragment"
+        android:label="MaterialFragment" >
+        <action
+            android:id="@+id/action_materialFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/transferlistFragment"
+        android:name="de.wsh.wshbmv.ui.fragments.TransferlistFragment"
+        android:label="TransferlistFragment" />
+</navigation>
