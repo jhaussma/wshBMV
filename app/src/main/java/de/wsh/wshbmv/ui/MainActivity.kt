@@ -7,6 +7,7 @@ import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.MyApplication
 import de.wsh.wshbmv.R
+import de.wsh.wshbmv.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
@@ -22,18 +23,22 @@ class MainActivity : AppCompatActivity() {
 
     private val TAG = "wshBMV"
 
+    private  lateinit var binding: ActivityMainBinding
+
     @Inject
     lateinit var app: MyApplication
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
 
         Timber.d("Testeintrag für Timber")
         Log.d(TAG, "Testnachricht ${app.getString(R.string.app_name)}")
 
-        startConnSQL()
+//        startConnSQL()
     }
 
 

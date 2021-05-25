@@ -6,11 +6,22 @@
     <fragment
         android:id="@+id/setupFragment"
         android:name="de.wsh.wshbmv.ui.fragments.SetupFragment"
-        android:label="SetupFragment" />
+        android:label="SetupFragment" >
+        <action
+            android:id="@+id/action_setupFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment" />
+        <action
+            android:id="@+id/action_setupFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/settingsFragment"
         android:name="de.wsh.wshbmv.ui.fragments.SettingsFragment"
-        android:label="SettingsFragment" />
+        android:label="SettingsFragment" >
+        <action
+            android:id="@+id/action_settingsFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment" />
+    </fragment>
     <fragment
         android:id="@+id/overviewFragment"
         android:name="de.wsh.wshbmv.ui.fragments.OverviewFragment"

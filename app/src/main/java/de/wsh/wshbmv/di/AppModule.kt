@@ -1,6 +1,8 @@
 package de.wsh.wshbmv.di
 
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import androidx.room.Room
 import dagger.Module
 import dagger.Provides
@@ -9,6 +11,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import de.wsh.wshbmv.MyApplication
 import de.wsh.wshbmv.db.TbmvDatabase
+import de.wsh.wshbmv.other.Constants.KEY_FIRST_SYNC_DONE
+import de.wsh.wshbmv.other.Constants.KEY_FIRST_TIME
+import de.wsh.wshbmv.other.Constants.KEY_LAGER
+import de.wsh.wshbmv.other.Constants.KEY_USER_NAME
+import de.wsh.wshbmv.other.Constants.KEY_USER_HASH
+import de.wsh.wshbmv.other.Constants.SHARED_PREFS_USER
 import de.wsh.wshbmv.other.Constants.TBMV_DATABASE_NAME
 import javax.inject.Named
 import javax.inject.Singleton
@@ -41,15 +49,48 @@ object AppModule {
         TBMV_DATABASE_NAME
     ).build()
 
-    // erklärt die DAO-Funktionen für die TbmvDatabase
+    /**
+     * erklärt die DAO-Funktionen für die TbmvDatabase
+     */
     @Singleton
     @Provides
     fun provideTmbvDAO(db: TbmvDatabase) = db.getTbmvDAO()
 
-// nachfolgendes kann wieder weg und war nur für Versuche gedacht...
-    @Singleton  // stellt sicher, dass es immer nur genau eine Instanz dieses Objekts gibt!
+    /**
+     *  lokal gespeicherte App-Infos wie Username, akt. Lagerort, First-Time-Aufruf (wegen Installation)
+     */
+    @Singleton
     @Provides
-    @Named("String1")
-    fun provideTestString1() = "Dies ist ein String der injected wurde"
+    fun provideSharedPreferences(@ApplicationContext app: Context) =
+        app.getSharedPreferences(SHARED_PREFS_USER, MODE_PRIVATE)
+
+    @Singleton
+    @Provides
+    @Named("UserName")
+    fun provideUserName(sharedePref: SharedPreferences) =
+        sharedePref.getString(KEY_USER_NAME, "") ?: ""
+
+    @Singleton
+    @Provides
+    @Named("UserHash")
+    fun provideUserHash(sharedePref: SharedPreferences) =
+        sharedePref.getString(KEY_USER_HASH, "") ?: ""
+
+    @Singleton
+    @Provides
+    @Named("LagerOrt")
+    fun provideLagerort(sharedePref: SharedPreferences) = sharedePref.getString(KEY_LAGER, "") ?: ""
+
+    @Singleton
+    @Provides
+    fun provideFirstTime(sharedePref: SharedPreferences) =
+        sharedePref.getBoolean(KEY_FIRST_TIME, true)
+
+//    @Singleton
+//    @Provides
+//    @Named("FirstSyncDone")
+//    fun provideFirstSyncDone(sharedePref: SharedPreferences) =
+//        sharedePref.getBoolean(KEY_FIRST_SYNC_DONE, false)
+
 
 }
