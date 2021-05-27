@@ -16,8 +16,9 @@ import de.wsh.wshbmv.other.Constants.KEY_FIRST_TIME
 import de.wsh.wshbmv.other.Constants.KEY_LAGER
 import de.wsh.wshbmv.other.Constants.KEY_USER_NAME
 import de.wsh.wshbmv.other.Constants.KEY_USER_HASH
-import de.wsh.wshbmv.other.Constants.SHARED_PREFS_USER
+import de.wsh.wshbmv.other.Constants.SHARED_PREFERENCES_NAME
 import de.wsh.wshbmv.other.Constants.TBMV_DATABASE_NAME
+import de.wsh.wshbmv.sql_db.SqlConnection
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -56,13 +57,20 @@ object AppModule {
     @Provides
     fun provideTmbvDAO(db: TbmvDatabase) = db.getTbmvDAO()
 
+
+    // erklärt die SQL-Connection
+    @Singleton
+    @Provides
+    fun provideSqlConnection(sqlConnection: SqlConnection) = sqlConnection.dbConn()
+
+
     /**
      *  lokal gespeicherte App-Infos wie Username, akt. Lagerort, First-Time-Aufruf (wegen Installation)
      */
     @Singleton
     @Provides
     fun provideSharedPreferences(@ApplicationContext app: Context) =
-        app.getSharedPreferences(SHARED_PREFS_USER, MODE_PRIVATE)
+        app.getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE)
 
     @Singleton
     @Provides
@@ -83,14 +91,15 @@ object AppModule {
 
     @Singleton
     @Provides
+    @Named("FirstTimeAppOpend")
     fun provideFirstTime(sharedePref: SharedPreferences) =
         sharedePref.getBoolean(KEY_FIRST_TIME, true)
 
-//    @Singleton
-//    @Provides
-//    @Named("FirstSyncDone")
-//    fun provideFirstSyncDone(sharedePref: SharedPreferences) =
-//        sharedePref.getBoolean(KEY_FIRST_SYNC_DONE, false)
+    @Singleton
+    @Provides
+    @Named("FirstSyncDone")
+    fun provideFirstSyncDone(sharedePref: SharedPreferences) =
+        sharedePref.getBoolean(KEY_FIRST_SYNC_DONE, false)
 
 
 }

@@ -11,8 +11,8 @@
             android:id="@+id/action_setupFragment_to_overviewFragment"
             app:destination="@id/overviewFragment" />
         <action
-            android:id="@+id/action_setupFragment_to_settingsFragment"
-            app:destination="@id/settingsFragment" />
+            android:id="@+id/action_setupFragment_to_synchronizeFragment"
+            app:destination="@id/synchronizeFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -42,4 +42,12 @@
         android:id="@+id/transferlistFragment"
         android:name="de.wsh.wshbmv.ui.fragments.TransferlistFragment"
         android:label="TransferlistFragment" />
+    <fragment
+        android:id="@+id/synchronizeFragment"
+        android:name="de.wsh.wshbmv.ui.fragments.SynchronizeFragment"
+        android:label="SynchronizeFragment" >
+        <action
+            android:id="@+id/action_synchronizeFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
 </navigation>

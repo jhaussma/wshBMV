@@ -20,7 +20,7 @@ data class TsysUser(
     var terminW: Int = 0,
     var stammR: Int = 0,
     var stammW: Int = 0,
-    var sundenR: Int = 0,
+    var kundenR: Int = 0,
     var kundenW: Int = 0,
     var vorlagenR: Int = 0,
     var vorlagenW: Int = 0,
@@ -31,5 +31,6 @@ data class TsysUser(
     var rechnungW: Int = 0,
     var bmvR: Int = 0,
     var bmvW: Int = 0,
-    var bmvAdmin: Int = 0
+    var bmvAdmin: Int = 0,
+    var passHash: String? = ""
 )

@@ -2,7 +2,6 @@ package de.wsh.wshbmv.ui.fragments
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.StrictMode
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -12,18 +11,17 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.FragmentSetupBinding
+import de.wsh.wshbmv.db.TbmvDAO
+import de.wsh.wshbmv.other.Constants.KEY_FIRST_SYNC_DONE
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_TIME
 import de.wsh.wshbmv.other.Constants.KEY_LAGER
 import de.wsh.wshbmv.other.Constants.KEY_USER_NAME
 import de.wsh.wshbmv.other.Constants.KEY_USER_HASH
 import de.wsh.wshbmv.other.HashUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import de.wsh.wshbmv.repositories.MainRepository
+import de.wsh.wshbmv.sql_db.SqlConnection
+import de.wsh.wshbmv.sql_db.SqlDbFirstInit
 import timber.log.Timber
-import java.sql.Connection
-import java.sql.DriverManager
-import java.sql.ResultSet
-import java.sql.Statement
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -36,14 +34,38 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     @Inject
     lateinit var sharedPref: SharedPreferences
 
-    @set:Inject
-    var isFirstAppOpen = true
+    @JvmField
+    @field:[Inject Named("FirstTimeAppOpend")]
+    var isFirstAppOpen: Boolean = true
+
+    @JvmField
+    @field:[Inject Named("FirstSyncDone")]
+    var hasFirstSyncDone: Boolean = false
+
+    @Inject
+    lateinit var tbmvDAO: TbmvDAO
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        bind = FragmentSetupBinding.bind(view) // initialisiert das Binding zu den Layout-Objekten
+        bind = FragmentSetupBinding.bind(view) // initialisiert die Binding zu den Layout-Objekten
+
+        lateinit var db: SqlDbFirstInit
+
+        if (hasFirstSyncDone) {
+            // wir bauen die Verbindung auf ohne weitere Aktion...
+            Timber.d("Start mit doFirstSync = false")
+            db = SqlDbFirstInit(MainRepository(tbmvDAO), false)
+            db.connectionClass = SqlConnection()
+        } else {
+            // wir bauen die Verbindung zur Erst-Synchronisierung (Userdaten) mit SQL auf...
+            Timber.d("Start mit doFirstSync = true")
+            db = SqlDbFirstInit(MainRepository(tbmvDAO), true)
+            db.connectionClass = SqlConnection()
+        }
 
         if (!isFirstAppOpen) {
+            Log.d("wshBMV", "not isFirstAppOpen")
             val navOptions = NavOptions.Builder()
                 .setPopUpTo(R.id.setupFragment, true)
                 .build()
@@ -52,8 +74,10 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
 
             if (myLager == "") {
                 // wir müssen noch die Lager-Bestimmung angehen
+                    //TODO hier gibts noch etwas zu klären...
+
                 findNavController().navigate(
-                    R.id.action_setupFragment_to_settingsFragment,
+                    R.id.action_setupFragment_to_overviewFragment,
                     savedInstanceState,
                     navOptions
                 )
@@ -65,33 +89,63 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                     navOptions
                 )
             }
+        } else {
+            Log.d("wshBMV", "isFirstAppOpen")
         }
 
         bind.tvContinue.setOnClickListener {
-            val success = writeUserInfoToSharedPref()
-            if (success) {
-                findNavController().navigate(R.id.action_setupFragment_to_settingsFragment)
+            if (db.isError || !db.isConnected) {
+                Snackbar.make(
+                    requireView(),
+                    "Fehlende Serververbindung, ...",
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            } else if (db.inProgress) {
+                Snackbar.make(
+                    requireView(),
+                    "Synchronisiere Userdaten, bitte warten...",
+                    Snackbar.LENGTH_SHORT
+                ).show()
             } else {
-                Snackbar.make(requireView(), "Bitte zuerst Username und Passwort eingeben!", Snackbar.LENGTH_SHORT).show()
+                // prüfe zuerst auf HashCode-Username
+
+                val success = writeUserInfoToSharedPref()
+                if (success) {
+                    findNavController().navigate(R.id.action_setupFragment_to_synchronizeFragment)
+                } else {
+                    Snackbar.make(
+                        requireView(),
+                        "Bitte zuerst Username und Passwort eingeben!",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
 
-    private fun  writeUserInfoToSharedPref(): Boolean {
+    // prüft die Userdaten auf korrekten Inhalt
+    private fun checkUserInfo() : Boolean {
+
+
+
+        return true
+    }
+
+    private fun writeUserInfoToSharedPref(): Boolean {
         val username = bind.etUserName.text.toString()
-        val userHash = HashUtils.sha256(bind.etUserPwd.text.toString() )
+        val userHash = HashUtils.sha256(bind.etUserPwd.text.toString())
         // überprüfe die Plausibilität der Eingaben
-        if(username.isEmpty() || userHash.isEmpty() || userHash.length < 4) {
+        if (username.isEmpty() || userHash.isEmpty() || userHash.length < 4) {
             return false
         }
         sharedPref.edit()
             .putString(KEY_USER_NAME, username)
             .putString(KEY_USER_HASH, userHash)
             .putBoolean(KEY_FIRST_TIME, false)
+            .putBoolean(KEY_FIRST_SYNC_DONE, false)
             .apply()
         return true
     }
-
 
 
 }
