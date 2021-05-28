@@ -1,20 +1,25 @@
 package de.wsh.wshbmv.sql_db
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.provider.ContactsContract
 import android.util.Log
-import de.wsh.wshbmv.db.entities.TbmvLager
-import de.wsh.wshbmv.db.entities.TsysUser
-import de.wsh.wshbmv.db.entities.TsysUserGruppe
-import de.wsh.wshbmv.db.entities.TsysUserInGruppe
+import de.wsh.wshbmv.db.Converters
+import de.wsh.wshbmv.db.entities.*
+import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars.sqlServerConnected
 import de.wsh.wshbmv.other.GlobalVars.sqlStatus
+import de.wsh.wshbmv.other.GlobalVars.sqlUserLoaded
 import de.wsh.wshbmv.other.enSqlStatus
 import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.ByteArrayOutputStream
 import java.lang.Exception
 import java.sql.Connection
+import java.util.*
 import javax.inject.Inject
 
 
@@ -51,7 +56,7 @@ class SqlDbFirstInit @Inject constructor(
                 }
             } catch (ex: Exception) {
                 sqlStatus = enSqlStatus.IN_ERROR // Ende ohne Erfolg!
-                Log.e("wshBMV", "Fehler ist aufgetreten: ${ex.message ?: ""}")
+                Timber.tag(TAG).e( "Fehler ist aufgetreten: ${ex.message ?: ""}")
             }
         }
     }
@@ -62,16 +67,18 @@ class SqlDbFirstInit @Inject constructor(
      */
     private suspend fun firstSyncDatabase(): Boolean {
         sqlStatus = enSqlStatus.IN_PROCESS
-        initUserTabs()
+        syncFirstPrioTabs()
+        sqlUserLoaded = true
+        syncAllTabs()
         sqlStatus = enSqlStatus.PROCESS_ENDED
         return true
     }
 
 
     /**
-     *  initialisiert die alle User-Tabellen + die Lager-Tabelle
+     *  initialisiert alle User-Tabellen + die Lager-Tabelle
      */
-    private suspend fun initUserTabs(): Boolean {
+    private suspend fun syncFirstPrioTabs(): Boolean {
         lateinit var user: TsysUser
         lateinit var userGruppe: TsysUserGruppe
         lateinit var userInGruppe: TsysUserInGruppe
@@ -172,5 +179,56 @@ class SqlDbFirstInit @Inject constructor(
             Timber.d("Es wurden keine Lager gefunden!!")
         }
         return true
+    }
+
+    /**
+     *  führt die Voll-Synchronisierung aller Tabellen mit Ausnahme der User-Tabs/Lager-Tab durch
+     */
+    private suspend fun syncAllTabs(): Boolean {
+        lateinit var material: TbmvMat
+
+        val statement = myConn!!.createStatement()
+
+        // Material
+        var resultSet = statement.executeQuery("SELECT * FROM TbmvMat")
+        if (resultSet != null) {
+            Timber.d("Wir schreiben TbmvMat...")
+            while (resultSet.next()) {
+                material = TbmvMat()
+                material.id = resultSet.getString("ID")
+                material.scancode = resultSet.getString("Scancode")
+                material.typ = resultSet.getString("Typ")
+                material.matchcode = resultSet.getString("Matchcode")
+                material.matGruppeGuid = resultSet.getString("MatGruppeGUID")
+                material.beschreibung = resultSet.getString("Beschreibung")
+                material.hersteller = resultSet.getString("Hersteller")
+                material.modell = resultSet.getString("Modell")
+                material.seriennummer = resultSet.getString("Seriennummer")
+                material.userGuid = resultSet.getString("UserGUID")
+                material.matStatus = resultSet.getString("MatStatus")
+                material.bildBmp = toBitmap(resultSet.getBytes("BildBmp"))
+                // füge den Datensatz in die SQLite ein
+                mainRepository.insertMat(material)
+            }
+        }
+
+
+
+
+        return true
+    }
+
+    fun toBitmap(bytes: ByteArray?): Bitmap? {
+        if (bytes != null) {
+            return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        } else {
+            return null
+        }
+    }
+
+    private fun fromBitmap(bmp: Bitmap): ByteArray {
+        val outputStream = ByteArrayOutputStream()
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        return  outputStream.toByteArray()
     }
 }

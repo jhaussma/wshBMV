@@ -17,5 +17,5 @@ data class TbmvMat(
     var seriennummer: String = "",
     var userGuid: String = "",
     var matStatus: String = "",
-    var bildGuid: Bitmap? = null
+    var bildBmp: Bitmap? = null
 )

@@ -4,14 +4,27 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import de.wsh.wshbmv.db.entities.*
+import de.wsh.wshbmv.db.entities.relations.*
 
 @Database(
     entities = [
-        TbmvMat::class,
         TsysUser::class,
         TsysUserGruppe::class,
         TsysUserInGruppe::class,
-        TbmvLager::class
+        TbmvBeleg::class,
+        TbmvBelegPos::class,
+        TbmvDokument::class,
+        TbmvMat::class,
+        TbmvMatGruppe::class,
+        TbmvLager::class,
+        TbmvService::class,
+        TbmvMat_Lager::class,
+        TbmvMat_Service::class,
+        TbmvMatService_Dok::class,
+        TbmvMatService_Historie::class,
+        TbmvService_Dok::class,
+        TappChgProtokoll::class,
+        TappSyncReport::class
     ],
     version = 1
 )

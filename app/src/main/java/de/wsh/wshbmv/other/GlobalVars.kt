@@ -20,7 +20,7 @@ object GlobalVars {
      */
     var sqlServerConnected = false      // True: wir haben medi1one-Server-Verbindung
     var sqlStatus : enSqlStatus = enSqlStatus.INIT  // Status der SQL-Serververbindung
-
+    var sqlUserLoaded = false           // True: bei der Komplett-Synchronisierung sind die User-Daten und Lager geladen...
 
     var myUser : TsysUser? = null
 
