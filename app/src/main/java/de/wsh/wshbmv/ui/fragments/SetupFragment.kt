@@ -14,13 +14,13 @@ import de.wsh.wshbmv.databinding.FragmentSetupBinding
 import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_SYNC_DONE
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_TIME
-import de.wsh.wshbmv.other.Constants.KEY_LAGER
+import de.wsh.wshbmv.other.Constants.KEY_LAGER_ID
 import de.wsh.wshbmv.other.Constants.KEY_USER_NAME
 import de.wsh.wshbmv.other.Constants.KEY_USER_HASH
+import de.wsh.wshbmv.other.Constants.TAG
+import de.wsh.wshbmv.other.GlobalVars.sqlServerConnected
+import de.wsh.wshbmv.other.GlobalVars.isFirstAppStart
 import de.wsh.wshbmv.other.HashUtils
-import de.wsh.wshbmv.repositories.MainRepository
-import de.wsh.wshbmv.sql_db.SqlConnection
-import de.wsh.wshbmv.sql_db.SqlDbFirstInit
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
@@ -49,28 +49,29 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bind = FragmentSetupBinding.bind(view) // initialisiert die Binding zu den Layout-Objekten
+        Timber.tag(TAG).d("OnViewCreated in SetupFragment...")
+        Timber.tag(TAG).d("hasServerConnection = ${sqlServerConnected.toString()}")
 
-        lateinit var db: SqlDbFirstInit
+//        lateinit var db: SqlDbFirstInit
+//        if (hasFirstSyncDone) {
+//            // wir bauen die Verbindung auf ohne weitere Aktion...
+//            Timber.d("Start mit doFirstSync = false")
+//            db = SqlDbFirstInit(MainRepository(tbmvDAO), false)
+//            db.connectionClass = SqlConnection()
+//        } else {
+//            // wir bauen die Verbindung zur Erst-Synchronisierung (Userdaten) mit SQL auf...
+//            Timber.d("Start mit doFirstSync = true")
+//            db = SqlDbFirstInit(MainRepository(tbmvDAO), true)
+//            db.connectionClass = SqlConnection()
+//        }
 
-        if (hasFirstSyncDone) {
-            // wir bauen die Verbindung auf ohne weitere Aktion...
-            Timber.d("Start mit doFirstSync = false")
-            db = SqlDbFirstInit(MainRepository(tbmvDAO), false)
-            db.connectionClass = SqlConnection()
-        } else {
-            // wir bauen die Verbindung zur Erst-Synchronisierung (Userdaten) mit SQL auf...
-            Timber.d("Start mit doFirstSync = true")
-            db = SqlDbFirstInit(MainRepository(tbmvDAO), true)
-            db.connectionClass = SqlConnection()
-        }
-
-        if (!isFirstAppOpen) {
+        if (!isFirstAppStart) {
             Log.d("wshBMV", "not isFirstAppOpen")
             val navOptions = NavOptions.Builder()
                 .setPopUpTo(R.id.setupFragment, true)
                 .build()
 
-            var myLager = sharedPref.getString(KEY_LAGER, "") ?: ""
+            var myLager = sharedPref.getString(KEY_LAGER_ID, "") ?: ""
 
             if (myLager == "") {
                 // wir müssen noch die Lager-Bestimmung angehen
@@ -94,32 +95,49 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         }
 
         bind.tvContinue.setOnClickListener {
-            if (db.isError || !db.isConnected) {
+            if (sqlServerConnected) {
                 Snackbar.make(
                     requireView(),
-                    "Fehlende Serververbindung, ...",
+                    "und weiter gehts...",
                     Snackbar.LENGTH_SHORT
                 ).show()
-            } else if (db.inProgress) {
-                Snackbar.make(
-                    requireView(),
-                    "Synchronisiere Userdaten, bitte warten...",
-                    Snackbar.LENGTH_SHORT
-                ).show()
-            } else {
-                // prüfe zuerst auf HashCode-Username
 
-                val success = writeUserInfoToSharedPref()
-                if (success) {
-                    findNavController().navigate(R.id.action_setupFragment_to_synchronizeFragment)
-                } else {
-                    Snackbar.make(
-                        requireView(),
-                        "Bitte zuerst Username und Passwort eingeben!",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
-                }
+
+
+            } else {
+                // wir haben noch keine Serververbindung...
+                Snackbar.make(
+                    requireView(),
+                    "Keine Serververbindung, bitte kurz warten...",
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
+//            if (db.isError || !db.isConnected) {
+//                Snackbar.make(
+//                    requireView(),
+//                    "Fehlende Serververbindung, ...",
+//                    Snackbar.LENGTH_SHORT
+//                ).show()
+//            } else if (db.inProgress) {
+//                Snackbar.make(
+//                    requireView(),
+//                    "Synchronisiere Userdaten, bitte warten...",
+//                    Snackbar.LENGTH_SHORT
+//                ).show()
+//            } else {
+//                // prüfe zuerst auf HashCode-Username
+//
+//                val success = writeUserInfoToSharedPref()
+//                if (success) {
+//                    findNavController().navigate(R.id.action_setupFragment_to_synchronizeFragment)
+//                } else {
+//                    Snackbar.make(
+//                        requireView(),
+//                        "Bitte zuerst Username und Passwort eingeben!",
+//                        Snackbar.LENGTH_SHORT
+//                    ).show()
+//                }
+//            }
         }
     }
 

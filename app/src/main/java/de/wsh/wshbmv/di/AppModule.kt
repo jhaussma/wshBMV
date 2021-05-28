@@ -13,7 +13,7 @@ import de.wsh.wshbmv.MyApplication
 import de.wsh.wshbmv.db.TbmvDatabase
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_SYNC_DONE
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_TIME
-import de.wsh.wshbmv.other.Constants.KEY_LAGER
+import de.wsh.wshbmv.other.Constants.KEY_LAGER_ID
 import de.wsh.wshbmv.other.Constants.KEY_USER_NAME
 import de.wsh.wshbmv.other.Constants.KEY_USER_HASH
 import de.wsh.wshbmv.other.Constants.SHARED_PREFERENCES_NAME
@@ -87,7 +87,7 @@ object AppModule {
     @Singleton
     @Provides
     @Named("LagerOrt")
-    fun provideLagerort(sharedePref: SharedPreferences) = sharedePref.getString(KEY_LAGER, "") ?: ""
+    fun provideLagerort(sharedePref: SharedPreferences) = sharedePref.getString(KEY_LAGER_ID, "") ?: ""
 
     @Singleton
     @Provides
