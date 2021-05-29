@@ -2,9 +2,9 @@ package de.wsh.wshbmv.db.entities.relations
 
 import androidx.room.Entity
 
-@Entity(primaryKeys = ["serviceID", "dokID"])
+@Entity(primaryKeys = ["serviceId", "dokId"])
 data class TbmvService_Dok(
     var id: String = "",
-    var serviceID: String = "",
-    var dokID: String = ""
+    var serviceId: String = "",
+    var dokId: String = ""
 )

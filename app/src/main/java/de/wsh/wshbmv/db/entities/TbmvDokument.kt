@@ -2,6 +2,7 @@ package de.wsh.wshbmv.db.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.*
 
 @Entity
 data class TbmvDokument(
@@ -12,7 +13,7 @@ data class TbmvDokument(
     var dateiName: String = "",
     var dateiVerzeichnis: String = "",
     var status: String = "",
-    var erstellDtm: Long = 0L,
+    var erstellDtm: Date? = null,
     var erstellName: String = "",
     var grobklasse: String = "",
     var stichwort: String = "",

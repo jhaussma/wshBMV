@@ -2,6 +2,7 @@ package de.wsh.wshbmv.db.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.*
 
 @Entity
 data class TbmvBelegPos(
@@ -10,6 +11,6 @@ data class TbmvBelegPos(
     var pos: Int = 0,
     var matGuid: String = "",
     var menge: Float = 0f,
-    var vonLagerGuid: String = "",
-    var ackDatum: Long? = null
+    var vonLagerGuid: String? = null,
+    var ackDatum: Date? = null
 )

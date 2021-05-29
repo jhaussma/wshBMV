@@ -50,7 +50,6 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         super.onViewCreated(view, savedInstanceState)
         bind = FragmentSetupBinding.bind(view) // initialisiert die Binding zu den Layout-Objekten
         Timber.tag(TAG).d("OnViewCreated in SetupFragment...")
-        Timber.tag(TAG).d("hasServerConnection = ${sqlServerConnected.toString()}")
 
 //        lateinit var db: SqlDbFirstInit
 //        if (hasFirstSyncDone) {
