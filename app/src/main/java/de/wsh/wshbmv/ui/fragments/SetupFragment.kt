@@ -2,7 +2,6 @@ package de.wsh.wshbmv.ui.fragments
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavOptions
@@ -15,18 +14,25 @@ import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_SYNC_DONE
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_TIME
 import de.wsh.wshbmv.other.Constants.KEY_LAGER_ID
+import de.wsh.wshbmv.other.Constants.KEY_LAGER_NAME
 import de.wsh.wshbmv.other.Constants.KEY_USER_NAME
 import de.wsh.wshbmv.other.Constants.KEY_USER_HASH
 import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars.sqlServerConnected
 import de.wsh.wshbmv.other.GlobalVars.isFirstAppStart
+import de.wsh.wshbmv.other.GlobalVars.myLager
+import de.wsh.wshbmv.other.GlobalVars.myUser
+import de.wsh.wshbmv.other.GlobalVars.sqlUserLoaded
 import de.wsh.wshbmv.other.HashUtils
+import de.wsh.wshbmv.repositories.MainRepository
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
-class SetupFragment : Fragment(R.layout.fragment_setup) {
+class SetupFragment @Inject constructor(
+    private val mainRepository: MainRepository
+) : Fragment(R.layout.fragment_setup) {
 
     // Binding zu den Objekten des Fragement-Layouts
     private lateinit var bind: FragmentSetupBinding
@@ -50,31 +56,19 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         super.onViewCreated(view, savedInstanceState)
         bind = FragmentSetupBinding.bind(view) // initialisiert die Binding zu den Layout-Objekten
         Timber.tag(TAG).d("OnViewCreated in SetupFragment...")
-
-//        lateinit var db: SqlDbFirstInit
-//        if (hasFirstSyncDone) {
-//            // wir bauen die Verbindung auf ohne weitere Aktion...
-//            Timber.d("Start mit doFirstSync = false")
-//            db = SqlDbFirstInit(MainRepository(tbmvDAO), false)
-//            db.connectionClass = SqlConnection()
-//        } else {
-//            // wir bauen die Verbindung zur Erst-Synchronisierung (Userdaten) mit SQL auf...
-//            Timber.d("Start mit doFirstSync = true")
-//            db = SqlDbFirstInit(MainRepository(tbmvDAO), true)
-//            db.connectionClass = SqlConnection()
-//        }
+        bind.tvLager.visibility = View.INVISIBLE
 
         if (!isFirstAppStart) {
-            Log.d("wshBMV", "not isFirstAppOpen")
+            Timber.tag(TAG).d( "not isFirstAppOpen")
             val navOptions = NavOptions.Builder()
                 .setPopUpTo(R.id.setupFragment, true)
                 .build()
 
-            var myLager = sharedPref.getString(KEY_LAGER_ID, "") ?: ""
+            val myLager = sharedPref.getString(KEY_LAGER_ID, "") ?: ""
 
             if (myLager == "") {
                 // wir müssen noch die Lager-Bestimmung angehen
-                    //TODO hier gibts noch etwas zu klären...
+                //TODO hier gibts noch etwas zu klären...
 
                 findNavController().navigate(
                     R.id.action_setupFragment_to_overviewFragment,
@@ -90,78 +84,122 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 )
             }
         } else {
-            Log.d("wshBMV", "isFirstAppOpen")
+            Timber.tag(TAG).d( "isFirstAppOpen")
         }
 
         bind.tvContinue.setOnClickListener {
-            if (sqlServerConnected) {
-                Snackbar.make(
-                    requireView(),
-                    "und weiter gehts...",
-                    Snackbar.LENGTH_SHORT
-                ).show()
-
-
-
-            } else {
+            if (!sqlServerConnected) {
                 // wir haben noch keine Serververbindung...
                 Snackbar.make(
                     requireView(),
                     "Keine Serververbindung, bitte kurz warten...",
-                    Snackbar.LENGTH_SHORT
+                    Snackbar.LENGTH_LONG
                 ).show()
+            } else if (!sqlUserLoaded) {
+                // die User-Tabellen wurden noch nicht vollständig geladen...
+                Snackbar.make(
+                    requireView(),
+                    "Die Benutzerdaten fehlen noch, bitte kurz warten...",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            } else {
+                // nun erfolgt die User-Überprüfung
+                val message = checkUserInfo()
+                if (message != "Okay") {
+                    Snackbar.make(
+                        requireView(),
+                        message,
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                } else {
+                    // die Anmeldung hat auch geklappt, nun müssen wir nur noch das Ende der Installation abwarten...
+                    //.. und schreiben die Preferenzen ins User-Log
+                    writeUserInfoToSharedPref()
+                    // wir machen die Lagerzuordnung sichtbar
+                    bind.tvLager.text = myLager!!.matchcode
+                    bind.tvLager.visibility = View.VISIBLE
+                    // .. blockieren die Eingabemöglichkeiten...
+                    bind.etUserName.isEnabled = false
+                    bind.etUserPwd.isEnabled = false
+                    bind.tvContinue.isEnabled = false
+                    // und melden weitere Wartezeit an...
+                    Snackbar.make(
+                        requireView(),
+                        "Bitte warten, die Synchronisierung geht weiter...",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
             }
-//            if (db.isError || !db.isConnected) {
-//                Snackbar.make(
-//                    requireView(),
-//                    "Fehlende Serververbindung, ...",
-//                    Snackbar.LENGTH_SHORT
-//                ).show()
-//            } else if (db.inProgress) {
-//                Snackbar.make(
-//                    requireView(),
-//                    "Synchronisiere Userdaten, bitte warten...",
-//                    Snackbar.LENGTH_SHORT
-//                ).show()
-//            } else {
-//                // prüfe zuerst auf HashCode-Username
-//
-//                val success = writeUserInfoToSharedPref()
-//                if (success) {
-//                    findNavController().navigate(R.id.action_setupFragment_to_synchronizeFragment)
-//                } else {
-//                    Snackbar.make(
-//                        requireView(),
-//                        "Bitte zuerst Username und Passwort eingeben!",
-//                        Snackbar.LENGTH_SHORT
-//                    ).show()
-//                }
-//            }
         }
     }
 
-    // prüft die Userdaten auf korrekten Inhalt
-    private fun checkUserInfo() : Boolean {
+    // prüft die Userdaten auf korrekten Inhalt und Berechtigungen
+    private fun checkUserInfo(): String {
+        // wurden Anmeldename und Passwort eingetragen?
+        val userName = bind.etUserName.text.toString()
+        val userPwd = bind.etUserPwd.text.toString()
 
-
-
-        return true
+        if ((userName.length < 4) || (userPwd.length < 4)) {
+            return "Anmeldename/Passwort müssen mind. 4 Zeichen beinhalten!"
+        }
+        myUser = mainRepository.getUserByLogName(userName)
+        if (myUser == null) {
+            // dieser User ist uns nicht bekannt!
+            return "Benutzer $userName ist unbekannt!"
+        }
+        if (myUser?.passHash != null) {
+            // in diesem Falle muss das Passwort überprüft werden
+            val myHash = HashUtils.sha256(bind.etUserPwd.toString())
+            if (myHash != myUser?.passHash) {
+                return "Falsches Passwort bitte korrigieren!"
+            }
+        } else {
+            // neues Passwort eintragen...
+            myUser!!.passHash = HashUtils.sha256(bind.etUserPwd.toString())
+            mainRepository.updateUser(myUser!!)
+        }
+        // nun klären wir Berechtigungen und ggf. die Lager-Zuordnung
+        if (myUser!!.bmvR + myUser!!.bmvW + myUser!!.bmvAdmin == 0) {
+            // der Benutzer darf keine BMV-Daten sehen
+            return "Sie sind für Betriebsmittel nicht freigeschaltet!"
+        }
+        val lager = mainRepository.getLagerByUserID(myUser!!.id)
+        myLager = if (lager.isEmpty()) {
+            if (myUser!!.bmvAdmin == 0) {
+                // der Benutzer ist keinem Lager zugeordnet und hat keine Admin-Berechtigung
+                return "Sie sind keinem Lager zugeordnet, fehlende Berechtigung!"
+            } else {
+                // als Admin ohne Lagerzuordnung ordnen wir das Hauptlager zu
+                mainRepository.getLagerByName("Lager")
+            }
+        } else {
+            // wir ordnen das (erste der gefundenen) Lager zu
+            lager.first()
+        }
+        return "Okay"
     }
 
-    private fun writeUserInfoToSharedPref(): Boolean {
+
+    private fun writeUserInfoToSharedPref()  {
         val username = bind.etUserName.text.toString()
         val userHash = HashUtils.sha256(bind.etUserPwd.text.toString())
-        // überprüfe die Plausibilität der Eingaben
-        if (username.isEmpty() || userHash.isEmpty() || userHash.length < 4) {
-            return false
-        }
+        val lagerID = myLager!!.id
+        val lagerName = myLager!!.matchcode
         sharedPref.edit()
             .putString(KEY_USER_NAME, username)
             .putString(KEY_USER_HASH, userHash)
             .putBoolean(KEY_FIRST_TIME, false)
             .putBoolean(KEY_FIRST_SYNC_DONE, false)
+            .putString(KEY_LAGER_ID, lagerID)
+            .putString(KEY_LAGER_NAME, lagerName)
             .apply()
-        return true
+        return
+    }
+
+    private fun writeSyncDoneToSharedPref()  {
+        sharedPref.edit()
+            .putBoolean(KEY_FIRST_SYNC_DONE, true)
+            .apply()
     }
 
 

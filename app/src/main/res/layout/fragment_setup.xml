@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
         android:ems="10"
-        android:hint="Username"
+        android:hint="Anmeldename"
         android:inputType="textPersonName"
         android:text=""
         app:layout_constraintEnd_toEndOf="parent"
@@ -42,6 +42,18 @@
         app:layout_constraintStart_toStartOf="@+id/etUserName"
         app:layout_constraintTop_toBottomOf="@+id/etUserName" />
 
+    <TextView
+        android:id="@+id/tvLager"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:hint="Lager"
+        android:text=""
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/etUserPwd"
+        app:layout_constraintTop_toBottomOf="@+id/etUserPwd" />
+
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="0dp"
@@ -50,7 +62,7 @@
         android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent">
 
         <TextView
@@ -81,4 +93,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/etUserName"
         app:layout_constraintVertical_bias="0.6" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
