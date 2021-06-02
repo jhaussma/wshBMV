@@ -2,8 +2,6 @@ package de.wsh.wshbmv.sql_db
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Build
-import androidx.annotation.RequiresApi
 import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
 import de.wsh.wshbmv.other.Constants.TAG
@@ -20,7 +18,6 @@ import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.lang.Exception
 import java.sql.Connection
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 
@@ -28,13 +25,14 @@ import javax.inject.Inject
  * Erst-Installation / Synchronisierung mit SQL-DB auf WSH-Server
  */
 class SqlDbFirstInit @Inject constructor(
-    val mainRepository: MainRepository, val doFirstSync: Boolean = false
+    val mainRepository: MainRepository, private val doFirstSync: Boolean = false
 ) {
 
     lateinit var connectionClass: SqlConnection
-    var myConn: Connection? = null
+    private var myConn: Connection? = null
 
     init {
+        Timber.tag(TAG).d("Init SqlDbFirstInit...")
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 sqlStatus = enSqlStatus.IN_PROCESS
@@ -47,7 +45,7 @@ class SqlDbFirstInit @Inject constructor(
                     Timber.tag(TAG).d("Verbindung zum SQL-Server und TbmvMat steht!")
                     if (doFirstSync) {
                         if (firstSyncDatabase()) {
-                            Timber.tag(TAG).d("Erst-Synchronisierung hat geklappt")
+                            Timber.tag(TAG).d("Erst-Synchronisierung ist durchgelaufen")
                         } else {
                             Timber.tag(TAG).d("Erst-Synchronisieriung war nicht erfolgreich!")
                         }
@@ -76,8 +74,7 @@ class SqlDbFirstInit @Inject constructor(
 
         // nach erfolgreichem First-Sync-Vorgang...
         // ...schreib einen Sync-Report-Eintrag
-        Timber.tag(TAG).d("Wir schreiben den Sync-Report")
-        var syncReport = TappSyncReport()
+        val syncReport = TappSyncReport()
         syncReport.timeStamp = nowInMillis
         syncReport.lastFromServerTime = nowInMillis
         syncReport.lastToServerTime = nowInMillis
@@ -412,11 +409,11 @@ class SqlDbFirstInit @Inject constructor(
         return true
     }
 
-    fun toBitmap(bytes: ByteArray?): Bitmap? {
-        if (bytes != null) {
-            return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    private fun toBitmap(bytes: ByteArray?): Bitmap? {
+        return if (bytes != null) {
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
         } else {
-            return null
+            null
         }
     }
 

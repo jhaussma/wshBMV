@@ -12,9 +12,9 @@ object GlobalVars {
      *  globale Statusinformationen zur aktuellen Benutzung der App
      */
     var isFirstAppStart = true          // True: es gibt noch keine lokale DB und USER-Einstellungen
-    var LagerID = ""                    // leer, wenn aktuell kein Lagerort eingestellt wurde -> Grundvoraussetzung
-    var LagerMatchcode = ""
     var firstSyncCompleted = false      // True: erste Komplettsynchronisierung war erfolgreich
+    var myUser : TsysUser? = null
+    var myLager : TbmvLager? = null
 
     /**
      *  SQL-Statusinformationen
@@ -22,8 +22,7 @@ object GlobalVars {
     var sqlServerConnected = false      // True: wir haben medi1one-Server-Verbindung
     var sqlStatus : enSqlStatus = enSqlStatus.INIT  // Status der SQL-Serververbindung
     var sqlUserLoaded = false           // True: bei der Komplett-Synchronisierung sind die User-Daten und Lager geladen...
+    var sqlUserNewPassHash = false      // True: beim nächsten Abgleich muss das Passwort des SQL-Servers aktualisiert werden...
 
-    var myUser : TsysUser? = null
-    var myLager : TbmvLager? = null
 
 }

@@ -19,10 +19,10 @@ class MainRepository @Inject constructor(
     suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUserInGruppe) =
         TbmvDao.insertUserInGruppe(tsysUserInGruppe)
 
-    fun updateUser(tsysUser: TsysUser) = TbmvDao.updateUser(tsysUser)
+    suspend fun updateUser(tsysUser: TsysUser) = TbmvDao.updateUser(tsysUser)
 
     suspend fun getUserByID(userID: String) = TbmvDao.getUserById(userID)
-    fun getUserByLogName(userLogName: String) = TbmvDao.getUserByLogName(userLogName)
+    suspend fun getUserByLogName(userLogName: String) = TbmvDao.getUserByLogName(userLogName)
 
     fun getUsersActive() = TbmvDao.getUsersActive()
 
@@ -35,8 +35,9 @@ class MainRepository @Inject constructor(
      *  Lager-Basis
      */
     suspend fun insertLager(tbmvLager: TbmvLager) = TbmvDao.insertLager(tbmvLager)
-    fun getLagerByUserID(userGuid: String) = TbmvDao.getLagerByUserID(userGuid)
-    fun getLagerByName(lagerName: String) = TbmvDao.getLagerByName(lagerName)
+    suspend fun getLagerByID(lagerId: String) = TbmvDao.getLagerByID(lagerId)
+    suspend fun getLagerByUserID(userGuid: String) = TbmvDao.getLagerByUserID(userGuid)
+    suspend fun getLagerByName(lagerName: String) = TbmvDao.getLagerByName(lagerName)
 
     /**
      *  Material und -Gruppen

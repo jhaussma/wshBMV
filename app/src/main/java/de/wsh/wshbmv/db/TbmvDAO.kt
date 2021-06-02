@@ -15,13 +15,13 @@ interface TbmvDAO {
     suspend fun insertUser(tsysUser: TsysUser)
 
     @Update
-    fun updateUser(tsysUser: TsysUser)
+    suspend fun updateUser(tsysUser: TsysUser)
 
     @Query("SELECT * FROM TsysUser WHERE id = :userID")
     suspend fun getUserById(userID: String): TsysUser?
 
-    @Query("SELECT * FROM TsysUser WHERE UserKennung = :userLogName")
-    fun getUserByLogName(userLogName: String): TsysUser?
+    @Query("SELECT * FROM TsysUser WHERE UserKennung LIKE :userLogName")
+    suspend fun getUserByLogName(userLogName: String): TsysUser?
 
     @Query("SELECT * FROM TsysUser WHERE BenutzerStatus = 'Aktiv' ORDER BY KurzZeichen")
     fun getUsersActive(): LiveData<List<TsysUser>>
@@ -51,10 +51,12 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLager(tbmvLager: TbmvLager)
 
+    @Query("SELECT * FROM TbmvLager WHERE ID = :lagerGuid")
+    suspend fun getLagerByID(lagerGuid: String): TbmvLager?
     @Query("SELECT * FROM TbmvLager WHERE UserGUID = :userGuid ORDER BY Matchcode")
-    fun getLagerByUserID(userGuid: String):List<TbmvLager>
-    @Query("SELECT * FROM TbmvLager WHERE Matchcode = :lagerName")
-    fun getLagerByName(lagerName: String): TbmvLager?
+    suspend fun getLagerByUserID(userGuid: String):List<TbmvLager>
+    @Query("SELECT * FROM TbmvLager WHERE Matchcode LIKE :lagerName")
+    suspend fun getLagerByName(lagerName: String): TbmvLager?
 
 
     /**
