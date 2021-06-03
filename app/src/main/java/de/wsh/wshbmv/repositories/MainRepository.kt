@@ -64,6 +64,8 @@ class MainRepository @Inject constructor(
     suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager) =
         TbmvDao.insertMat_Lager(tbmvMat_Lager)
 
+     fun getMatlistOfLager(lagerId: String) = TbmvDao.getMatlistOfLager(lagerId)
+
     /**
      *  Relation Material - Service
      */

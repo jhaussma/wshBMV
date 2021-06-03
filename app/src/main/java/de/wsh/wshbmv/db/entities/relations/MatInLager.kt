@@ -10,8 +10,7 @@ data class MatInLager(
     @Embedded val mat_lager: TbmvMat_Lager,
     @Relation(
         parentColumn = "matId",
-        entityColumn = "id",
-        associateBy = Junction(TbmvMat_Lager::class) //TODO hier stimmts noch nicht!!!
+        entityColumn = "id"
     )
     val material: List<TbmvMat>
 )

@@ -53,8 +53,10 @@ interface TbmvDAO {
 
     @Query("SELECT * FROM TbmvLager WHERE ID = :lagerGuid")
     suspend fun getLagerByID(lagerGuid: String): TbmvLager?
+
     @Query("SELECT * FROM TbmvLager WHERE UserGUID = :userGuid ORDER BY Matchcode")
-    suspend fun getLagerByUserID(userGuid: String):List<TbmvLager>
+    suspend fun getLagerByUserID(userGuid: String): List<TbmvLager>
+
     @Query("SELECT * FROM TbmvLager WHERE Matchcode LIKE :lagerName")
     suspend fun getLagerByName(lagerName: String): TbmvLager?
 
@@ -64,13 +66,9 @@ interface TbmvDAO {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMat(tbmvMat: TbmvMat)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe)
-
-    @Transaction
-    @Query("SELECT * FROM TbmvLager WHERE id = :lagerId")
-    suspend fun getMatlistOfLagerSortByScancode(lagerId: String) : List<MatInLager>
-
 
 
     /**
@@ -94,6 +92,11 @@ interface TbmvDAO {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager)
+
+    @Transaction
+    @Query("SELECT * FROM TbmvMat_Lager WHERE lagerId = :lagerId")
+    fun getMatlistOfLager(lagerId: String): LiveData<List<MatInLager>>
+
 
     /**
      *  Relation Material - Service

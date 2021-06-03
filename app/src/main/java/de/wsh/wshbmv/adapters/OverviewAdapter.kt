@@ -4,6 +4,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.menu.ActionMenuItemView
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.ActivityMainBinding
@@ -11,15 +13,28 @@ import de.wsh.wshbmv.databinding.FragmentOverviewBinding
 import de.wsh.wshbmv.databinding.FragmentSetupBinding
 import de.wsh.wshbmv.databinding.ItemOverviewBinding
 import de.wsh.wshbmv.db.entities.TbmvMat
+import de.wsh.wshbmv.db.entities.relations.MatInLager
 
 // Constructor u.U. später wieder rausnehmen, ähnlich RunAdapter
-class OverviewAdapter(
-    var matList: List<TbmvMat>
-) : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolder>()  {
+class OverviewAdapter() : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolder>()  {
 
     inner class OverviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     private  lateinit var binding: ItemOverviewBinding
+
+    val diffCallback = object : DiffUtil.ItemCallback<TbmvMat>() {
+        override fun areItemsTheSame(oldItem: TbmvMat, newItem: TbmvMat): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: TbmvMat, newItem: TbmvMat): Boolean {
+            return oldItem.hashCode() == newItem.hashCode()
+        }
+    }
+
+    var differ = AsyncListDiffer(this, diffCallback)
+
+    fun submitList(list: List<TbmvMat>) = differ.submitList(list)
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OverviewViewHolder {
@@ -34,18 +49,19 @@ class OverviewAdapter(
 
     override fun onBindViewHolder(holder: OverviewViewHolder, position: Int) {
         // befülle die Sicht eines Datensatz-Eintrags mit den Daten aus dem Datensatz
+        val material = differ.currentList[position]
         holder.itemView.apply {
-            binding.tvOvwScancode.text = matList[position].scancode
-            binding.tvOvwMatchcode.text = matList[position].matchcode
-            binding.tvOvwHersteller.text = matList[position].hersteller
-            binding.tvOvwModell.text = matList[position].modell
-            binding.tvOvwSeriennummer.text = matList[position].seriennummer
-            binding.ivOvwMatBild.setImageBitmap(matList[position].bildBmp)
+            binding.tvOvwScancode.text = material.scancode
+            binding.tvOvwMatchcode.text = material.matchcode
+            binding.tvOvwHersteller.text = material.hersteller
+            binding.tvOvwModell.text = material.modell
+            binding.tvOvwSeriennummer.text = material.seriennummer
+            binding.ivOvwMatBild.setImageBitmap(material.bildBmp)
         }
 
     }
 
     override fun getItemCount(): Int {
-        return matList.size
+        return differ.currentList.size
     }
 }
