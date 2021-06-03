@@ -3,4 +3,12 @@
     <string name="welcomeText">wshBMV \nNeuinstallation</string>
     <string name="installationHinweis">Es wird zuerst ein Datenbankabgleich durchgeführt, dafür muss eine VPN-Verbindung mit dem WSH-Server aktiv sein! \n\nBitte haben Sie etwas Geduld...</string>
 
+    <string-array name="sort_mat_options">
+        <item>Matchcode</item>
+        <item>Scancode</item>
+        <item>Seriennr.</item>
+        <item>Hersteller</item>
+        <item>Modell</item>
+        <item>Status</item>
+    </string-array>
 </resources>
