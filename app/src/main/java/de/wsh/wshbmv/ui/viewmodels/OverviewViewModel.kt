@@ -6,7 +6,7 @@ import de.wsh.wshbmv.repositories.MainRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class OverviewViewModel @Inject constructor(
     val mainRepository: MainRepository
 ): ViewModel() {
 

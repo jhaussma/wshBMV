@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:padding="16dp">
+
+
+    <ImageView
+        android:id="@+id/ivOvwMatBild"
+        android:layout_width="80dp"
+        android:layout_height="74dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvOvwScancode"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <ImageView
+        android:id="@+id/ivOvwStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/checkbox_on_background" />
+
+    <TextView
+        android:id="@+id/tvOvwScancode"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:hint="Scancode"
+        android:text="Scancode"
+        app:layout_constraintStart_toEndOf="@+id/ivOvwStatus"
+        app:layout_constraintTop_toTopOf="@+id/ivOvwStatus" />
+
+    <TextView
+        android:id="@+id/tvOvwMatchcode"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="Matchcode"
+        app:layout_constraintEnd_toStartOf="@+id/ivOvwMatBild"
+        app:layout_constraintStart_toEndOf="@+id/tvOvwScancode"
+        app:layout_constraintTop_toTopOf="@+id/tvOvwScancode" />
+
+    <TextView
+        android:id="@+id/tvOvwHersteller"
+        android:layout_width="130dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="Hersteller"
+        android:text="Hersteller"
+        app:layout_constraintStart_toStartOf="@+id/tvOvwScancode"
+        app:layout_constraintTop_toBottomOf="@+id/tvOvwScancode" />
+
+    <TextView
+        android:id="@+id/tvOvwModell"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:hint="Modell"
+        android:text="Modell"
+        app:layout_constraintEnd_toStartOf="@+id/ivOvwMatBild"
+        app:layout_constraintStart_toEndOf="@+id/tvOvwHersteller"
+        app:layout_constraintTop_toBottomOf="@+id/tvOvwMatchcode" />
+
+    <TextView
+        android:id="@+id/tvOvwSeriennummer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:hint="Seriennr."
+        android:text="Seriennr."
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/ivOvwMatBild"
+        app:layout_constraintStart_toStartOf="@+id/tvOvwHersteller"
+        app:layout_constraintTop_toBottomOf="@+id/tvOvwHersteller" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

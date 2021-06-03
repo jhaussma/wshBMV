@@ -64,9 +64,14 @@ interface TbmvDAO {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMat(tbmvMat: TbmvMat)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe)
+
+    @Transaction
+    @Query("SELECT * FROM TbmvLager WHERE id = :lagerId")
+    suspend fun getMatlistOfLagerSortByScancode(lagerId: String) : List<MatInLager>
+
+
 
     /**
      *  Service - Planung
