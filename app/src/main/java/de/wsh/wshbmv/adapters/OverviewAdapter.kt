@@ -3,26 +3,23 @@ package de.wsh.wshbmv.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import de.wsh.wshbmv.R
-import de.wsh.wshbmv.databinding.ActivityMainBinding
-import de.wsh.wshbmv.databinding.FragmentOverviewBinding
-import de.wsh.wshbmv.databinding.FragmentSetupBinding
 import de.wsh.wshbmv.databinding.ItemOverviewBinding
 import de.wsh.wshbmv.db.entities.TbmvMat
-import de.wsh.wshbmv.db.entities.relations.MatInLager
 
-// Constructor u.U. später wieder rausnehmen, ähnlich RunAdapter
-class OverviewAdapter() : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolder>()  {
+
+
+class OverviewAdapter : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolder>() {
 
     inner class OverviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    private  lateinit var binding: ItemOverviewBinding
+    private lateinit var bind: ItemOverviewBinding
 
-    val diffCallback = object : DiffUtil.ItemCallback<TbmvMat>() {
+    private val diffCallback = object : DiffUtil.ItemCallback<TbmvMat>() {
         override fun areItemsTheSame(oldItem: TbmvMat, newItem: TbmvMat): Boolean {
             return oldItem.id == newItem.id
         }
@@ -44,6 +41,7 @@ class OverviewAdapter() : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolde
             parent,
             false
         )
+        bind = ItemOverviewBinding.bind(view)
         return OverviewViewHolder(view)
     }
 
@@ -51,14 +49,26 @@ class OverviewAdapter() : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolde
         // befülle die Sicht eines Datensatz-Eintrags mit den Daten aus dem Datensatz
         val material = differ.currentList[position]
         holder.itemView.apply {
-            binding.tvOvwScancode.text = material.scancode
-            binding.tvOvwMatchcode.text = material.matchcode
-            binding.tvOvwHersteller.text = material.hersteller
-            binding.tvOvwModell.text = material.modell
-            binding.tvOvwSeriennummer.text = material.seriennummer
-            binding.ivOvwMatBild.setImageBitmap(material.bildBmp)
+            // lade das Bild ins ImageView (Materialbild)
+            Glide.with(this).load(material.bildBmp).into(bind.ivOvwMatBild)
+            // den Status anzeigen
+            when (material.matStatus) {
+                "Aktiv" -> Glide.with(this).load(R.drawable.ic_stat_okay).into(bind.ivOvwStatus)
+                "Defekt" -> Glide.with(this).load(R.drawable.ic_stat_defekt).into(bind.ivOvwStatus)
+                "Service" -> Glide.with(this).load(R.drawable.ic_stat_service)
+                    .into(bind.ivOvwStatus)
+                "Vermisst" -> Glide.with(this).load(R.drawable.ic_stat_missed)
+                    .into(bind.ivOvwStatus)
+                else -> Glide.with(this).load("").into(bind.ivOvwStatus)
+            }
+            // die Datenfelder
+            bind.tvOvwScancode.text = material.scancode
+            bind.tvOvwMatchcode.text = material.matchcode
+            bind.tvOvwHersteller.text = material.hersteller
+            bind.tvOvwModell.text = material.modell
+            bind.tvOvwSeriennummer.text = material.seriennummer
+            bind.tvOvwBeschreibung.text = material.beschreibung
         }
-
     }
 
     override fun getItemCount(): Int {

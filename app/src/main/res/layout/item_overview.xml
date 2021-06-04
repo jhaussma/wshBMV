@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="120dp"
+    android:layout_height="145dp"
     android:padding="16dp">
 
 
@@ -18,11 +18,11 @@
 
     <ImageView
         android:id="@+id/ivOvwStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvOvwScancode"
         app:srcCompat="@android:drawable/checkbox_on_background" />
 
     <TextView
@@ -30,10 +30,10 @@
         android:layout_width="80dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:hint="Scancode"
+        android:layout_marginTop="8dp"
         android:text="Scancode"
         app:layout_constraintStart_toEndOf="@+id/ivOvwStatus"
-        app:layout_constraintTop_toTopOf="@+id/ivOvwStatus" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvOvwMatchcode"
@@ -51,7 +51,6 @@
         android:layout_width="130dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:hint="Hersteller"
         android:text="Hersteller"
         app:layout_constraintStart_toStartOf="@+id/tvOvwScancode"
         app:layout_constraintTop_toBottomOf="@+id/tvOvwScancode" />
@@ -63,7 +62,6 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:hint="Modell"
         android:text="Modell"
         app:layout_constraintEnd_toStartOf="@+id/ivOvwMatBild"
         app:layout_constraintStart_toEndOf="@+id/tvOvwHersteller"
@@ -75,11 +73,19 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:hint="Seriennr."
         android:text="Seriennr."
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/ivOvwMatBild"
         app:layout_constraintStart_toStartOf="@+id/tvOvwHersteller"
         app:layout_constraintTop_toBottomOf="@+id/tvOvwHersteller" />
+
+    <TextView
+        android:id="@+id/tvOvwBeschreibung"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Beschreibung"
+        app:layout_constraintEnd_toEndOf="@+id/ivOvwMatBild"
+        app:layout_constraintStart_toStartOf="@+id/tvOvwSeriennummer"
+        app:layout_constraintTop_toBottomOf="@+id/tvOvwSeriennummer" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

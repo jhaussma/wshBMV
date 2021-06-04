@@ -1,5 +1,7 @@
 package de.wsh.wshbmv.repositories
 
+import androidx.lifecycle.LiveData
+import androidx.room.Query
 import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
@@ -47,6 +49,16 @@ class MainRepository @Inject constructor(
         TbmvDao.insertMatGruppe(tbmvMatGruppe)
 
     /**
+     * für TESTZWECKE, später korrigieren...
+     */
+    fun getMaterialSortByMatchocde() = TbmvDao.getMaterialSortByMatchocde()
+    fun getMaterialSortByScancode() = TbmvDao.getMaterialSortByScancode()
+    fun getMaterialSortBySeriennr() = TbmvDao.getMaterialSortBySeriennr()
+    fun getMaterialSortByHersteller() = TbmvDao.getMaterialSortByHersteller()
+    fun getMaterialSortByModell() = TbmvDao.getMaterialSortByModell()
+    fun getMaterialSortByStatus() = TbmvDao.getMaterialSortByStatus()
+
+    /**
      *  Service
      */
     suspend fun insertService(tbmvService: TbmvService) = TbmvDao.insertService(tbmvService)
@@ -64,7 +76,7 @@ class MainRepository @Inject constructor(
     suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager) =
         TbmvDao.insertMat_Lager(tbmvMat_Lager)
 
-     fun getMatlistOfLager(lagerId: String) = TbmvDao.getMatlistOfLager(lagerId)
+    fun getMatlistOfLager(lagerId: String) = TbmvDao.getMatlistOfLager(lagerId)
 
     /**
      *  Relation Material - Service

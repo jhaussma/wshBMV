@@ -70,6 +70,23 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe)
 
+    /**
+     * für TESTZWECKE, später korrigieren...
+     */
+    @Query("SELECT * FROM TbmvMat ORDER BY matchcode, beschreibung")
+    fun getMaterialSortByMatchocde() : LiveData<List<TbmvMat>>
+    @Query("SELECT * FROM TbmvMat ORDER BY scancode")
+    fun getMaterialSortByScancode() : LiveData<List<TbmvMat>>
+    @Query("SELECT * FROM TbmvMat ORDER BY seriennummer")
+    fun getMaterialSortBySeriennr() : LiveData<List<TbmvMat>>
+    @Query("SELECT * FROM TbmvMat ORDER BY hersteller")
+    fun getMaterialSortByHersteller() : LiveData<List<TbmvMat>>
+    @Query("SELECT * FROM TbmvMat ORDER BY modell")
+    fun getMaterialSortByModell() : LiveData<List<TbmvMat>>
+    @Query("SELECT * FROM TbmvMat ORDER BY matStatus")
+    fun getMaterialSortByStatus() : LiveData<List<TbmvMat>>
+
+
 
     /**
      *  Service - Planung
@@ -95,7 +112,7 @@ interface TbmvDAO {
 
     @Transaction
     @Query("SELECT * FROM TbmvMat_Lager WHERE lagerId = :lagerId")
-    fun getMatlistOfLager(lagerId: String): LiveData<List<MatInLager>>
+    fun getMatlistOfLager(lagerId: String): MatInLager?
 
 
     /**

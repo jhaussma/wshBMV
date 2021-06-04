@@ -1,8 +1,10 @@
 package de.wsh.wshbmv.ui
 
 import android.content.SharedPreferences
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.MyApplication
 import de.wsh.wshbmv.databinding.ActivityMainBinding
@@ -57,7 +59,6 @@ class MainActivity : AppCompatActivity() {
         // wir starten den Layout-Inflater
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 
     }
 
