@@ -14,21 +14,21 @@ import javax.inject.Inject
 @HiltViewModel
 class OverviewViewModel @Inject constructor(
     mainRepository: MainRepository
-): ViewModel() {
+) : ViewModel() {
 
-    private  val materialSortByMatchcode = mainRepository.getMaterialSortByMatchocde()
-    private  val materialSortByScancode = mainRepository.getMaterialSortByScancode()
-    private  val materialSortBySeriennr = mainRepository.getMaterialSortBySeriennr()
-    private  val materialSortByHersteller = mainRepository.getMaterialSortByHersteller()
-    private  val materialSortByModell = mainRepository.getMaterialSortByModell()
-    private  val materialSortByStatus = mainRepository.getMaterialSortByStatus()
+    private val materialSortByMatchcode = mainRepository.getMaterialSortByMatchocde()
+    private val materialSortByScancode = mainRepository.getMaterialSortByScancode()
+    private val materialSortBySeriennr = mainRepository.getMaterialSortBySeriennr()
+    private val materialSortByHersteller = mainRepository.getMaterialSortByHersteller()
+    private val materialSortByModell = mainRepository.getMaterialSortByModell()
+    private val materialSortByStatus = mainRepository.getMaterialSortByStatus()
 
 
     val materials = MediatorLiveData<List<TbmvMat>>()
 
     var sortType = SortType.MATCHCODE
 
-    fun init() {
+    init {
         materials.addSource(materialSortByHersteller) { result ->
             if(sortType == SortType.HERSTELLER) {
                 result?.let { materials.value = it }

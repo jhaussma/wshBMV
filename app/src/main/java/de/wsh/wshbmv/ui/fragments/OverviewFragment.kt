@@ -63,10 +63,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
 
         viewModel.materials.observe(viewLifecycleOwner, Observer {
             overviewAdapter.submitList(it)
-            overviewAdapter.notifyDataSetChanged()
         })
-
-        viewModel.init()
     }
 
     private fun requestPermissions() {

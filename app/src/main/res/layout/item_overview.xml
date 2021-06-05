@@ -3,18 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="145dp"
+    android:layout_height="wrap_content"
     android:padding="16dp">
 
-
-    <ImageView
-        android:id="@+id/ivOvwMatBild"
-        android:layout_width="80dp"
-        android:layout_height="74dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/tvOvwScancode"
-        tools:srcCompat="@tools:sample/avatars" />
 
     <ImageView
         android:id="@+id/ivOvwStatus"
@@ -73,19 +64,19 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:text="Seriennr."
-        app:layout_constraintEnd_toStartOf="@+id/ivOvwMatBild"
+        android:layout_marginBottom="8dp"
+        android:text="Seriennummer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/tvOvwModell"
         app:layout_constraintStart_toStartOf="@+id/tvOvwHersteller"
         app:layout_constraintTop_toBottomOf="@+id/tvOvwHersteller" />
 
-    <TextView
-        android:id="@+id/tvOvwBeschreibung"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Beschreibung"
-        app:layout_constraintEnd_toEndOf="@+id/ivOvwMatBild"
-        app:layout_constraintStart_toStartOf="@+id/tvOvwSeriennummer"
-        app:layout_constraintTop_toBottomOf="@+id/tvOvwSeriennummer" />
+    <ImageView
+        android:id="@+id/ivOvwMatBild"
+        android:layout_width="80dp"
+        android:layout_height="74dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvOvwScancode"
+        tools:srcCompat="@color/colorAccent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

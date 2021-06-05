@@ -10,7 +10,8 @@ import com.bumptech.glide.Glide
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.ItemOverviewBinding
 import de.wsh.wshbmv.db.entities.TbmvMat
-
+import de.wsh.wshbmv.other.Constants.TAG
+import timber.log.Timber
 
 
 class OverviewAdapter : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolder>() {
@@ -36,23 +37,22 @@ class OverviewAdapter : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolder>
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OverviewViewHolder {
         // erzeuge die Sicht eines Eintrags aus Layout item_overview...
-        val view = LayoutInflater.from(parent.context).inflate(
+        return OverviewViewHolder(
+            LayoutInflater.from(parent.context).inflate(
             R.layout.item_overview,
             parent,
             false
+            )
         )
-        bind = ItemOverviewBinding.bind(view)
-        return OverviewViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: OverviewViewHolder, position: Int) {
         // befülle die Sicht eines Datensatz-Eintrags mit den Daten aus dem Datensatz
-        val material = differ.currentList[position]
+        val myMaterial = differ.currentList[position]
+        bind = ItemOverviewBinding.bind(holder.itemView)
         holder.itemView.apply {
-            // lade das Bild ins ImageView (Materialbild)
-            Glide.with(this).load(material.bildBmp).into(bind.ivOvwMatBild)
             // den Status anzeigen
-            when (material.matStatus) {
+            when (myMaterial.matStatus) {
                 "Aktiv" -> Glide.with(this).load(R.drawable.ic_stat_okay).into(bind.ivOvwStatus)
                 "Defekt" -> Glide.with(this).load(R.drawable.ic_stat_defekt).into(bind.ivOvwStatus)
                 "Service" -> Glide.with(this).load(R.drawable.ic_stat_service)
@@ -61,17 +61,18 @@ class OverviewAdapter : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolder>
                     .into(bind.ivOvwStatus)
                 else -> Glide.with(this).load("").into(bind.ivOvwStatus)
             }
+            Glide.with(this).load(myMaterial.bildBmp).into(bind.ivOvwMatBild)
             // die Datenfelder
-            bind.tvOvwScancode.text = material.scancode
-            bind.tvOvwMatchcode.text = material.matchcode
-            bind.tvOvwHersteller.text = material.hersteller
-            bind.tvOvwModell.text = material.modell
-            bind.tvOvwSeriennummer.text = material.seriennummer
-            bind.tvOvwBeschreibung.text = material.beschreibung
+            bind.tvOvwScancode.text = myMaterial.scancode
+            bind.tvOvwMatchcode.text = myMaterial.matchcode
+            bind.tvOvwHersteller.text = myMaterial.hersteller
+            bind.tvOvwModell.text = myMaterial.modell
+            bind.tvOvwSeriennummer.text = myMaterial.seriennummer
         }
     }
 
     override fun getItemCount(): Int {
         return differ.currentList.size
     }
+
 }
