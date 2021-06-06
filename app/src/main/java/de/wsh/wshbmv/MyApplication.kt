@@ -1,6 +1,7 @@
 package de.wsh.wshbmv
 
 import android.app.Application
+import com.codecorp.decoder.CortexDecoderLibrary
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 

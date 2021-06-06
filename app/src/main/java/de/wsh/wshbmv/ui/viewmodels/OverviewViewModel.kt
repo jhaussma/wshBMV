@@ -70,8 +70,6 @@ class OverviewViewModel @Inject constructor(
         SortType.STATUS -> materialSortByStatus.value?.let { materials.value = it }
     }.also {
         this.sortType = sortType
-        Timber.tag(TAG).d("SortType: ${sortType.toString()}")
-        Timber.tag(TAG).d(materials.value.toString())
     }
 
 

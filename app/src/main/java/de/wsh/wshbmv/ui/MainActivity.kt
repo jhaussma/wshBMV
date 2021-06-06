@@ -1,10 +1,9 @@
 package de.wsh.wshbmv.ui
 
 import android.content.SharedPreferences
-import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.bumptech.glide.Glide
+import com.codecorp.decoder.CortexDecoderLibrary
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.MyApplication
 import de.wsh.wshbmv.databinding.ActivityMainBinding
@@ -23,6 +22,9 @@ import javax.inject.Named
 class MainActivity : AppCompatActivity() {
 
     private  lateinit var binding: ActivityMainBinding
+
+    @Inject
+    lateinit var cortexScan: CortexDecoderLibrary
 
     @Inject
     lateinit var app: MyApplication
@@ -59,6 +61,9 @@ class MainActivity : AppCompatActivity() {
         // wir starten den Layout-Inflater
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // starte den CortexDecoder
+        cortexScan = CortexDecoderLibrary.sharedObject(this,"noCamera")
 
     }
 
