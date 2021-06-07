@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".cortex_decoder.ScanActivity">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/activity_main_button_to_sdk_version"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:textColor="#FF333333"
+        />
+
+    <FrameLayout
+        android:id="@+id/activity_scan_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/activity_scan_barcode_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lines="5"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:background="#CC333333"
+            android:textColor="#FFCCCCCC"
+            android:text="Barcode Result"
+            android:gravity="center"
+            android:layout_gravity="bottom"
+            />
+    </FrameLayout>
+
+</androidx.appcompat.widget.LinearLayoutCompat>
