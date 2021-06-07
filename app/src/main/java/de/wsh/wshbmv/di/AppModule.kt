@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import androidx.room.Room
+import com.codecorp.decoder.CortexDecoderLibrary
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -63,6 +64,15 @@ object AppModule {
     @Provides
     fun provideSqlConnection(sqlConnection: SqlConnection) = sqlConnection.dbConn()
 
+    /**
+     *  erklärt den CortexDecoder
+     */
+    @Singleton
+    @Provides
+    fun provideCortexDecoder(
+        @ApplicationContext app: Context,
+    ) = CortexDecoderLibrary.sharedObject(app, "Camera2")
+
 
     /**
      *  lokal gespeicherte App-Infos wie Username, akt. Lagerort, First-Time-Aufruf (wegen Installation)
@@ -87,7 +97,8 @@ object AppModule {
     @Singleton
     @Provides
     @Named("LagerOrt")
-    fun provideLagerort(sharedePref: SharedPreferences) = sharedePref.getString(KEY_LAGER_ID, "") ?: ""
+    fun provideLagerort(sharedePref: SharedPreferences) =
+        sharedePref.getString(KEY_LAGER_ID, "") ?: ""
 
     @Singleton
     @Provides

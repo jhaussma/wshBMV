@@ -23,4 +23,8 @@ object Constants {
     const val SQL_CONN_DB = "JogiTestDB"
     const val SQL_USER_NAME = "SA"
     const val SQL_USER_PWD = "Coca10Cola"
+//    const val SQL_CONN_IP = "192.168.101.22\\SQLEXPRESS"
+//    const val SQL_CONN_DB = "wshAPlan"
+//    const val SQL_USER_NAME = "SA"
+//    const val SQL_USER_PWD = "Sy67Ha99"
 }

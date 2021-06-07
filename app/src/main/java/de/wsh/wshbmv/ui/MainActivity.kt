@@ -23,8 +23,8 @@ class MainActivity : AppCompatActivity() {
 
     private  lateinit var binding: ActivityMainBinding
 
-    @Inject
-    lateinit var cortexScan: CortexDecoderLibrary
+//    @Inject
+//    lateinit var cortexScan: CortexDecoderLibrary
 
     @Inject
     lateinit var app: MyApplication
@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // starte den CortexDecoder
-        cortexScan = CortexDecoderLibrary.sharedObject(this,"noCamera")
+//        cortexScan = CortexDecoderLibrary.sharedObject(this,"noCamera")
 
     }
 
