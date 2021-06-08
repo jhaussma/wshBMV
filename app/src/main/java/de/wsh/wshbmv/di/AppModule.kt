@@ -64,15 +64,15 @@ object AppModule {
     @Provides
     fun provideSqlConnection(sqlConnection: SqlConnection) = sqlConnection.dbConn()
 
-    /**
-     *  erklärt den CortexDecoder
-     */
-    @Singleton
-    @Provides
-    fun provideCortexDecoder(
-        @ApplicationContext app: Context,
-    ) = CortexDecoderLibrary.sharedObject(app, "Camera2")
-
+//    /**
+//     *  erklärt den CortexDecoder
+//     */
+//    @Singleton
+//    @Provides
+//    fun provideCortexDecoder(
+//        @ApplicationContext app: Context,
+//    ) = CortexDecoderLibrary.sharedObject(app, "Camera2")
+//
 
     /**
      *  lokal gespeicherte App-Infos wie Username, akt. Lagerort, First-Time-Aufruf (wegen Installation)

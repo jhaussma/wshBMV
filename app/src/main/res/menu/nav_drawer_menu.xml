@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/miScanner"
+        android:title="Scanner"
+        android:icon="@drawable/ic_barcode"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/miBMListe"
+        android:title="BM Liste"
+        android:icon="@drawable/ic_bm_liste"
+        app:showAsAction="ifRoom"         />
+
+    <item
+        android:id="@+id/miTransfer"
+        android:title="Transferlisten"
+        android:icon="@drawable/ic_transfer"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/miInventur"
+        android:title="Inventur"
+        android:icon="@drawable/ic_inventur"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/miSync"
+        android:title="Synchronisieren"
+        android:icon="@drawable/ic_sync"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/miSettings"
+        android:title="Einstellungen"
+        android:icon="@drawable/ic_settings"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/miEndApp"
+        android:title="App schließen"
+        android:icon="@drawable/ic_close"
+        app:showAsAction="ifRoom"/>
+
+</menu>
