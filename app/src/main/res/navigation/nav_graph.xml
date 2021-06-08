@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/setupFragment">
 
@@ -30,6 +31,9 @@
             android:id="@+id/action_overviewFragment_to_materialFragment"
             app:destination="@id/materialFragment"
             app:launchSingleTop="true"/>
+        <action
+            android:id="@+id/action_overviewFragment_to_scanActivity"
+            app:destination="@id/scanActivity" />
     </fragment>
     <fragment
         android:id="@+id/materialFragment"
@@ -43,4 +47,9 @@
         android:id="@+id/transferlistFragment"
         android:name="de.wsh.wshbmv.ui.fragments.TransferlistFragment"
         android:label="TransferlistFragment" />
+    <activity
+        android:id="@+id/scanActivity"
+        android:name="de.wsh.wshbmv.cortex_decoder.ScanActivity"
+        android:label="activity_scan"
+        tools:layout="@layout/activity_scan" />
 </navigation>

@@ -1,6 +1,7 @@
 package de.wsh.wshbmv.cortex_decoder
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -19,9 +20,11 @@ import com.codecorp.symbology.Symbologies
 import com.codecorp.symbology.SymbologyType
 import com.codecorp.util.Codewords
 import com.codecorp.util.Utilities
+import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.databinding.ActivityScanBinding
 import pub.devrel.easypermissions.EasyPermissions
 
+@AndroidEntryPoint
 class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks, CortexDecoderLibraryCallback, LicenseCallback {
 
     private lateinit var binding: ActivityScanBinding
@@ -32,8 +35,8 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks, C
 
     var mCortexDecoderLibrary:CortexDecoderLibrary? = null
 
-    val EDK_ACTIVATE_LICENSE_KEY = "your key"
-    val EDK_CUSTOMERID = "your customer id"
+    val EDK_ACTIVATE_LICENSE_KEY = "0R71aoAa3FQ3L4pZlzrIs1Be/8Vj6DfYRnDL6zsv0bK6PRkeuftE0yYm99Yvk9/v/B9dRiHnas/FrhtRacNL9/5HJ8Espns8hATFBN4hBoiEvznSMOFSGFla8qWik4fh7n01D69b+vHaF8FQq6xd2BQ9A/imr2aVBFYM7jQo0QC11b1HCGbm2uD1bA7+NlRyHui6ThHRSbQI98mf+4jjryn79mC7u9kNMFsXTGzz95gUU9qCzmkEHs1tuDH9SVJTMaXQ4Ze6dqsBruw1CtW62tal7S4ZO5a3A3UXXi/DQXPz1QhM9SAlkehpENBt+flbIYmNLCDq+edAbJmnqs0X4rE/Ao9ozPxM3ziBvWY0JGjBttQCuNgcJOSnMlqn6NTgsl8t9lU0pCc2dRYc06V06g=="
+    val EDK_CUSTOMERID = "JOE042620210001"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +70,7 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks, C
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initSDK(){
         mCortexDecoderLibrary = CortexDecoderLibrary.sharedObject(applicationContext, CAMERA_API)
         mCortexDecoderLibrary?.setLicenseCallback(this)
@@ -93,7 +97,7 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks, C
     }
 
     private fun showBarcodeResult(barcode: String?, type: SymbologyType?){
-        var typeStr = Utilities.stringFromSymbologyType(type)
+        val typeStr = Utilities.stringFromSymbologyType(type)
         binding.activityScanBarcodeResult.setText(typeStr+"\n"+barcode)
     }
 

@@ -3,9 +3,12 @@ package de.wsh.wshbmv.ui
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.codecorp.decoder.CortexDecoderLibrary
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Toast
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.MyApplication
+import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.ActivityMainBinding
 import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.other.Constants.TAG
@@ -67,4 +70,16 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.app_bar_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.miBarcode -> Toast.makeText(this, "Barcode geklickt", Toast.LENGTH_SHORT).show()
+            R.id.miSync -> Toast.makeText(this, "Sync geklickt", Toast.LENGTH_SHORT).show()
+        }
+        return true
+    }
 }
