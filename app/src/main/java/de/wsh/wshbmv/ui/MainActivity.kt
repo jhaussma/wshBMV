@@ -8,6 +8,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.navigation.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.MyApplication
 import de.wsh.wshbmv.R
@@ -52,6 +53,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Timber.tag(TAG).d("Start MainActivity mit onCreate")
+
+
         // erste Statusabklärung...
         isFirstAppStart = _isFirstAppStart
         firstSyncCompleted = hasFirstSyncDone
@@ -66,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
         toggle = ActionBarDrawerToggle(this, binding.drawerLayout, R.string.read_open, R.string.read_close)
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
@@ -74,11 +78,14 @@ class MainActivity : AppCompatActivity() {
         // für die Click-Reaktionen des Slide-In_Menü :
         binding.navView.setNavigationItemSelectedListener {
             when (it.itemId) {
-                R.id.miBMListe -> Toast.makeText(
-                    applicationContext,
-                    "BM-Liste geklickt",
-                    Toast.LENGTH_LONG
-                ).show()
+                R.id.miBMListe -> {
+                    Toast.makeText(
+                        applicationContext,
+                        "BM-Liste geklickt",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    binding.navHostFragment.findNavController().navigate(R.id.action_global_materialFragment)
+                }
 
                 R.id.miTransfer -> Toast.makeText(
                     applicationContext,
@@ -147,4 +154,7 @@ class MainActivity : AppCompatActivity() {
             return true
         }
     }
+
+
+
 }

@@ -52,4 +52,8 @@
         android:name="de.wsh.wshbmv.cortex_decoder.ScanActivity"
         android:label="activity_scan"
         tools:layout="@layout/activity_scan" />
+    <action
+        android:id="@+id/action_global_materialFragment"
+        app:destination="@id/materialFragment"
+        app:launchSingleTop="true" />
 </navigation>
