@@ -15,12 +15,18 @@ import de.wsh.wshbmv.R
 import de.wsh.wshbmv.cortex_decoder.ScanActivity
 import de.wsh.wshbmv.databinding.ActivityMainBinding
 import de.wsh.wshbmv.db.TbmvDAO
+import de.wsh.wshbmv.db.entities.relations.BmData
 import de.wsh.wshbmv.other.Constants.TAG
+import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.firstSyncCompleted
 import de.wsh.wshbmv.other.GlobalVars.isFirstAppStart
 import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.sql_db.SqlConnection
 import de.wsh.wshbmv.sql_db.SqlDbFirstInit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
@@ -84,14 +90,34 @@ class MainActivity : AppCompatActivity() {
                         "BM-Liste geklickt",
                         Toast.LENGTH_LONG
                     ).show()
+                    // nur für Testzwecke!!
                     binding.navHostFragment.findNavController().navigate(R.id.action_global_materialFragment)
                 }
 
-                R.id.miTransfer -> Toast.makeText(
-                    applicationContext,
-                    "Transferlisten geklickt",
-                    Toast.LENGTH_LONG
-                ).show()
+                R.id.miTransfer -> {
+                    Toast.makeText(
+                        applicationContext,
+                        "Transferlisten geklickt",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    // nur für Testzwecke!!
+                    val job = GlobalScope.launch(Dispatchers.IO) {
+                        Timber.tag(TAG).d("Datenausgabeversuch für mein Material:")
+                        var material = tbmvDAO.getMaterialByMatID("5f23C813-ED3F-4C76-BD4E-7D86f3206A18")
+                        Timber.tag(TAG).d(material.toString())
+                        var lagerListe = tbmvDAO.getLagerWithMatInStore("5f23C813-ED3F-4C76-BD4E-7D86f3206A18")
+                        Timber.tag(TAG).d(lagerListe.toString())
+                        if (lagerListe != null) {
+                            Timber.tag(TAG).d(lagerListe.lager.toString())
+                        }
+                        lagerListe = tbmvDAO.getHauptLagerVonMaterial("5f23C813-ED3F-4C76-BD4E-7D86f3206A18")
+                        Timber.tag(TAG).d(lagerListe.toString())
+                        if (lagerListe != null) {
+                            Timber.tag(TAG).d(lagerListe.lager.toString())
+                        }
+
+                    }
+                }
 
                 R.id.miInventur -> Toast.makeText(
                     applicationContext,

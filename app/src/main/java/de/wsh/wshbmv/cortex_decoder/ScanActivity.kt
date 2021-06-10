@@ -64,9 +64,8 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
             }
 
             checkPermission()
-
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            checkPermission()
+//        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            checkPermission()
         } else {
             checkPermission()
         }
@@ -90,47 +89,48 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
         Timber.tag(TAG).d("wir starten nun den CortexDecoder")
         mCortexDecoderLibrary = CortexDecoderLibrary.sharedObject(applicationContext, CAMERA_API)
         Timber.tag(TAG).d(".. vor setLicenseCallback...")
-        mCortexDecoderLibrary?.setLicenseCallback(this)
+        mCortexDecoderLibrary.setLicenseCallback(this)
         Timber.tag(TAG).d(".. vor setCallback...")
-        mCortexDecoderLibrary?.setCallback(this)
+        mCortexDecoderLibrary.setCallback(this)
         Timber.tag(TAG).d(".. vor setEDKCustomerID...")
-        mCortexDecoderLibrary?.setEDKCustomerID(EDK_CUSTOMERID)
+        mCortexDecoderLibrary.setEDKCustomerID(EDK_CUSTOMERID)
         Timber.tag(TAG).d(".. vor activateLicense...")
-        mCortexDecoderLibrary?.activateLicense(EDK_ACTIVATE_LICENSE_KEY)
+        mCortexDecoderLibrary.activateLicense(EDK_ACTIVATE_LICENSE_KEY)
         Timber.tag(TAG).d(".. vor Eintrag der SDK-Version...")
 
-        binding.activityMainButtonToSdkVersion.setText("SDK Version: " + mCortexDecoderLibrary?.sdkVersion)
+        binding.activityMainButtonToSdkVersion.setText("SDK Version: " + mCortexDecoderLibrary.sdkVersion)
         Timber.tag(TAG).d(".. initSDK ist durch...")
     }
 
     private fun setSDK() {
         Timber.tag(TAG).d("setSDK")
-        binding.activityScanFrame.addView(mCortexDecoderLibrary?.cameraPreview, 0)
-        mCortexDecoderLibrary?.setDecoderResolution(Resolution.Resolution_1920x1080)
+        binding.activityScanFrame.addView(mCortexDecoderLibrary.cameraPreview, 0)
+        mCortexDecoderLibrary.setDecoderResolution(Resolution.Resolution_1920x1080)
     }
 
     private fun doStartDecoding() {
         Timber.tag(TAG).d("doStartDecoding")
-        mCortexDecoderLibrary?.startCameraPreview()
-        mCortexDecoderLibrary?.startDecoding()
+        mCortexDecoderLibrary.startCameraPreview()
+        mCortexDecoderLibrary.startDecoding()
     }
 
     private fun doStopDecoding() {
         Timber.tag(TAG).d("doStopDecoding")
-        mCortexDecoderLibrary?.stopDecoding()
-        mCortexDecoderLibrary?.stopCameraPreview()
+        mCortexDecoderLibrary.stopDecoding()
+        mCortexDecoderLibrary.stopCameraPreview()
     }
 
     private fun showBarcodeResult(barcode: String?, type: SymbologyType?) {
         val typeStr = Utilities.stringFromSymbologyType(type)
-        binding.activityScanBarcodeResult.setText(typeStr + "\n" + barcode)
+//        binding.activityScanBarcodeResult.setText(typeStr + "\n" + barcode)
+        binding.activityScanBarcodeResult.setText("$typeStr\n$barcode")
     }
 
     override fun onDestroy() {
         super.onDestroy()
         doStopDecoding()
-        mCortexDecoderLibrary?.closeCamera()
-        mCortexDecoderLibrary?.closeSharedObject()
+        mCortexDecoderLibrary.closeCamera()
+        mCortexDecoderLibrary.closeSharedObject()
     }
 
     //enabled Symbology

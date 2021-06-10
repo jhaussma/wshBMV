@@ -18,6 +18,8 @@ class MaterialFragment : Fragment(R.layout.fragment_material) {
         bind = FragmentMaterialBinding.bind(view)
 
 
+
+
     }
 
 }

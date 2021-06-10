@@ -203,7 +203,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             // der Benutzer darf keine BMV-Daten sehen
             return "Sie sind für Betriebsmittel nicht freigeschaltet!"
         }
-        val myLagerList = tbmvDAO.getLagerByUserID(myUser!!.id)
+        val myLagerList = tbmvDAO.getLagerListeByUserID(myUser!!.id)
         if (myLagerList.isEmpty()) {
             if (myUser!!.bmvAdmin == 0) {
                 // der Benutzer ist keinem Lager zugeordnet und hat keine Admin-Berechtigung

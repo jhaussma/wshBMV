@@ -17,13 +17,13 @@ interface TbmvDAO {
     @Update
     suspend fun updateUser(tsysUser: TsysUser)
 
-    @Query("SELECT * FROM TsysUser WHERE id = :userID")
-    suspend fun getUserById(userID: String): TsysUser?
+    @Query("SELECT * FROM TsysUser WHERE id LIKE :userID")
+    fun getUserById(userID: String): TsysUser?
 
-    @Query("SELECT * FROM TsysUser WHERE UserKennung LIKE :userLogName")
-    suspend fun getUserByLogName(userLogName: String): TsysUser?
+    @Query("SELECT * FROM TsysUser WHERE userKennung LIKE :userLogName")
+    fun getUserByLogName(userLogName: String): TsysUser?
 
-    @Query("SELECT * FROM TsysUser WHERE BenutzerStatus = 'Aktiv' ORDER BY KurzZeichen")
+    @Query("SELECT * FROM TsysUser WHERE benutzerStatus LIKE 'Aktiv' ORDER BY kurzZeichen")
     fun getUsersActive(): LiveData<List<TsysUser>>
 
     /**
@@ -51,14 +51,14 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLager(tbmvLager: TbmvLager)
 
-    @Query("SELECT * FROM TbmvLager WHERE ID = :lagerGuid")
-    suspend fun getLagerByID(lagerGuid: String): TbmvLager?
+    @Query("SELECT * FROM TbmvLager WHERE id LIKE :lagerGuid")
+    fun getLagerByID(lagerGuid: String): TbmvLager?
 
-    @Query("SELECT * FROM TbmvLager WHERE UserGUID = :userGuid ORDER BY Matchcode")
-    suspend fun getLagerByUserID(userGuid: String): List<TbmvLager>
+    @Query("SELECT * FROM TbmvLager WHERE userGuid LIKE :userGuid ORDER BY Matchcode")
+    fun getLagerListeByUserID(userGuid: String): List<TbmvLager>
 
-    @Query("SELECT * FROM TbmvLager WHERE Matchcode LIKE :lagerName")
-    suspend fun getLagerByName(lagerName: String): TbmvLager?
+    @Query("SELECT * FROM TbmvLager WHERE matchcode LIKE :lagerName")
+    fun getLagerByName(lagerName: String): TbmvLager?
 
 
     /**
@@ -70,22 +70,33 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe)
 
+    @Query("SELECT * FROM TbmvMat WHERE id LIKE :materialGuid")
+    fun getMaterialByMatID(materialGuid: String): TbmvMat?
+
+    @Query("SELECT * FROM TbmvMatGruppe WHERE id LIKE :matGruppeGuid")
+    fun getMatGruppeByGruppeID(matGruppeGuid: String): TbmvMatGruppe?
+
+
     /**
      * für TESTZWECKE, später korrigieren...
      */
     @Query("SELECT * FROM TbmvMat ORDER BY matchcode, beschreibung")
-    fun getMaterialSortByMatchocde() : LiveData<List<TbmvMat>>
-    @Query("SELECT * FROM TbmvMat ORDER BY scancode")
-    fun getMaterialSortByScancode() : LiveData<List<TbmvMat>>
-    @Query("SELECT * FROM TbmvMat ORDER BY seriennummer")
-    fun getMaterialSortBySeriennr() : LiveData<List<TbmvMat>>
-    @Query("SELECT * FROM TbmvMat ORDER BY hersteller")
-    fun getMaterialSortByHersteller() : LiveData<List<TbmvMat>>
-    @Query("SELECT * FROM TbmvMat ORDER BY modell")
-    fun getMaterialSortByModell() : LiveData<List<TbmvMat>>
-    @Query("SELECT * FROM TbmvMat ORDER BY matStatus")
-    fun getMaterialSortByStatus() : LiveData<List<TbmvMat>>
+    fun getMaterialSortByMatchocde(): LiveData<List<TbmvMat>>
 
+    @Query("SELECT * FROM TbmvMat ORDER BY scancode")
+    fun getMaterialSortByScancode(): LiveData<List<TbmvMat>>
+
+    @Query("SELECT * FROM TbmvMat ORDER BY seriennummer")
+    fun getMaterialSortBySeriennr(): LiveData<List<TbmvMat>>
+
+    @Query("SELECT * FROM TbmvMat ORDER BY hersteller")
+    fun getMaterialSortByHersteller(): LiveData<List<TbmvMat>>
+
+    @Query("SELECT * FROM TbmvMat ORDER BY modell")
+    fun getMaterialSortByModell(): LiveData<List<TbmvMat>>
+
+    @Query("SELECT * FROM TbmvMat ORDER BY matStatus")
+    fun getMaterialSortByStatus(): LiveData<List<TbmvMat>>
 
 
     /**
@@ -111,8 +122,17 @@ interface TbmvDAO {
     suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager)
 
     @Transaction
-    @Query("SELECT * FROM TbmvMat_Lager WHERE lagerId = :lagerId")
+    @Query("SELECT * FROM TbmvMat_Lager WHERE lagerId LIKE :lagerId")
     fun getMatlistOfLager(lagerId: String): MatInLager?
+
+    @Transaction
+    @Query("SELECT * FROM TbmvMat_Lager WHERE matId LIKE :matId AND bestand > 0")
+    fun getLagerWithMatInStore(matId: String): LagerWithMaterial?
+
+    @Transaction
+    @Query("SELECT * FROM TbmvMat_Lager WHERE matId LIKE :matId AND isDefault = 1")
+    fun getHauptLagerVonMaterial(matId: String): LagerWithMaterial?
+
 
 
     /**

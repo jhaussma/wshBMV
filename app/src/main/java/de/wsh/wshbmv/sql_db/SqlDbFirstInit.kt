@@ -338,7 +338,7 @@ class SqlDbFirstInit @Inject constructor(
                 matInLager.id = resultSet.getString("ID")
                 matInLager.matId = resultSet.getString("MatGUID")
                 matInLager.lagerId = resultSet.getString("LagerGUID")
-                matInLager.default = resultSet.getInt("Default")
+                matInLager.isDefault = resultSet.getInt("Default")
                 matInLager.bestand = resultSet.getFloat("Bestand")
                 // füge den Datensatz in die SQLite ein
                 mainRepository.insertMat_Lager(matInLager)

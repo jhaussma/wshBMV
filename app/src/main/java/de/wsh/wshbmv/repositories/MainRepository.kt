@@ -1,10 +1,10 @@
 package de.wsh.wshbmv.repositories
 
-import androidx.lifecycle.LiveData
-import androidx.room.Query
 import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
+import java.time.LocalDateTime
+import java.util.*
 import javax.inject.Inject
 
 class MainRepository @Inject constructor(
@@ -37,9 +37,9 @@ class MainRepository @Inject constructor(
      *  Lager-Basis
      */
     suspend fun insertLager(tbmvLager: TbmvLager) = TbmvDao.insertLager(tbmvLager)
-    suspend fun getLagerByID(lagerId: String) = TbmvDao.getLagerByID(lagerId)
-    suspend fun getLagerByUserID(userGuid: String) = TbmvDao.getLagerByUserID(userGuid)
-    suspend fun getLagerByName(lagerName: String) = TbmvDao.getLagerByName(lagerName)
+    fun getLagerByID(lagerId: String) = TbmvDao.getLagerByID(lagerId)
+    fun getLagerByUserID(userGuid: String) = TbmvDao.getLagerListeByUserID(userGuid)
+    fun getLagerByName(lagerName: String) = TbmvDao.getLagerByName(lagerName)
 
     /**
      *  Material und -Gruppen
@@ -47,6 +47,30 @@ class MainRepository @Inject constructor(
     suspend fun insertMat(tbmvMat: TbmvMat) = TbmvDao.insertMat(tbmvMat)
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe) =
         TbmvDao.insertMatGruppe(tbmvMatGruppe)
+
+
+    // nur für TESTS!!! wieder löschen...
+    fun getMaterialByMatID(materialID: String) = TbmvDao.getMaterialByMatID(materialID)
+
+    // Betriebsmittel Datensatz
+    fun getBMDatenZuMatID(materialID: String): BmData? {
+        val myBmData: BmData? = null
+//        myBmData?.tbmvMat = TbmvDao.getMaterialByMatID(materialID)
+//        myBmData?.tbmvMatGruppe =
+//            myBmData?.tbmvMat?.let { TbmvDao.getMatGruppeByGruppeID(it.matGruppeGuid) }
+//        myBmData?.tsysUser = myBmData?.tbmvMat?.let { TbmvDao.getUserById(it.userGuid) }
+//        var lagerWithMaterial = TbmvDao.getLagerWithMatInStore(materialID)
+//        if(lagerWithMaterial != null) {
+//            myBmData?.matLager = lagerWithMaterial.lager.first()
+//        }
+//        lagerWithMaterial= TbmvDao.getHauptLagerVonMaterial(materialID)
+//        if(lagerWithMaterial != null) {
+//            myBmData?.matHautpLager = lagerWithMaterial.lager.first()
+//        }
+//        myBmData?.nextServiceDatum = Calendar.getInstance().time
+        return myBmData
+    }
+
 
     /**
      * für TESTZWECKE, später korrigieren...

@@ -7,6 +7,6 @@ data class  TbmvMat_Lager(
     var id : String = "",
     var matId : String = "",
     var lagerId : String = "",
-    var default : Int = 0,
+    var isDefault : Int = 0,
     var bestand : Float = 0f
 )
