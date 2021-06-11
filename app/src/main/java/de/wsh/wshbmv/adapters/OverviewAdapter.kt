@@ -1,6 +1,7 @@
 package de.wsh.wshbmv.adapters
 
 import android.view.LayoutInflater
+import android.view.OrientationEventListener
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
@@ -14,9 +15,23 @@ import de.wsh.wshbmv.other.Constants.TAG
 import timber.log.Timber
 
 
-class OverviewAdapter : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolder>() {
+class OverviewAdapter(
+    private val listener: OnItemClickListener
+) : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolder>() {
 
-    inner class OverviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    inner class OverviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+        // Einbindung des OnClickListeners für das Recyclerview beginnt hier und dann über das Interface ganz unten...
+        init {
+            itemView.setOnClickListener(this)
+        }
+        override fun onClick(view: View?) {
+            val position: Int = adapterPosition
+            if (position != RecyclerView.NO_POSITION) {
+                val tbmvMat = differ.currentList[position]
+                listener.onMaterialItemClick(tbmvMat)
+            }
+        }
+    }
 
     private lateinit var bind: ItemOverviewBinding
 
@@ -75,4 +90,8 @@ class OverviewAdapter : RecyclerView.Adapter<OverviewAdapter.OverviewViewHolder>
         return differ.currentList.size
     }
 
+    // Übergabe des Onclick-Listeners des RecyclerView an ein View-Element (der Adapter selbst ist das ja nicht!)
+    interface OnItemClickListener {
+        fun onMaterialItemClick(tbmvMat: TbmvMat)
+    }
 }

@@ -2,13 +2,17 @@ package de.wsh.wshbmv.ui
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.icu.text.CaseMap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.view.GravityCompat
+import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.MyApplication
 import de.wsh.wshbmv.R
@@ -23,6 +27,9 @@ import de.wsh.wshbmv.other.GlobalVars.isFirstAppStart
 import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.sql_db.SqlConnection
 import de.wsh.wshbmv.sql_db.SqlDbFirstInit
+import de.wsh.wshbmv.ui.fragments.MaterialFragment
+import de.wsh.wshbmv.ui.fragments.SettingsFragment
+import de.wsh.wshbmv.ui.fragments.TransferlistFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -32,7 +39,8 @@ import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), FragCommunicator,
+    NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var binding: ActivityMainBinding
 
@@ -53,6 +61,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var tbmvDAO: TbmvDAO
     lateinit var db: SqlDbFirstInit
+    lateinit var mainRepo: MainRepository
 
     lateinit var toggle: ActionBarDrawerToggle
 
@@ -60,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Timber.tag(TAG).d("Start MainActivity mit onCreate")
 
+        mainRepo = MainRepository(tbmvDAO)
 
         // erste Statusabklärung...
         isFirstAppStart = _isFirstAppStart
@@ -76,91 +86,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 
-        toggle = ActionBarDrawerToggle(this, binding.drawerLayout, R.string.read_open, R.string.read_close)
+        toggle = ActionBarDrawerToggle(
+            this,
+            binding.drawerLayout,
+            R.string.read_open,
+            R.string.read_close
+        )
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        // für die Click-Reaktionen des Slide-In_Menü :
-        binding.navView.setNavigationItemSelectedListener {
-            when (it.itemId) {
-                R.id.miBMListe -> {
-                    Toast.makeText(
-                        applicationContext,
-                        "BM-Liste geklickt",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    // nur für Testzwecke!!
-                    binding.navHostFragment.findNavController().navigate(R.id.action_global_materialFragment)
-                }
-
-                R.id.miTransfer -> {
-                    Toast.makeText(
-                        applicationContext,
-                        "Transferlisten geklickt",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    // nur für Testzwecke!!
-                    val job = GlobalScope.launch(Dispatchers.IO) {
-                        Timber.tag(TAG).d("Datenausgabeversuch für mein Material:")
-                        var material = tbmvDAO.getMaterialByMatID("5f23C813-ED3F-4C76-BD4E-7D86f3206A18")
-                        Timber.tag(TAG).d(material.toString())
-                        var lagerListe = tbmvDAO.getLagerWithMatInStore("5f23C813-ED3F-4C76-BD4E-7D86f3206A18")
-                        Timber.tag(TAG).d(lagerListe.toString())
-                        if (lagerListe != null) {
-                            Timber.tag(TAG).d(lagerListe.lager.toString())
-                        }
-                        lagerListe = tbmvDAO.getHauptLagerVonMaterial("5f23C813-ED3F-4C76-BD4E-7D86f3206A18")
-                        Timber.tag(TAG).d(lagerListe.toString())
-                        if (lagerListe != null) {
-                            Timber.tag(TAG).d(lagerListe.lager.toString())
-                        }
-
-                    }
-                }
-
-                R.id.miInventur -> Toast.makeText(
-                    applicationContext,
-                    "Inventur geklickt",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                R.id.miEndApp -> {
-                    Toast.makeText(
-                        applicationContext,
-                        "Anwendung wird beendet",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    finish()
-                }
-
-                R.id.miScanner -> {
-                    Toast.makeText(
-                        applicationContext,
-                        "Scanner geklickt",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    startActivity(Intent(this, ScanActivity::class.java))
-                }
-
-                R.id.miSync -> {
-                    Toast.makeText(
-                        applicationContext,
-                        "Synchronisieren geklickt",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-
-                R.id.miSettings -> {
-                    Toast.makeText(
-                        applicationContext,
-                        "Einstellungen geklickt",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-            true
-        }
+        // Click-Reaktionen des Slide-In_Menü  einbinden
+        binding.navView.setNavigationItemSelectedListener(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -169,7 +106,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if(toggle.onOptionsItemSelected(item)) {
+        if (toggle.onOptionsItemSelected(item)) {
             return true
         } else {
             when (item.itemId) {
@@ -181,6 +118,110 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
+        when (item.itemId) {
+            R.id.miBMListe -> {
+                Toast.makeText(
+                    applicationContext,
+                    "BM-Liste geklickt",
+                    Toast.LENGTH_LONG
+                ).show()
+                // nur für Testzwecke!!
+                binding.navHostFragment.findNavController()
+                    .navigate(R.id.action_global_materialFragment)
+            }
 
+            R.id.miTransfer -> {
+                Toast.makeText(
+                    applicationContext,
+                    "Transferlisten geklickt",
+                    Toast.LENGTH_LONG
+                ).show()
+                setToolbarTitel("Transfer")
+                changeFragment(TransferlistFragment())
+            }
+
+            R.id.miInventur -> Toast.makeText(
+                applicationContext,
+                "Inventur geklickt",
+                Toast.LENGTH_LONG
+            ).show()
+
+            R.id.miEndApp -> {
+                Toast.makeText(
+                    applicationContext,
+                    "Anwendung wird beendet",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+            }
+
+            R.id.miScanner -> {
+                // hier startet der Scanner
+                // entweder:
+//                Intent(this,ScanActivity::class.java).also {
+//                    startActivity(it)
+//                }
+                // oder alternativ:
+//                startActivity(Intent(this, ScanActivity::class.java))
+
+                // nur für Testzwecke!!
+                val job = GlobalScope.launch(Dispatchers.IO) {
+                    Timber.tag(TAG).d("Datenausgabeversuch für mein Material:")
+                    var bmDaten = mainRepo.getBMDatenZuMatID("5F23C813-ED3F-4C76-BD4E-7D86f3206A18")
+                    Timber.tag(TAG).d(bmDaten.toString())
+                }
+                runBlocking {
+                    job.join()
+                }
+
+                setToolbarTitel("Transfer")
+                changeFragment(MaterialFragment())
+            }
+
+            R.id.miSync -> {
+                Toast.makeText(
+                    applicationContext,
+                    "Synchronisieren geklickt",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            R.id.miSettings -> {
+                setToolbarTitel("Einstellungen")
+                changeFragment(SettingsFragment())
+            }
+        }
+        return true
+    }
+
+    fun setToolbarTitel(title: String) {
+        supportActionBar?.title = title
+    }
+
+    fun changeFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.navHostFragment, fragment)
+            addToBackStack(null)
+            commit()
+        }
+    }
+
+    // Start einer Material-Detailsicht
+    override fun passBmDataID(materialId: String) {
+        val bundle = Bundle()
+        bundle.putString("materialId", materialId)
+        Timber.tag(TAG).d("override passBmDataID mit: $materialId")
+
+//        val transaction = supportFragmentManager.beginTransaction()
+        val fragmentMaterial = MaterialFragment()
+        fragmentMaterial.arguments = bundle
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.navHostFragment, fragmentMaterial)
+            addToBackStack(null)
+            commit()
+        }
+    }
 
 }

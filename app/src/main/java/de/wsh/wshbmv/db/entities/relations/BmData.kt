@@ -8,10 +8,10 @@ import de.wsh.wshbmv.db.entities.TsysUser
 import java.util.*
 
 data class BmData(
-    @Embedded var tbmvMat: TbmvMat?,
-    @Embedded var tbmvMatGruppe: TbmvMatGruppe?,
-    @Embedded var tsysUser: TsysUser?,
-    var nextServiceDatum: Date?,
-    @Embedded var matLager: TbmvLager?,
-    @Embedded var matHautpLager: TbmvLager?
+    @Embedded var tbmvMat: TbmvMat? = null,
+    @Embedded var tbmvMatGruppe: TbmvMatGruppe? = null,
+    @Embedded var tsysUser: TsysUser? = null,
+    var nextServiceDatum: Date? = null,
+    @Embedded var matLager: TbmvLager? = null,
+    @Embedded var matHautpLager: TbmvLager? = null
     )
