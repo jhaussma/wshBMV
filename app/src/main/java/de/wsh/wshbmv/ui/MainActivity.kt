@@ -2,7 +2,6 @@ package de.wsh.wshbmv.ui
 
 import android.content.Intent
 import android.content.SharedPreferences
-import android.icu.text.CaseMap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
@@ -19,9 +18,7 @@ import de.wsh.wshbmv.R
 import de.wsh.wshbmv.cortex_decoder.ScanActivity
 import de.wsh.wshbmv.databinding.ActivityMainBinding
 import de.wsh.wshbmv.db.TbmvDAO
-import de.wsh.wshbmv.db.entities.relations.BmData
 import de.wsh.wshbmv.other.Constants.TAG
-import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.firstSyncCompleted
 import de.wsh.wshbmv.other.GlobalVars.isFirstAppStart
 import de.wsh.wshbmv.repositories.MainRepository
@@ -30,10 +27,6 @@ import de.wsh.wshbmv.sql_db.SqlDbFirstInit
 import de.wsh.wshbmv.ui.fragments.MaterialFragment
 import de.wsh.wshbmv.ui.fragments.SettingsFragment
 import de.wsh.wshbmv.ui.fragments.TransferlistFragment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
@@ -61,9 +54,9 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
     @Inject
     lateinit var tbmvDAO: TbmvDAO
     lateinit var db: SqlDbFirstInit
-    lateinit var mainRepo: MainRepository
+    private lateinit var mainRepo: MainRepository
 
-    lateinit var toggle: ActionBarDrawerToggle
+    private lateinit var toggle: ActionBarDrawerToggle
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,8 +71,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
         db = SqlDbFirstInit(MainRepository(tbmvDAO), isFirstAppStart)
         db.connectionClass = SqlConnection()
 
-        Timber.tag(TAG).d("isFirstAppStart = ${isFirstAppStart.toString()}")
-        Timber.tag(TAG).d("firstSyncCompleted = ${firstSyncCompleted.toString()}")
+        Timber.tag(TAG).d("isFirstAppStart = $isFirstAppStart")
+        Timber.tag(TAG).d("firstSyncCompleted = $firstSyncCompleted")
 
         // wir starten den Layout-Inflater
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -106,15 +99,15 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (toggle.onOptionsItemSelected(item)) {
-            return true
+        return if (toggle.onOptionsItemSelected(item)) {
+            true
         } else {
             when (item.itemId) {
                 R.id.miBarcode -> Toast.makeText(this, "Barcode geklickt", Toast.LENGTH_SHORT)
                     .show()
                 R.id.miSync -> Toast.makeText(this, "Sync geklickt", Toast.LENGTH_SHORT).show()
             }
-            return true
+            true
         }
     }
 
@@ -160,24 +153,24 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
             R.id.miScanner -> {
                 // hier startet der Scanner
                 // entweder:
-//                Intent(this,ScanActivity::class.java).also {
-//                    startActivity(it)
-//                }
+                Intent(this,ScanActivity::class.java).also {
+                    startActivity(it)
+                }
                 // oder alternativ:
 //                startActivity(Intent(this, ScanActivity::class.java))
 
-                // nur für Testzwecke!!
-                val job = GlobalScope.launch(Dispatchers.IO) {
-                    Timber.tag(TAG).d("Datenausgabeversuch für mein Material:")
-                    var bmDaten = mainRepo.getBMDatenZuMatID("5F23C813-ED3F-4C76-BD4E-7D86f3206A18")
-                    Timber.tag(TAG).d(bmDaten.toString())
-                }
-                runBlocking {
-                    job.join()
-                }
+//                // nur für Testzwecke!!
+//                val job = GlobalScope.launch(Dispatchers.IO) {
+//                    Timber.tag(TAG).d("Datenausgabeversuch für mein Material:")
+//                    var bmDaten = mainRepo.getBMDatenZuMatID("5F23C813-ED3F-4C76-BD4E-7D86f3206A18")
+//                    Timber.tag(TAG).d(bmDaten.toString())
+//                }
+//                runBlocking {
+//                    job.join()
+//                }
 
-                setToolbarTitel("Transfer")
-                changeFragment(MaterialFragment())
+//                setToolbarTitel("Transfer")
+//                changeFragment(MaterialFragment())
             }
 
             R.id.miSync -> {
@@ -196,14 +189,14 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
         return true
     }
 
-    fun setToolbarTitel(title: String) {
+    private fun setToolbarTitel(title: String) {
         supportActionBar?.title = title
     }
 
-    fun changeFragment(fragment: Fragment) {
+    private fun changeFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction().apply {
             replace(R.id.navHostFragment, fragment)
-            addToBackStack(null)
+            addToBackStack(fragment::class.java.name)
             commit()
         }
     }
@@ -219,7 +212,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
         fragmentMaterial.arguments = bundle
         supportFragmentManager.beginTransaction().apply {
             replace(R.id.navHostFragment, fragmentMaterial)
-            addToBackStack(null)
+            addToBackStack(fragmentMaterial::class.java.name)
             commit()
         }
     }

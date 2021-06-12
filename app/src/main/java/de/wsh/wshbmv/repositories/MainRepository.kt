@@ -1,8 +1,13 @@
 package de.wsh.wshbmv.repositories
 
+import androidx.lifecycle.MutableLiveData
 import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
+import de.wsh.wshbmv.other.Constants.TAG
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 
@@ -23,7 +28,7 @@ class MainRepository @Inject constructor(
     suspend fun updateUser(tsysUser: TsysUser) = tbmvDao.updateUser(tsysUser)
 
     suspend fun getUserByID(userID: String) = tbmvDao.getUserById(userID)
-    suspend fun getUserByLogName(userLogName: String) = tbmvDao.getUserByLogName(userLogName)
+    fun getUserByLogName(userLogName: String) = tbmvDao.getUserByLogName(userLogName)
 
     fun getUsersActive() = tbmvDao.getUsersActive()
 
@@ -47,29 +52,34 @@ class MainRepository @Inject constructor(
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe) =
         tbmvDao.insertMatGruppe(tbmvMatGruppe)
 
+    suspend fun getMaterialByMatID(materialID: String) = tbmvDao.getMaterialByMatID(materialID)
+    suspend fun getMatGruppeByGruppeID(matGruppeId: String) =
+        tbmvDao.getMatGruppeByGruppeID(matGruppeId)
 
-    // nur für TESTS!!! wieder löschen...
-    fun getMaterialByMatID(materialID: String) = tbmvDao.getMaterialByMatID(materialID)
 
     // Betriebsmittel Datensatz
-    fun getBMDatenZuMatID(materialID: String): BmData {
-        val myBmData: BmData = BmData(
-            tbmvMat = tbmvDao.getMaterialByMatID(materialID))
-        myBmData.tbmvMatGruppe = myBmData.tbmvMat?.let { tbmvDao.getMatGruppeByGruppeID(it.matGruppeGuid) }
-        myBmData.tsysUser = myBmData.tbmvMat?.let { tbmvDao.getUserById(it.userGuid) }
-        var lagerWithMaterial = tbmvDao.getLagerWithMatInStore(materialID)
-        if(lagerWithMaterial != null) {
-            myBmData.matLager = lagerWithMaterial.lager.first()
+    suspend fun getBMDatenZuMatID(materialID: String): BmData {
+        var bmData: BmData? = null
+        withContext(Dispatchers.IO) {
+            val material = tbmvDao.getMaterialByMatID(materialID)
+            val matGruppe =
+                material.let { it?.let { it1 -> tbmvDao.getMatGruppeByGruppeID(it1.matGruppeGuid) } }
+            val user = material.let { it?.let { it1 -> tbmvDao.getUserById(it1.userGuid) } }
+            val lager = tbmvDao.getLagerWithMatInStore(materialID)?.lager?.first()
+            val hauptlager = tbmvDao.getHauptLagerVonMaterial(materialID)?.lager?.first()
+            Timber.tag(TAG).d("tbmvDao.getMaterial: ${material.toString()}")
+            bmData = BmData(
+                tbmvMat = material,
+                tbmvMatGruppe = matGruppe,
+                tsysUser = user,
+                matLager = lager,
+                matHautpLager = hauptlager,
+                nextServiceDatum = Date()
+            )
         }
-        lagerWithMaterial= tbmvDao.getHauptLagerVonMaterial(materialID)
-        if(lagerWithMaterial != null) {
-            myBmData.matHautpLager = lagerWithMaterial.lager.first()
-        }
-        myBmData.nextServiceDatum = Calendar.getInstance().time
-        return myBmData
+        Timber.tag(TAG).d("Rückgabe von  bmData: ${bmData?.tbmvMat.toString()}")
+        return bmData
     }
-
-
 
 
     /**
@@ -100,7 +110,12 @@ class MainRepository @Inject constructor(
     suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager) =
         tbmvDao.insertMat_Lager(tbmvMat_Lager)
 
-    fun getMatlistOfLager(lagerId: String) = tbmvDao.getMatlistOfLager(lagerId)
+    //    suspend fun getMatlistOfLager(lagerId: String) = tbmvDao.getMatlistOfLager(lagerId)
+    suspend fun getLagerWithMatINStore(materialID: String) =
+        tbmvDao.getLagerWithMatInStore(materialID)
+
+    suspend fun getHauptLagerVonMaterial(materialID: String) =
+        tbmvDao.getHauptLagerVonMaterial(materialID)
 
     /**
      *  Relation Material - Service

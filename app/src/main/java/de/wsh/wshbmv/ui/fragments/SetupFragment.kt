@@ -17,7 +17,6 @@ import de.wsh.wshbmv.other.Constants.KEY_LAGER_ID
 import de.wsh.wshbmv.other.Constants.KEY_LAGER_NAME
 import de.wsh.wshbmv.other.Constants.KEY_USER_NAME
 import de.wsh.wshbmv.other.Constants.KEY_USER_HASH
-import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars.firstSyncCompleted
 import de.wsh.wshbmv.other.GlobalVars.sqlServerConnected
 import de.wsh.wshbmv.other.GlobalVars.myLager
@@ -26,7 +25,6 @@ import de.wsh.wshbmv.other.GlobalVars.sqlUserLoaded
 import de.wsh.wshbmv.other.GlobalVars.sqlUserNewPassHash
 import de.wsh.wshbmv.other.HashUtils
 import kotlinx.coroutines.*
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -60,7 +58,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             if (myUser == null || myLager == null) {
                 val job = GlobalScope.launch(Dispatchers.IO) {
                     myUser = tbmvDAO.getUserByLogName(userName)
-                    myLager = tbmvDAO.getLagerByID(lagerId)
+                    myLager = tbmvDAO.getLagerByID(lagerId)?.value
                 }
                 runBlocking {
                     job.join()
@@ -145,13 +143,13 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                     ).show()
 
                     // und warten nun, bis die Synchronisierung fertig ist...
-                    val job = GlobalScope.launch(Dispatchers.Default) {
+                    val myJob = GlobalScope.launch(Dispatchers.Default) {
                         while (!firstSyncCompleted) {
                             delay(500)
                         }
                     }
                     runBlocking {
-                        job.join()
+                        myJob.join()
                     }
                     // nun schreiben wir die Info ins Preference-Log des Users
                     writeSyncDoneToSharedPref()
@@ -204,17 +202,17 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             return "Sie sind für Betriebsmittel nicht freigeschaltet!"
         }
         val myLagerList = tbmvDAO.getLagerListeByUserID(myUser!!.id)
-        if (myLagerList.isEmpty()) {
+        if (myLagerList.value?.isEmpty() == true) {
             if (myUser!!.bmvAdmin == 0) {
                 // der Benutzer ist keinem Lager zugeordnet und hat keine Admin-Berechtigung
                 return "Sie sind keinem Lager zugeordnet, fehlende Berechtigung!"
             } else {
                 // als Admin ohne Lagerzuordnung ordnen wir das Hauptlager zu
-                myLager = tbmvDAO.getLagerByName("Lager")
+                myLager = tbmvDAO.getLagerByName("Lager")?.value
             }
         } else {
             // wir ordnen das (erste der gefundenen) Lager zu
-            myLager = myLagerList.first()
+            myLager = myLagerList.value?.first()
         }
         return "Okay"
     }
