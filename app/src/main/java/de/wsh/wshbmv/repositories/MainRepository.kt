@@ -58,7 +58,7 @@ class MainRepository @Inject constructor(
 
 
     // Betriebsmittel Datensatz
-    suspend fun getBMDatenZuMatID(materialID: String): BmData {
+    suspend fun getBMDatenZuMatID(materialID: String): BmData? {
         var bmData: BmData? = null
         withContext(Dispatchers.IO) {
             val material = tbmvDao.getMaterialByMatID(materialID)
