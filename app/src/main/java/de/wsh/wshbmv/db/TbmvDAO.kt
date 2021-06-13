@@ -55,10 +55,13 @@ interface TbmvDAO {
     fun getLagerByID(lagerGuid: String): LiveData<TbmvLager>?
 
     @Query("SELECT * FROM TbmvLager WHERE userGuid LIKE :userGuid ORDER BY Matchcode")
-    fun getLagerListeByUserID(userGuid: String): LiveData<List<TbmvLager>>
+    suspend fun getLagerListeByUserID(userGuid: String): List<TbmvLager>
 
     @Query("SELECT * FROM TbmvLager WHERE matchcode LIKE :lagerName")
     fun getLagerByName(lagerName: String): LiveData<TbmvLager>?
+
+    @Query("SELECT * FROM TbmvLager ORDER BY Typ, Matchcode")
+    suspend fun getLagerListSorted() : MutableList<TbmvLager>
 
 
     /**

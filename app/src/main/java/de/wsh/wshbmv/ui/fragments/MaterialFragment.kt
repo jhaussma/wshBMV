@@ -5,6 +5,7 @@ import android.os.PatternMatcher
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.FragmentMaterialBinding
@@ -28,39 +29,21 @@ class MaterialFragment : Fragment(R.layout.fragment_material) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         materialId = arguments?.getString("materialId")
-        Timber.tag(TAG).d("Material-ID: $materialId")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bind = FragmentMaterialBinding.bind(view)
-
-//        materialId = arguments?.getString("materialId")
-//        Timber.tag(TAG).d("Material-ID: $materialId")
-
         Timber.tag(TAG).d("wir starten das ViewModel")
-
-//        val bmData = materialId?.let { viewModel.getBmDataToMaterialId(it) }
-//        if (bmData != null) {
-//            Timber.tag(TAG).d("ich sehe Land: ${bmData.tbmvMat.toString()}")
-//        } else {
-//            Timber.tag(TAG).d("hier wurde das Material nicht gefunden!!!")
-//        }
 
         viewModel.bmDataLive.observe(viewLifecycleOwner, {
             Timber.tag(TAG).d("bmData wurden geändert: ${it.tbmvMat.toString()}")
             writeUiValues(it)
         })
 
-        viewModel.country.observe(viewLifecycleOwner, {country ->
-            Timber.tag(TAG).d("Land geändert in: $country")
-        })
-
         bind.btServiceDetails.setOnClickListener {
-            viewModel.saveCountry("Germany")
+            Timber.tag(TAG).d("btServiceDetails wurde gedrückt...")
         }
-
-
     }
 
     // schreib die Dateninhalte in die Maske
@@ -79,7 +62,8 @@ class MaterialFragment : Fragment(R.layout.fragment_material) {
         bind.tvMatLager.text = bmData.matLager?.matchcode
         bind.tvMatHauptlager.text = bmData.matHautpLager?.matchcode
 
-        // es fehlt noch das BILD!!!
+        // wir binden das Bild noch mit ein
+        Glide.with(this).load(bmData.tbmvMat?.bildBmp).into(bind.ivMatBild)
     }
 
 

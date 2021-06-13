@@ -42,7 +42,6 @@ class MainRepository @Inject constructor(
      */
     suspend fun insertLager(tbmvLager: TbmvLager) = tbmvDao.insertLager(tbmvLager)
     fun getLagerByID(lagerId: String) = tbmvDao.getLagerByID(lagerId)
-    fun getLagerByUserID(userGuid: String) = tbmvDao.getLagerListeByUserID(userGuid)
     fun getLagerByName(lagerName: String) = tbmvDao.getLagerByName(lagerName)
 
     /**
@@ -65,19 +64,27 @@ class MainRepository @Inject constructor(
             val matGruppe =
                 material.let { it?.let { it1 -> tbmvDao.getMatGruppeByGruppeID(it1.matGruppeGuid) } }
             val user = material.let { it?.let { it1 -> tbmvDao.getUserById(it1.userGuid) } }
-            val lager = tbmvDao.getLagerWithMatInStore(materialID)?.lager?.first()
-            val hauptlager = tbmvDao.getHauptLagerVonMaterial(materialID)?.lager?.first()
-            Timber.tag(TAG).d("tbmvDao.getMaterial: ${material.toString()}")
+            var lagerListe = tbmvDao.getLagerWithMatInStore(materialID)?.lager
+            val lager = if (lagerListe?.isEmpty() != true) {
+                lagerListe?.first()
+            } else {
+                null
+            }
+            lagerListe = tbmvDao.getHauptLagerVonMaterial(materialID)?.lager
+            val hauptLager = if (lagerListe?.isEmpty() != true) {
+                lagerListe?.first()
+            } else {
+                null
+            }
             bmData = BmData(
                 tbmvMat = material,
                 tbmvMatGruppe = matGruppe,
                 tsysUser = user,
                 matLager = lager,
-                matHautpLager = hauptlager,
+                matHautpLager = hauptLager,
                 nextServiceDatum = Date()
             )
         }
-        Timber.tag(TAG).d("Rückgabe von  bmData: ${bmData?.tbmvMat.toString()}")
         return bmData
     }
 

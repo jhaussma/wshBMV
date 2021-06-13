@@ -15,6 +15,9 @@ object GlobalVars {
     var firstSyncCompleted = false      // True: erste Komplettsynchronisierung war erfolgreich
     var myUser : TsysUser? = null
     var myLager : TbmvLager? = null
+    var myLagers = listOf<TbmvLager>()  // enthält alle Lager, die ich aufgrund meiner Berechtigung sehen darf
+
+
 
     /**
      *  SQL-Statusinformationen

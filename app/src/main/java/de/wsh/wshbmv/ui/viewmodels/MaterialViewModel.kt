@@ -24,40 +24,9 @@ class MaterialViewModel @Inject constructor(
     var bmDataLive: MutableLiveData<BmData> = MutableLiveData()
 
 
-
-    // nur für Testzwecke
-    private var _country = MutableLiveData("Serbia")
-    val country: LiveData<String> = _country
-
-    fun saveCountry(newCountry: String) {
-        _country.value = newCountry
-    }
-
-
-    // wir übernehmen die materialId und laden den passenden Datensatz mit Betriebsmittel-Daten
-//    fun getBmDataToMaterialId(materialId: String): BmData? {
-//        var bmData: BmData? = null
-//        viewModelScope.launch {
-//            val _bmData = mainRepo.getBMDatenZuMatID(materialId)
-//            Timber.tag(TAG).d("im ViewModel angekommen: ${_bmData?.tbmvMat.toString()}")
-//            bmData = _bmData
-//        }
-//        Timber.tag(TAG).d("Viewmodel gibt zurück: ${bmData?.tbmvMat.toString()}")
-//        return bmData
-//    }
-
-//    private fun getNewBmData(materialId: String): BmData? {
-//        var bmData: BmData? = null
-//        viewModelScope.launch {
-//            val _bmData = mainRepo.getBMDatenZuMatID(materialId)
-//            Timber.tag(TAG).d("im ViewModel angekommen: ${_bmData?.tbmvMat.toString()}")
-//            bmDataLive.value = _bmData
-//            bmData = _bmData
-//        }
-//        Timber.tag(TAG).d("Viewmodel gibt zurück: ${bmData?.tbmvMat.toString()}")
-//        return bmData
-//    }
-
+    /**
+     *  eine neue Material-/Betriebsmittel-ID kann damit definiert werden, die dazugehörgen Daten werden erzeugt
+     */
     fun setNewMaterialId(materialId: String) {
         myMaterialId.value = materialId
         Timber.tag(TAG).d("setNewMaterialId gestartet im ViewModel")
@@ -68,6 +37,9 @@ class MaterialViewModel @Inject constructor(
         }
     }
 
+    /**
+     *  mit Hilfe von getMaterialID() kann eine Anwendung die gerade aktive Material-ID der Materialsicht
+     */
     fun getMaterialId() = myMaterialId
 
 }

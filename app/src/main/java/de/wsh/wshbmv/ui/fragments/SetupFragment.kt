@@ -11,20 +11,24 @@ import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.FragmentSetupBinding
 import de.wsh.wshbmv.db.TbmvDAO
+import de.wsh.wshbmv.db.entities.TbmvLager
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_SYNC_DONE
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_TIME
 import de.wsh.wshbmv.other.Constants.KEY_LAGER_ID
 import de.wsh.wshbmv.other.Constants.KEY_LAGER_NAME
 import de.wsh.wshbmv.other.Constants.KEY_USER_NAME
 import de.wsh.wshbmv.other.Constants.KEY_USER_HASH
+import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars.firstSyncCompleted
 import de.wsh.wshbmv.other.GlobalVars.sqlServerConnected
 import de.wsh.wshbmv.other.GlobalVars.myLager
+import de.wsh.wshbmv.other.GlobalVars.myLagers
 import de.wsh.wshbmv.other.GlobalVars.myUser
 import de.wsh.wshbmv.other.GlobalVars.sqlUserLoaded
 import de.wsh.wshbmv.other.GlobalVars.sqlUserNewPassHash
 import de.wsh.wshbmv.other.HashUtils
 import kotlinx.coroutines.*
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -182,13 +186,13 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         myUser = tbmvDAO.getUserByLogName(userName)
         if (myUser == null) {
             // dieser User ist uns nicht bekannt!
-            return   "Benutzer $userName ist unbekannt!"
+            return "Benutzer $userName ist unbekannt!"
         }
         if (myUser?.passHash != null) {
             // in diesem Falle muss das Passwort überprüft werden
             val myHash = HashUtils.sha256(bind.etUserPwd.toString())
             if (myHash != myUser?.passHash) {
-                return  "Falsches Passwort bitte korrigieren!"
+                return "Falsches Passwort bitte korrigieren!"
             }
         } else {
             // neues Passwort eintragen...
@@ -201,8 +205,8 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             // der Benutzer darf keine BMV-Daten sehen
             return "Sie sind für Betriebsmittel nicht freigeschaltet!"
         }
-        val myLagerList = tbmvDAO.getLagerListeByUserID(myUser!!.id)
-        if (myLagerList.value?.isEmpty() == true) {
+        val locLagerList = tbmvDAO.getLagerListeByUserID(myUser!!.id)
+        if (locLagerList.isEmpty() == true) {
             if (myUser!!.bmvAdmin == 0) {
                 // der Benutzer ist keinem Lager zugeordnet und hat keine Admin-Berechtigung
                 return "Sie sind keinem Lager zugeordnet, fehlende Berechtigung!"
@@ -212,7 +216,16 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             }
         } else {
             // wir ordnen das (erste der gefundenen) Lager zu
-            myLager = myLagerList.value?.first()
+            myLager = locLagerList.first()
+        }
+
+        // wir sammeln alle Lager,die der User sehen darf in einer Liste
+        myLagers = tbmvDAO.getLagerListSorted()
+        if (myUser!!.bmvAdmin == 0) {
+            // als NICHT-Admin darf ich nur die Lager auswählen, die mir gehören -> alle anderen rauslöschen
+                (myLagers as MutableList<TbmvLager>).removeAll{
+                    it.userGuid != myUser!!.id
+                }
         }
         return "Okay"
     }

@@ -158,7 +158,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:hint="Hersteller"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView4"
                 app:layout_constraintTop_toTopOf="@+id/tvView4" />
@@ -178,7 +177,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:hint="Modell"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView5"
                 app:layout_constraintTop_toTopOf="@+id/tvView5" />
@@ -198,7 +196,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:hint="Seriennummer"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView6"
                 app:layout_constraintTop_toTopOf="@+id/tvView6" />
@@ -218,7 +215,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:hint="Gruppe"
+                android:hint="tbd."
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView7"
                 app:layout_constraintTop_toTopOf="@+id/tvView7" />
@@ -238,7 +235,6 @@
                 android:id="@+id/tvMatBeschreibung"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="Beschreibung"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvView8" />
@@ -270,7 +266,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:hint="Verantwortlich"
+                android:hint="tbd."
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView9"
                 app:layout_constraintTop_toTopOf="@+id/tvView9" />
@@ -290,7 +286,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:hint="Standort aktuell"
+                android:hint="unbekannt"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView10"
                 app:layout_constraintTop_toTopOf="@+id/tvView10" />
@@ -310,7 +306,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:hint="Haupt-Standort"
+                android:hint="unbekannt"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView11"
                 app:layout_constraintTop_toTopOf="@+id/tvView11" />
