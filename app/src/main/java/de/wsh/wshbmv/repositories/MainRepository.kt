@@ -41,7 +41,7 @@ class MainRepository @Inject constructor(
      *  Lager-Basis
      */
     suspend fun insertLager(tbmvLager: TbmvLager) = tbmvDao.insertLager(tbmvLager)
-    fun getLagerByID(lagerId: String) = tbmvDao.getLagerByID(lagerId)
+    suspend fun getLagerByID(lagerId: String) = tbmvDao.getLagerByID(lagerId)
     fun getLagerByName(lagerName: String) = tbmvDao.getLagerByName(lagerName)
 
     /**
@@ -58,7 +58,7 @@ class MainRepository @Inject constructor(
 
     // Betriebsmittel Datensatz
     suspend fun getBMDatenZuMatID(materialID: String): BmData? {
-        var bmData: BmData? = null
+        var bmData: BmData
         withContext(Dispatchers.IO) {
             val material = tbmvDao.getMaterialByMatID(materialID)
             val matGruppe =

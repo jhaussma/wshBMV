@@ -52,7 +52,7 @@ interface TbmvDAO {
     suspend fun insertLager(tbmvLager: TbmvLager)
 
     @Query("SELECT * FROM TbmvLager WHERE id LIKE :lagerGuid")
-    fun getLagerByID(lagerGuid: String): LiveData<TbmvLager>?
+    suspend fun getLagerByID(lagerGuid: String): TbmvLager?
 
     @Query("SELECT * FROM TbmvLager WHERE userGuid LIKE :userGuid ORDER BY Matchcode")
     suspend fun getLagerListeByUserID(userGuid: String): List<TbmvLager>
