@@ -10,18 +10,24 @@ import de.wsh.wshbmv.other.SortType
 import de.wsh.wshbmv.repositories.MainRepository
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Named
 
 @HiltViewModel
 class OverviewViewModel @Inject constructor(
     mainRepository: MainRepository
 ) : ViewModel() {
 
-    private val materialSortByMatchcode = mainRepository.getMaterialSortByMatchocde()
-    private val materialSortByScancode = mainRepository.getMaterialSortByScancode()
-    private val materialSortBySeriennr = mainRepository.getMaterialSortBySeriennr()
-    private val materialSortByHersteller = mainRepository.getMaterialSortByHersteller()
-    private val materialSortByModell = mainRepository.getMaterialSortByModell()
-    private val materialSortByStatus = mainRepository.getMaterialSortByStatus()
+    @JvmField
+    @field:[Inject Named("LagerId")]
+    var lagerId: String = ""
+
+
+    private val materialSortByMatchcode = mainRepository.getMaterialSortByMatchocde(lagerId)
+    private val materialSortByScancode = mainRepository.getMaterialSortByScancode(lagerId)
+    private val materialSortBySeriennr = mainRepository.getMaterialSortBySeriennr(lagerId)
+    private val materialSortByHersteller = mainRepository.getMaterialSortByHersteller(lagerId)
+    private val materialSortByModell = mainRepository.getMaterialSortByModell(lagerId)
+    private val materialSortByStatus = mainRepository.getMaterialSortByStatus(lagerId)
 
 
     val materials = MediatorLiveData<List<TbmvMat>>()

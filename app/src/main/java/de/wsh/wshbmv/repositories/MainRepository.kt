@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
+import javax.inject.Named
 
 class MainRepository @Inject constructor(
     val tbmvDao: TbmvDAO
@@ -92,12 +93,12 @@ class MainRepository @Inject constructor(
     /**
      * für TESTZWECKE, später korrigieren...
      */
-    fun getMaterialSortByMatchocde() = tbmvDao.getMaterialSortByMatchocde()
-    fun getMaterialSortByScancode() = tbmvDao.getMaterialSortByScancode()
-    fun getMaterialSortBySeriennr() = tbmvDao.getMaterialSortBySeriennr()
-    fun getMaterialSortByHersteller() = tbmvDao.getMaterialSortByHersteller()
-    fun getMaterialSortByModell() = tbmvDao.getMaterialSortByModell()
-    fun getMaterialSortByStatus() = tbmvDao.getMaterialSortByStatus()
+    fun getMaterialSortByMatchocde(lagerId: String) = tbmvDao.getMaterialSortByMatchocde(lagerId)
+    fun getMaterialSortByScancode(lagerId: String) = tbmvDao.getMaterialSortByScancode(lagerId)
+    fun getMaterialSortBySeriennr(lagerId: String) = tbmvDao.getMaterialSortBySeriennr(lagerId)
+    fun getMaterialSortByHersteller(lagerId: String) = tbmvDao.getMaterialSortByHersteller(lagerId)
+    fun getMaterialSortByModell(lagerId: String) = tbmvDao.getMaterialSortByModell(lagerId)
+    fun getMaterialSortByStatus(lagerId: String) = tbmvDao.getMaterialSortByStatus(lagerId)
 
     /**
      *  Service

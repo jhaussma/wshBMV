@@ -80,27 +80,6 @@ interface TbmvDAO {
     suspend fun getMatGruppeByGruppeID(matGruppeGuid: String): TbmvMatGruppe?
 
 
-    /**
-     * für TESTZWECKE, später korrigieren...
-     */
-    @Query("SELECT * FROM TbmvMat ORDER BY matchcode, beschreibung")
-    fun getMaterialSortByMatchocde(): LiveData<List<TbmvMat>>
-
-    @Query("SELECT * FROM TbmvMat ORDER BY scancode")
-    fun getMaterialSortByScancode(): LiveData<List<TbmvMat>>
-
-    @Query("SELECT * FROM TbmvMat ORDER BY seriennummer")
-    fun getMaterialSortBySeriennr(): LiveData<List<TbmvMat>>
-
-    @Query("SELECT * FROM TbmvMat ORDER BY hersteller")
-    fun getMaterialSortByHersteller(): LiveData<List<TbmvMat>>
-
-    @Query("SELECT * FROM TbmvMat ORDER BY modell")
-    fun getMaterialSortByModell(): LiveData<List<TbmvMat>>
-
-    @Query("SELECT * FROM TbmvMat ORDER BY matStatus")
-    fun getMaterialSortByStatus(): LiveData<List<TbmvMat>>
-
 
     /**
      *  Service - Planung
@@ -135,6 +114,32 @@ interface TbmvDAO {
     @Transaction
     @Query("SELECT * FROM TbmvMat_Lager WHERE matId LIKE :matId AND isDefault = 1")
     suspend fun getHauptLagerVonMaterial(matId: String): LagerWithMaterial?
+
+    // sortierte / gefilterte Abfragen der Betriebsmittel eines Lagers
+    @Transaction
+    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY matchcode, beschreibung")
+    fun getMaterialSortByMatchocde(lagerId: String): LiveData<List<TbmvMat>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY scancode")
+    fun getMaterialSortByScancode(lagerId: String): LiveData<List<TbmvMat>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY seriennummer")
+    fun getMaterialSortBySeriennr(lagerId: String): LiveData<List<TbmvMat>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY hersteller")
+    fun getMaterialSortByHersteller(lagerId: String): LiveData<List<TbmvMat>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY modell")
+    fun getMaterialSortByModell(lagerId: String): LiveData<List<TbmvMat>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY matStatus")
+    fun getMaterialSortByStatus(lagerId: String): LiveData<List<TbmvMat>>
+
 
 
 

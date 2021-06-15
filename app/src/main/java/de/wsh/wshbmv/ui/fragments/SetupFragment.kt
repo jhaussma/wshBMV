@@ -78,6 +78,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 Timber.tag(TAG).d("verifyUserInfo meldet 'Okay'")
                 // schreibe die Anmeldedaten in die SharedPreferences zurück
                 writeUserInfoToSharedPref()
+
                 // lösche das Fragement vom BackStack
                 val navOptions = NavOptions.Builder()
                     .setPopUpTo(R.id.setupFragment, true)
@@ -133,7 +134,8 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 } else {
                     // die Anmeldung hat geklappt, ..
                     //.. und schreiben die Preferenzen ins User-Log
-                        Timber.tag(TAG).d("Anmeldung war okay, firstSyncCompleted = $firstSyncCompleted")
+                    Timber.tag(TAG)
+                        .d("Anmeldung war okay, firstSyncCompleted = $firstSyncCompleted")
                     if (!isFirstAppStart) {
                         writeUserInfoToSharedPref()
                     } else {

@@ -21,9 +21,16 @@ import de.wsh.wshbmv.ui.FragCommunicator
 import de.wsh.wshbmv.ui.viewmodels.MaterialViewModel
 import de.wsh.wshbmv.ui.viewmodels.OverviewViewModel
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Named
 
 @AndroidEntryPoint
 class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.OnItemClickListener {
+
+    @JvmField
+    @field:[Inject Named("LagerId")]
+    var lagerId: String = ""
+
 
     private val listViewModel: OverviewViewModel by activityViewModels()
     private val matViewModel: MaterialViewModel by activityViewModels()
@@ -78,6 +85,21 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
             }
         }
 
+        bind.spLager.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                adapterView: AdapterView<*>?,
+                view: View?,
+                pos: Int,
+                id: Long
+            ) {
+                Timber.tag(TAG).d("spLager, ausgewählt: $pos")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+                Timber.tag(TAG).d("spLager, nix selektiert!")
+            }
+        }
+
         listViewModel.materials.observe(viewLifecycleOwner, Observer {
             overviewAdapter.submitList(it)
         })
@@ -97,9 +119,19 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
         Timber.tag(TAG).d("Meine Lagerliste: ${myLagers.toString()}")
         val spLager: Spinner = bind.spLager
         var lagerNames = arrayListOf<String>()
-        myLagers.forEach() { item -> lagerNames.add("${item.typ.first()}: ${item.matchcode}") }
-        val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, lagerNames)
+        var myLagerPos = -1
+        myLagers.forEach() { item ->
+            lagerNames.add("${item.typ.first()}: ${item.matchcode}")
+            if (item.id == lagerId) {
+                myLagerPos = lagerNames.size -1
+            }
+        }
+        val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, lagerNames)
         spLager.adapter = arrayAdapter
+        if (lagerNames.size > 1) {
+            // wir wählen das aktuell eingestellte Lager aus
+            spLager.setSelection(myLagerPos)
+        }
     }
 
 
