@@ -69,13 +69,13 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         bind.tvLager.visibility = View.INVISIBLE
 
 
-
         // wir laden zuerst die bekannten User-Daten in die Anmeldemaske...
         if (!isFirstAppStart) loadUserInfo()
 
         if (firstSyncCompleted) {
             var message = verifyUserInfo()
             if (message == "Okay") {
+                Timber.tag(TAG).d("verifyUserInfo meldet 'Okay'")
                 // schreibe die Anmeldedaten in die SharedPreferences zurück
                 writeUserInfoToSharedPref()
                 // lösche das Fragement vom BackStack
@@ -89,11 +89,6 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                     navOptions
                 )
 
-                Timber.tag(TAG).d("UserName: $userName")
-                Timber.tag(TAG).d("UserHash: $userHash")
-                Timber.tag(TAG).d("lagerId: $lagerId")
-                Timber.tag(TAG).d("lagerName: $lagerName")
-
             } else {
                 Snackbar.make(
                     requireView(),
@@ -102,44 +97,21 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 ).show()
 
             }
-// vorbereitet zum Löschen nach erfolgreichem Test!!!
-//            if (myUser == null || myLager == null) {
-//                val job = GlobalScope.launch(Dispatchers.IO) {
-//                    myUser = tbmvDAO.getUserByLogName(userName)
-//                    myLager = tbmvDAO.getLagerByID(lagerId)?.value
-//                }
-//                runBlocking {
-//                    job.join()
-//                }
-//                if (myUser == null) {
-//                    Snackbar.make(
-//                        requireView(),
-//                        "Der User-Datensatz wurde nicht gefunden...",
-//                        Snackbar.LENGTH_LONG
-//                    ).show()
-//                    // ggf. muss hier mal eine Rettungs-Reaktion eingeführt werden
-//                }
-//                if (myLager == null) {
-//                    Snackbar.make(
-//                        requireView(),
-//                        "Der Lager-Datensatz wurde nicht gefunden...",
-//                        Snackbar.LENGTH_LONG
-//                    ).show()
-//                    // ggf. muss hier mal eine Rettungs-Reaktion eingeführt werden
-//                }
-//            }
         }
 
-        // wir haben Userdaten abzufragen und warten auf die Synchronisierung...
+        /**
+         *  User-Anmeldung verarbeiten
+         */
+        // wir haben Userdaten abzufragen, bei Erststart warten wir u.U. noch auf die Synchronisierung...
         bind.tvContinue.setOnClickListener {
-            if (!sqlServerConnected) {
+            if (!firstSyncCompleted && !sqlServerConnected) {
                 // wir haben noch keine Serververbindung...
                 Snackbar.make(
                     requireView(),
                     "Keine Serververbindung, bitte kurz warten...",
                     Snackbar.LENGTH_LONG
                 ).show()
-            } else if (!sqlUserLoaded) {
+            } else if (!firstSyncCompleted && !sqlUserLoaded) {
                 // die User-Tabellen wurden noch nicht vollständig geladen...
                 Snackbar.make(
                     requireView(),
@@ -147,16 +119,11 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                     Snackbar.LENGTH_LONG
                 ).show()
             } else {
-                // nun erfolgt die User-Überprüfung in einem IO-Thread
-                var message = ""
-                val job = GlobalScope.launch(Dispatchers.IO) {
-                    message = checkUserInfo()
-                }
-                // wir warten auf das Ergebnis...
-                runBlocking {
-                    job.join()
-                }
+                Timber.tag(TAG).d("Die User-Überprüfung startet nun...")
+                // nun erfolgt die User-Überprüfung
+                var message = verifyUserInfo()
                 // die Auswertung...
+                Timber.tag(TAG).d("User-Überprüfung ergab: $message")
                 if (message != "Okay") {
                     Snackbar.make(
                         requireView(),
@@ -164,36 +131,43 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                         Snackbar.LENGTH_LONG
                     ).show()
                 } else {
-                    // die Anmeldung hat geklappt, nun müssen wir nur noch das Ende der Installation abwarten...
+                    // die Anmeldung hat geklappt, ..
                     //.. und schreiben die Preferenzen ins User-Log
-                    writeUserInfoToSharedPrefFirsttime()
-                    // wir machen die Lagerzuordnung sichtbar
-                    bind.tvLager.text = myLager!!.matchcode
-                    bind.tvLager.visibility = View.VISIBLE
-                    // .. blockieren die Eingabemöglichkeiten...
-                    bind.etUserName.isEnabled = false
-                    bind.etUserPwd.isEnabled = false
-                    bind.tvContinue.isEnabled = false
-                    // und melden weitere Wartezeit an...
-                    Snackbar.make(
-                        requireView(),
-                        "Bitte warten, die Synchronisierung geht weiter...",
-                        Snackbar.LENGTH_LONG
-                    ).show()
+                        Timber.tag(TAG).d("Anmeldung war okay, firstSyncCompleted = $firstSyncCompleted")
+                    if (!isFirstAppStart) {
+                        writeUserInfoToSharedPref()
+                    } else {
+                        writeUserInfoToSharedPrefFirsttime()
+                        // wir machen die Lagerzuordnung sichtbar
+                        bind.tvLager.text = myLager!!.matchcode
+                        bind.tvLager.visibility = View.VISIBLE
+                        // .. blockieren die Eingabemöglichkeiten...
+                        bind.etUserName.isEnabled = false
+                        bind.etUserPwd.isEnabled = false
+                        bind.tvContinue.isEnabled = false
+                        if (!firstSyncCompleted) {
+                            // und melden weitere Wartezeit an...
+                            Snackbar.make(
+                                requireView(),
+                                "Bitte warten, die Synchronisierung geht weiter...",
+                                Snackbar.LENGTH_LONG
+                            ).show()
 
-                    // und warten nun, bis die Synchronisierung fertig ist...
-                    val myJob = GlobalScope.launch(Dispatchers.Default) {
-                        while (!firstSyncCompleted) {
-                            delay(500)
+                            // ..und warten nun, bis die Synchronisierung fertig ist...
+                            val myJob = GlobalScope.launch(Dispatchers.Default) {
+                                while (!firstSyncCompleted) {
+                                    delay(500)
+                                }
+                            }
+                            runBlocking {
+                                myJob.join()
+                            }
                         }
+                        // nun schreiben wir die First-Sync-Info ins Preference-Log des Users
+                        writeSyncDoneToSharedPref()
                     }
-                    runBlocking {
-                        myJob.join()
-                    }
-                    // nun schreiben wir die Info ins Preference-Log des Users
-                    writeSyncDoneToSharedPref()
 
-                    // und wechseln in die Haupt-Übersicht...
+                    // zum Abschluss wechseln wir in die Haupt-Übersicht...
                     val navOptions = NavOptions.Builder()
                         .setPopUpTo(R.id.setupFragment, true)
                         .build()
@@ -207,6 +181,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         }
     }
 
+
     // wir laden die bekannten? Userdaten, falls eine Eingabe erforderlich werden sollte
     private fun loadUserInfo() {
         bind.etUserName.setText(userName)
@@ -216,13 +191,27 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
 
     // überprüft die bekannten User-Daten mit den gespeicherten...
     private fun verifyUserInfo(): String {
-        if (userName.length < 4) return "Anmeldename muss mind. 4 Zeichen beinhalten!"
-        if (userHash.isEmpty()) return "Bitte das Passwort eingeben!"
+        val myUserName = bind.etUserName.text.toString()
+        Timber.tag(TAG).d("Username-Eingabe: $myUserName")
+        if (myUserName.length < 4) return "Anmeldename muss mind. 4 Zeichen beinhalten!"
+        val userPwd = bind.etUserPwd.text.toString()
+        Timber.tag(TAG).d("Passwort-Eingabe: $userPwd")
+        val myHash: String = if (userPwd != "") {
+            // wir prüfen gegen eine Passworteingabe
+            if (userPwd.length < 4) return "Bitte Passwort mit mind. 4 Zeichen verwenden!"
+            Timber.tag(TAG).d("PW-Hash wird berechnet...")
+            HashUtils.sha256(userPwd)
+        } else {
+            // stille Anmeldung wird erwartet (Hash aus Shared Preferences)
+            userHash
+        }
+        Timber.tag(TAG).d("Hash: $myHash")
+        if (myHash.isEmpty()) return "Bitte das Passwort eingeben!"
 
         // wir laden die Userdaten
         var message = "Okay"
         var job = GlobalScope.launch(Dispatchers.IO) {
-            myUser = tbmvDAO.getUserByLogName(userName)
+            myUser = tbmvDAO.getUserByLogName(myUserName)
             if (myUser == null) {
                 // dieser User ist uns nicht bekannt!
                 message = "Benutzer $userName ist unbekannt!"
@@ -230,12 +219,24 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 // wir überprüfen die Useranmeldung
                 if (myUser!!.passHash != null) {
                     // in diesem Falle muss das Passwort überprüft werden
-                    if (userHash != myUser?.passHash) {
+                    if (myHash != myUser?.passHash) {
+                        Timber.tag(TAG).d("myHash: $myHash")
+                        Timber.tag(TAG).d("myUser.passHash: ${myUser!!.passHash}")
                         message = "Falsches Passwort bitte korrigieren!"
+                    } else {
+                        // Anmeldung war hier erfolgreich
+                        userName = myUserName
+                        userHash = myHash
+                        message = "Okay"
                     }
                 } else {
-                    // neues Passwort wird erfragt...
-                    message = "Bitte neues Passwort eingeben!"
+                    // neues Passwort wird eintragen, ansonsten ist die Anmeldung okay...
+                    myUser!!.passHash = myHash
+                    tbmvDAO.updateUser(myUser!!)
+                    sqlUserNewPassHash = true
+                    userName = myUserName
+                    userHash = myHash
+                    message = "Okay"
                 }
             }
         }
@@ -267,15 +268,15 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             } else {
                 // ist die bisher eingetragene ID noch zugeordnet?
                 val locLagerListFiltered = locLagerList.filter { it.id == lagerId }
-                if (locLagerListFiltered.isEmpty()) {
+                myLager = if (locLagerListFiltered.isEmpty()) {
                     // wir stellen auf den ersten gefundenen Lagereintrag um
-                    myLager = locLagerList.first()
-                    lagerId = myLager!!.id
-                    lagerName = myLager!!.matchcode
+                    locLagerList.first()
                 } else {
                     // wir verwenden den alten Eintrag
-                    myLager = locLagerListFiltered.first()
+                    locLagerListFiltered.first()
                 }
+                lagerId = myLager!!.id
+                lagerName = myLager!!.matchcode
             }
         }
         runBlocking {
@@ -303,83 +304,27 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     }
 
 
-
-    // prüft die Userdaten auf korrekten Inhalt und Berechtigungen
-    private suspend fun checkUserInfo(): String {
-        // wurden Anmeldename und Passwort eingetragen?
-        val userName = bind.etUserName.text.toString()
-        val userPwd = bind.etUserPwd.text.toString()
-
-        if ((userName.length < 4) || (userPwd.length < 4)) {
-            return "Anmeldename/Passwort müssen mind. 4 Zeichen beinhalten!"
-        }
-
-        // nun werden die Daten abgefragt (in einem IO-Thread)..
-        myUser = tbmvDAO.getUserByLogName(userName)
-        if (myUser == null) {
-            // dieser User ist uns nicht bekannt!
-            return "Benutzer $userName ist unbekannt!"
-        }
-        if (myUser?.passHash != null) {
-            // in diesem Falle muss das Passwort überprüft werden
-            val myHash = HashUtils.sha256(bind.etUserPwd.toString())
-            if (myHash != myUser?.passHash) {
-                return "Falsches Passwort bitte korrigieren!"
-            }
-        } else {
-            // neues Passwort eintragen...
-            myUser!!.passHash = HashUtils.sha256(bind.etUserPwd.toString())
-            tbmvDAO.updateUser(myUser!!)
-            sqlUserNewPassHash = true
-        }
-        // nun klären wir Berechtigungen und ggf. die Lager-Zuordnung
-        if (myUser!!.bmvR + myUser!!.bmvW + myUser!!.bmvAdmin == 0) {
-            // der Benutzer darf keine BMV-Daten sehen
-            return "Sie sind für Betriebsmittel nicht freigeschaltet!"
-        }
-        val locLagerList = tbmvDAO.getLagerListeByUserID(myUser!!.id)
-        if (locLagerList.isEmpty() == true) {
-            if (myUser!!.bmvAdmin == 0) {
-                // der Benutzer ist keinem Lager zugeordnet und hat keine Admin-Berechtigung
-                return "Sie sind keinem Lager zugeordnet, fehlende Berechtigung!"
-            } else {
-                // als Admin ohne Lagerzuordnung ordnen wir das Hauptlager zu
-                myLager = tbmvDAO.getLagerByName("Lager")?.value
-            }
-        } else {
-            // wir ordnen das (erste der gefundenen) Lager zu
-            myLager = locLagerList.first()
-        }
-
-        // wir sammeln alle Lager,die der User sehen darf in einer Liste
-        myLagers = tbmvDAO.getLagerListSorted()
-        if (myUser!!.bmvAdmin == 0) {
-            // als NICHT-Admin darf ich nur die Lager auswählen, die mir gehören -> alle anderen rauslöschen
-            (myLagers as MutableList<TbmvLager>).removeAll {
-                it.userGuid != myUser!!.id
-            }
-        }
-        return "Okay"
-    }
-
-
     private fun writeUserInfoToSharedPrefFirsttime() {
-        val username = bind.etUserName.text.toString()
-        val userHash = HashUtils.sha256(bind.etUserPwd.text.toString())
-        val lagerID = myLager!!.id
-        val lagerName = myLager!!.matchcode
+        Timber.tag(TAG).d("WriteFirstPref, username: $userName")
+        Timber.tag(TAG).d("userHash: $userHash")
+        Timber.tag(TAG).d("LagerID: $lagerId")
+        Timber.tag(TAG).d("Lagername: $lagerName")
         sharedPref.edit()
-            .putString(KEY_USER_NAME, username)
+            .putString(KEY_USER_NAME, userName)
             .putString(KEY_USER_HASH, userHash)
             .putBoolean(KEY_FIRST_TIME, false)
             .putBoolean(KEY_FIRST_SYNC_DONE, false)
-            .putString(KEY_LAGER_ID, lagerID)
+            .putString(KEY_LAGER_ID, lagerId)
             .putString(KEY_LAGER_NAME, lagerName)
             .apply()
         return
     }
 
     private fun writeUserInfoToSharedPref() {
+        Timber.tag(TAG).d("WritePref, username: $userName")
+        Timber.tag(TAG).d("userHash: $userHash")
+        Timber.tag(TAG).d("LagerID: $lagerId")
+        Timber.tag(TAG).d("Lagername: $lagerName")
         sharedPref.edit()
             .putString(KEY_USER_NAME, userName)
             .putString(KEY_USER_HASH, userHash)

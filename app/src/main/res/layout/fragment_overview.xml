@@ -10,19 +10,31 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Lager:"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/tvMatFilterBy" />
+        android:text="Lager:" />
 
     <Spinner
-        android:id="@+id/spMatFilter"
-        android:layout_width="wrap_content"
+        android:id="@+id/spLager"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:entries="@array/sort_mat_options"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="19dp" />
+
+    <Spinner
+        android:id="@+id/spMatFilter"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="123dp"
+        android:entries="@array/sort_mat_options"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/spLager"
+        tools:layout_editor_absoluteY="19dp" />
 
     <TextView
         android:id="@+id/tvMatFilterBy"
@@ -30,31 +42,18 @@
         android:layout_height="wrap_content"
         android:text="Sort.::"
         android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="@+id/spMatFilter"
-        app:layout_constraintEnd_toStartOf="@+id/spMatFilter"
-        app:layout_constraintTop_toTopOf="parent" />
+        tools:layout_editor_absoluteX="225dp" />
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvOverview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spMatFilter" />
-
-    <Spinner
-        android:id="@+id/spLager"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:entries="@array/sort_mat_options"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        app:layout_constraintEnd_toStartOf="@+id/tvMatFilterBy"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/tvMatLager"
-        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
