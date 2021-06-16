@@ -19,7 +19,7 @@ class OverviewViewModel @Inject constructor(
 
     @JvmField
     @field:[Inject Named("LagerId")]
-    var lagerId: String = ""
+    var lagerId: String = myLager?.id ?: ""
 
 
     private val materialSortByMatchcode = mainRepository.getMaterialSortByMatchocde(lagerId)
@@ -35,6 +35,7 @@ class OverviewViewModel @Inject constructor(
     var sortType = SortType.MATCHCODE
 
     init {
+        Timber.tag(TAG).d("Viewmodel-Init, lagerId = $lagerId")
         materials.addSource(materialSortByHersteller) { result ->
             if(sortType == SortType.HERSTELLER) {
                 result?.let { materials.value = it }
