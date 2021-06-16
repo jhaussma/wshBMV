@@ -1,9 +1,14 @@
 package de.wsh.wshbmv.ui
 
+import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -11,6 +16,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import com.codecorp.cortexdecoderlibrary.BuildConfig
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.MyApplication
@@ -27,12 +33,13 @@ import de.wsh.wshbmv.sql_db.SqlDbFirstInit
 import de.wsh.wshbmv.ui.fragments.MaterialFragment
 import de.wsh.wshbmv.ui.fragments.SettingsFragment
 import de.wsh.wshbmv.ui.fragments.TransferlistFragment
+import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), FragCommunicator,
+class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.PermissionCallbacks,
     NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var binding: ActivityMainBinding
@@ -58,6 +65,15 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
 
     private lateinit var toggle: ActionBarDrawerToggle
 
+    val PERMISSION_LIST: Array<String> = arrayOf(
+        Manifest.permission.CAMERA,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.INTERNET
+    )
+    val PERMISSION_REQUEST = 5679
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Timber.tag(TAG).d("Start MainActivity mit onCreate")
@@ -77,7 +93,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
         // wir starten den Layout-Inflater
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        checkSDKLevel()
 
         toggle = ActionBarDrawerToggle(
             this,
@@ -103,11 +119,21 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
             true
         } else {
             when (item.itemId) {
-                R.id.miBarcode -> Toast.makeText(this, "Barcode geklickt", Toast.LENGTH_SHORT)
-                    .show()
-                R.id.miSync -> Toast.makeText(this, "Sync geklickt", Toast.LENGTH_SHORT).show()
+                R.id.miBarcode -> {
+                    Toast.makeText(this, "Barcode geklickt", Toast.LENGTH_SHORT).show()
+                    false
+                }
+                R.id.miSync -> {
+                    Toast.makeText(this, "Sync geklickt", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.miMatAddPhoto -> {
+                    Toast.makeText(this, "Bild wird aufgenommen", Toast.LENGTH_SHORT).show()
+                    true
+                }
+
+                else -> true
             }
-            true
         }
     }
 
@@ -153,24 +179,9 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
             R.id.miScanner -> {
                 // hier startet der Scanner
                 // entweder:
-                Intent(this,ScanActivity::class.java).also {
+                Intent(this, ScanActivity::class.java).also {
                     startActivity(it)
                 }
-                // oder alternativ:
-//                startActivity(Intent(this, ScanActivity::class.java))
-
-//                // nur für Testzwecke!!
-//                val job = GlobalScope.launch(Dispatchers.IO) {
-//                    Timber.tag(TAG).d("Datenausgabeversuch für mein Material:")
-//                    var bmDaten = mainRepo.getBMDatenZuMatID("5F23C813-ED3F-4C76-BD4E-7D86f3206A18")
-//                    Timber.tag(TAG).d(bmDaten.toString())
-//                }
-//                runBlocking {
-//                    job.join()
-//                }
-
-//                setToolbarTitel("Transfer")
-//                changeFragment(MaterialFragment())
             }
 
             R.id.miSync -> {
@@ -201,6 +212,10 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
         }
     }
 
+    override fun passNewPhoto(uri: Uri) {
+        TODO("Not yet implemented")
+    }
+
     // Start einer Material-Detailsicht
     override fun passBmDataID(materialId: String) {
         val bundle = Bundle()
@@ -215,6 +230,60 @@ class MainActivity : AppCompatActivity(), FragCommunicator,
             addToBackStack(fragmentMaterial::class.java.name)
             commit()
         }
+    }
+
+    // die Permissions....
+    private fun checkSDKLevel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                val uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID)
+                Timber.tag(TAG).d("Uri: ${uri.toString()}")
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
+                startActivity(intent)
+            }
+
+            checkPermission()
+//        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            checkPermission()
+        } else {
+            checkPermission()
+        }
+    }
+
+    private fun checkPermission() {
+        if (EasyPermissions.hasPermissions(this, *PERMISSION_LIST)) {
+            Timber.tag(TAG).d("Alle APP-Permissions sind freigegeben...")
+        } else {
+            EasyPermissions.requestPermissions(
+                this,
+                "Bitte alle Berechtigungen zulassen!",
+                PERMISSION_REQUEST,
+                *PERMISSION_LIST
+            )
+        }
+    }
+
+    // Easy Permission -Funktionen
+    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
+        Toast.makeText(this, "Bitte alle Brechtigungen zulassen!", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
+        if (requestCode == PERMISSION_REQUEST && perms.size == PERMISSION_LIST.size) {
+            Toast.makeText(this, "Berechtigungen wurden eingetragen", Toast.LENGTH_SHORT).show()
+            Timber.tag(TAG).d("Alle APP-Permissions sind freigegeben...")
+        } else {
+            Toast.makeText(this, "Bitte alle Brechtigungen zulassen!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 
 }

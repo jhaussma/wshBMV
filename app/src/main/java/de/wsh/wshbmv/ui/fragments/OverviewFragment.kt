@@ -1,5 +1,6 @@
 package de.wsh.wshbmv.ui.fragments
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
@@ -14,7 +15,9 @@ import de.wsh.wshbmv.R
 import de.wsh.wshbmv.adapters.OverviewAdapter
 import de.wsh.wshbmv.databinding.FragmentOverviewBinding
 import de.wsh.wshbmv.db.entities.TbmvMat
+import de.wsh.wshbmv.other.Constants
 import de.wsh.wshbmv.other.Constants.TAG
+import de.wsh.wshbmv.other.GlobalVars.myLager
 import de.wsh.wshbmv.other.GlobalVars.myLagers
 import de.wsh.wshbmv.other.SortType
 import de.wsh.wshbmv.ui.FragCommunicator
@@ -26,6 +29,9 @@ import javax.inject.Named
 
 @AndroidEntryPoint
 class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.OnItemClickListener {
+
+    @Inject
+    lateinit var sharedPref: SharedPreferences
 
     @JvmField
     @field:[Inject Named("LagerId")]
@@ -52,7 +58,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
 
         requestPermissions()
         setupRecyclerView()
-        overviewAdapter
+
 
         setupLagerFilter()
 
@@ -93,6 +99,10 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
                 id: Long
             ) {
                 Timber.tag(TAG).d("spLager, ausgewählt: $pos")
+                myLager = myLagers[pos]
+                lagerId = myLager!!.id
+                listViewModel.filterMatListe(lagerId)
+                writeLagerInfoToSharedPref(lagerId, myLager!!.matchcode)
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -105,9 +115,6 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
         })
     }
 
-    private fun requestPermissions() {
-        // todo...
-    }
 
     private fun setupRecyclerView() = bind.rvOverview.apply {
         overviewAdapter = OverviewAdapter(this@OverviewFragment)
@@ -142,5 +149,19 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
         matViewModel.setNewMaterialId(tbmvMat.id)
         fragCommunicator.passBmDataID(tbmvMat.id)
     }
+
+
+    private fun writeLagerInfoToSharedPref(
+        lagerId: String,
+        lagerName: String
+    ) {
+        sharedPref.edit()
+            .putString(Constants.KEY_LAGER_ID, lagerId)
+            .putString(Constants.KEY_LAGER_NAME, lagerName)
+            .apply()
+        return
+    }
+
+
 
 }

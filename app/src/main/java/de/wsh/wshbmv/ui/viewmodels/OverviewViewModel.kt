@@ -21,54 +21,28 @@ class OverviewViewModel @Inject constructor(
     @field:[Inject Named("LagerId")]
     var lagerId: String = myLager?.id ?: ""
 
+    private val mainRepo = mainRepository
 
-    private val materialSortByMatchcode = mainRepository.getMaterialSortByMatchocde(lagerId)
-    private val materialSortByScancode = mainRepository.getMaterialSortByScancode(lagerId)
-    private val materialSortBySeriennr = mainRepository.getMaterialSortBySeriennr(lagerId)
-    private val materialSortByHersteller = mainRepository.getMaterialSortByHersteller(lagerId)
-    private val materialSortByModell = mainRepository.getMaterialSortByModell(lagerId)
-    private val materialSortByStatus = mainRepository.getMaterialSortByStatus(lagerId)
-
+    private var materialSortByMatchcode = mainRepository.getMaterialSortByMatchocde(lagerId)
+    private var materialSortByScancode = mainRepository.getMaterialSortByScancode(lagerId)
+    private var materialSortBySeriennr = mainRepository.getMaterialSortBySeriennr(lagerId)
+    private var materialSortByHersteller = mainRepository.getMaterialSortByHersteller(lagerId)
+    private var materialSortByModell = mainRepository.getMaterialSortByModell(lagerId)
+    private var materialSortByStatus = mainRepository.getMaterialSortByStatus(lagerId)
 
     val materials = MediatorLiveData<List<TbmvMat>>()
 
     var sortType = SortType.MATCHCODE
 
     init {
-        Timber.tag(TAG).d("Viewmodel-Init, lagerId = $lagerId")
-        materials.addSource(materialSortByHersteller) { result ->
-            if(sortType == SortType.HERSTELLER) {
-                result?.let { materials.value = it }
-            }
-        }
-        materials.addSource(materialSortByMatchcode) { result ->
-            if(sortType == SortType.MATCHCODE) {
-                result?.let { materials.value = it }
-            }
-        }
-        materials.addSource(materialSortByModell) { result ->
-            if(sortType == SortType.MODELL) {
-                result?.let { materials.value = it }
-            }
-        }
-        materials.addSource(materialSortByScancode) { result ->
-            if(sortType == SortType.SCANCODE) {
-                result?.let { materials.value = it }
-            }
-        }
-        materials.addSource(materialSortBySeriennr) { result ->
-            if(sortType == SortType.SERIENNUMMER) {
-                result?.let { materials.value = it }
-            }
-        }
-        materials.addSource(materialSortByStatus) { result ->
-            if(sortType == SortType.STATUS) {
-                result?.let { materials.value = it }
-            }
-        }
+        /*
+            initialisiert die Listen der Betriebsmittel (alle Sortierungen)
+            aktuell wird die Initialisierung nicht benötigt, da die Zuordnung sowieso automatisch beim Ersteinstellen der Spinner (Lager und Sortierung) neu durchgeführt wird (doppelter Aufruf!)
+         */
+        // initMaterials()
     }
 
-    fun sortMatliste(sortType: SortType) = when(sortType) {
+    fun sortMatliste(sortType: SortType) = when (sortType) {
         SortType.MATCHCODE -> materialSortByMatchcode.value?.let { materials.value = it }
         SortType.SCANCODE -> materialSortByScancode.value?.let { materials.value = it }
         SortType.SERIENNUMMER -> materialSortBySeriennr.value?.let { materials.value = it }
@@ -79,6 +53,56 @@ class OverviewViewModel @Inject constructor(
         this.sortType = sortType
     }
 
+    fun filterMatListe(newLagerId: String) {
+        // lösche die alten Sourcen...
+        materials.removeSource(materialSortByMatchcode)
+        materials.removeSource(materialSortByScancode)
+        materials.removeSource(materialSortBySeriennr)
+        materials.removeSource(materialSortByHersteller)
+        materials.removeSource(materialSortByModell)
+        materials.removeSource(materialSortByStatus)
+        // lade die neuen Sourcen...
+        materialSortByMatchcode = mainRepo.getMaterialSortByMatchocde(newLagerId)
+        materialSortByScancode = mainRepo.getMaterialSortByScancode(newLagerId)
+        materialSortBySeriennr = mainRepo.getMaterialSortBySeriennr(newLagerId)
+        materialSortByHersteller = mainRepo.getMaterialSortByHersteller(newLagerId)
+        materialSortByModell = mainRepo.getMaterialSortByModell(newLagerId)
+        materialSortByStatus = mainRepo.getMaterialSortByStatus(newLagerId)
+        // ..und ordne die wieder dem materials zu
+        initMaterials()
+    }
 
-
+    fun initMaterials() {
+        Timber.tag(TAG).d("lädt Materials mit lagerId: $lagerId")
+        materials.addSource(materialSortByHersteller) { result ->
+            if (sortType == SortType.HERSTELLER) {
+                result?.let { materials.value = it }
+            }
+        }
+        materials.addSource(materialSortByMatchcode) { result ->
+            if (sortType == SortType.MATCHCODE) {
+                result?.let { materials.value = it }
+            }
+        }
+        materials.addSource(materialSortByModell) { result ->
+            if (sortType == SortType.MODELL) {
+                result?.let { materials.value = it }
+            }
+        }
+        materials.addSource(materialSortByScancode) { result ->
+            if (sortType == SortType.SCANCODE) {
+                result?.let { materials.value = it }
+            }
+        }
+        materials.addSource(materialSortBySeriennr) { result ->
+            if (sortType == SortType.SERIENNUMMER) {
+                result?.let { materials.value = it }
+            }
+        }
+        materials.addSource(materialSortByStatus) { result ->
+            if (sortType == SortType.STATUS) {
+                result?.let { materials.value = it }
+            }
+        }
+    }
 }

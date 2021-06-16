@@ -73,7 +73,9 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         if (!isFirstAppStart) loadUserInfo()
 
         if (firstSyncCompleted) {
+            Timber.tag(TAG).d("Wir starten mit lagerID: $lagerId")
             var message = verifyUserInfo()
+            Timber.tag(TAG).d("nach verifyUserInfo, lagerID: $lagerId")
             if (message == "Okay") {
                 Timber.tag(TAG).d("verifyUserInfo meldet 'Okay'")
                 // schreibe die Anmeldedaten in die SharedPreferences zurück
@@ -256,9 +258,15 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             // der Benutzer darf keine BMV-Daten sehen
             return "Sie sind für Betriebsmittel nicht freigeschaltet!"
         }
+
         // und nun die Lager-Zuodnung
+        Timber.tag(TAG).d("vor Lagerberechtigungsprüfung, lagerId: $lagerId")
         job = GlobalScope.launch(Dispatchers.IO) {
-            val locLagerList = tbmvDAO.getLagerListeByUserID(myUser!!.id)
+            val locLagerList = if (myUser!!.bmvAdmin == 0) {
+                tbmvDAO.getLagerListeByUserID(myUser!!.id)
+            } else {
+                tbmvDAO.getLagerListSorted()
+            }
             if (locLagerList.isEmpty() == true) {
                 if (myUser!!.bmvAdmin == 0) {
                     // der Benutzer ist keinem Lager zugeordnet und hat keine Admin-Berechtigung
@@ -270,6 +278,8 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             } else {
                 // ist die bisher eingetragene ID noch zugeordnet?
                 val locLagerListFiltered = locLagerList.filter { it.id == lagerId }
+                Timber.tag(TAG).d("Lagerliste ungefiltert: ${locLagerList.toString()}")
+                Timber.tag(TAG).d("Lagerliste gefiltert: ${locLagerListFiltered.toString()}")
                 myLager = if (locLagerListFiltered.isEmpty()) {
                     // wir stellen auf den ersten gefundenen Lagereintrag um
                     locLagerList.first()
@@ -277,8 +287,11 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                     // wir verwenden den alten Eintrag
                     locLagerListFiltered.first()
                 }
+
                 lagerId = myLager!!.id
                 lagerName = myLager!!.matchcode
+                Timber.tag(TAG)
+                    .d("nach erster Prüfung nun zugeordnet, lagerId: $lagerId, $lagerName")
             }
         }
         runBlocking {
@@ -307,10 +320,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
 
 
     private fun writeUserInfoToSharedPrefFirsttime() {
-        Timber.tag(TAG).d("WriteFirstPref, username: $userName")
-        Timber.tag(TAG).d("userHash: $userHash")
-        Timber.tag(TAG).d("LagerID: $lagerId")
-        Timber.tag(TAG).d("Lagername: $lagerName")
+        Timber.tag(TAG).d("Erste Lagerzuordnung: $lagerId, $lagerName")
         sharedPref.edit()
             .putString(KEY_USER_NAME, userName)
             .putString(KEY_USER_HASH, userHash)
@@ -323,10 +333,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     }
 
     private fun writeUserInfoToSharedPref() {
-        Timber.tag(TAG).d("WritePref, username: $userName")
-        Timber.tag(TAG).d("userHash: $userHash")
-        Timber.tag(TAG).d("LagerID: $lagerId")
-        Timber.tag(TAG).d("Lagername: $lagerName")
+        Timber.tag(TAG).d("Wiederholte Lagerzuordnung: $lagerId, $lagerName")
         sharedPref.edit()
             .putString(KEY_USER_NAME, userName)
             .putString(KEY_USER_HASH, userHash)

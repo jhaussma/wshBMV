@@ -87,7 +87,6 @@ class OverviewAdapter(
     }
 
     override fun getItemCount(): Int {
-        Timber.tag(TAG).d("Anzahl Datensätze im differ: ${differ.currentList.size}")
         return differ.currentList.size
     }
 

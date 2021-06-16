@@ -42,8 +42,6 @@ class MainRepository @Inject constructor(
      *  Lager-Basis
      */
     suspend fun insertLager(tbmvLager: TbmvLager) = tbmvDao.insertLager(tbmvLager)
-    suspend fun getLagerByID(lagerId: String) = tbmvDao.getLagerByID(lagerId)
-    fun getLagerByName(lagerName: String) = tbmvDao.getLagerByName(lagerName)
 
     /**
      *  Material und -Gruppen
@@ -91,7 +89,7 @@ class MainRepository @Inject constructor(
 
 
     /**
-     * für TESTZWECKE, später korrigieren...
+     *  lade sortierte und gefilterte Listen der Betriebsmittel/Materialien eines Lagers
      */
     fun getMaterialSortByMatchocde(lagerId: String) = tbmvDao.getMaterialSortByMatchocde(lagerId)
     fun getMaterialSortByScancode(lagerId: String) = tbmvDao.getMaterialSortByScancode(lagerId)
@@ -118,12 +116,6 @@ class MainRepository @Inject constructor(
     suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager) =
         tbmvDao.insertMat_Lager(tbmvMat_Lager)
 
-    //    suspend fun getMatlistOfLager(lagerId: String) = tbmvDao.getMatlistOfLager(lagerId)
-    suspend fun getLagerWithMatINStore(materialID: String) =
-        tbmvDao.getLagerWithMatInStore(materialID)
-
-    suspend fun getHauptLagerVonMaterial(materialID: String) =
-        tbmvDao.getHauptLagerVonMaterial(materialID)
 
     /**
      *  Relation Material - Service

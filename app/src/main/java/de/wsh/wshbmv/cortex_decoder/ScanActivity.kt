@@ -168,15 +168,15 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
 
     //Easy Permission
     override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
-        Toast.makeText(this, "please allow all permissions", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Bitte alle Brechtigungen zulassen!", Toast.LENGTH_SHORT).show()
     }
 
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         if (requestCode == PERMISSION_REQUEST && perms.size == PERMISSION_LIST.size) {
-            Toast.makeText(this, "permission granted", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Berechtigungen wurden eingetragen", Toast.LENGTH_SHORT).show()
             initSDK()
         } else {
-            Toast.makeText(this, "please allow all permissions", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Bitte alle Brechtigungen zulassen!", Toast.LENGTH_SHORT).show()
         }
     }
 
