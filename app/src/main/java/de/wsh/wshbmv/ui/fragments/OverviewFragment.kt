@@ -51,15 +51,12 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        bind =
-            FragmentOverviewBinding.bind(view) // initialisiert die Binding zu den Layout-Objekten
-        fragCommunicator =
-            activity as FragCommunicator // initialisiert die Kommunikation zwischen den Fragments
+        // initialisiere die Binding zu den Layout-Objekten
+        bind = FragmentOverviewBinding.bind(view)
+        // initialisiere die Kommunikation zwischen den Fragments
+        fragCommunicator = activity as FragCommunicator
 
-        requestPermissions()
         setupRecyclerView()
-
-
         setupLagerFilter()
 
         when (listViewModel.sortType) {
@@ -130,10 +127,11 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
         myLagers.forEach() { item ->
             lagerNames.add("${item.typ.first()}: ${item.matchcode}")
             if (item.id == lagerId) {
-                myLagerPos = lagerNames.size -1
+                myLagerPos = lagerNames.size - 1
             }
         }
-        val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, lagerNames)
+        val arrayAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, lagerNames)
         spLager.adapter = arrayAdapter
         if (lagerNames.size > 1) {
             // wir wählen das aktuell eingestellte Lager aus
@@ -161,7 +159,6 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
             .apply()
         return
     }
-
 
 
 }

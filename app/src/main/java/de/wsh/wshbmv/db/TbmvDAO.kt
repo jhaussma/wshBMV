@@ -68,7 +68,7 @@ interface TbmvDAO {
      *  Material und Gruppen
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMat(tbmvMat: TbmvMat)
+    suspend fun upsertMat(tbmvMat: TbmvMat)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe)
@@ -117,27 +117,27 @@ interface TbmvDAO {
 
     // sortierte / gefilterte Abfragen der Betriebsmittel eines Lagers
     @Transaction
-    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY matchcode, beschreibung")
+    @Query("SELECT TbmvMat.* FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY matchcode, beschreibung")
     fun getMaterialSortByMatchocde(lagerId: String): LiveData<List<TbmvMat>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY scancode")
+    @Query("SELECT TbmvMat.* FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY scancode")
     fun getMaterialSortByScancode(lagerId: String): LiveData<List<TbmvMat>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY seriennummer")
+    @Query("SELECT TbmvMat.* FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY seriennummer")
     fun getMaterialSortBySeriennr(lagerId: String): LiveData<List<TbmvMat>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY hersteller")
+    @Query("SELECT TbmvMat.* FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY hersteller")
     fun getMaterialSortByHersteller(lagerId: String): LiveData<List<TbmvMat>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY modell")
+    @Query("SELECT TbmvMat.* FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY modell")
     fun getMaterialSortByModell(lagerId: String): LiveData<List<TbmvMat>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY matStatus")
+    @Query("SELECT TbmvMat.* FROM TbmvMat INNER JOIN TbmvMat_Lager ON TbmvMat.id = TbmvMat_Lager.matId WHERE TbmvMat_Lager.lagerId = :lagerId ORDER BY matStatus")
     fun getMaterialSortByStatus(lagerId: String): LiveData<List<TbmvMat>>
 
 

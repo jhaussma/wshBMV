@@ -1,16 +1,15 @@
 package de.wsh.wshbmv.repositories
 
-import androidx.lifecycle.MutableLiveData
 import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
-import de.wsh.wshbmv.other.Constants.TAG
+import de.wsh.wshbmv.other.Constants.DB_AKTION_ADD_DS
+import de.wsh.wshbmv.other.Constants.DB_AKTION_UPDATE_DS
+import de.wsh.wshbmv.other.GlobalVars.sqlSynchronized
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
-import javax.inject.Named
 
 class MainRepository @Inject constructor(
     val tbmvDao: TbmvDAO
@@ -46,7 +45,34 @@ class MainRepository @Inject constructor(
     /**
      *  Material und -Gruppen
      */
-    suspend fun insertMat(tbmvMat: TbmvMat) = tbmvDao.insertMat(tbmvMat)
+    suspend fun insertMat(tbmvMat: TbmvMat, noProtokoll: Boolean = false) {
+        tbmvDao.upsertMat(tbmvMat)
+        if (!noProtokoll) {
+            val chgProtokoll = TappChgProtokoll(
+                timeStamp = System.currentTimeMillis(),
+                datenbank = "TbmvMat",
+                satzID = tbmvMat.id,
+                Aktion = DB_AKTION_ADD_DS
+            )
+            tbmvDao.insertChgProtokoll(chgProtokoll)
+            sqlSynchronized = false
+        }
+    }
+
+    suspend fun updateMat(tbmvMat: TbmvMat, noProtokoll: Boolean = false) {
+        tbmvDao.upsertMat(tbmvMat)
+        if (!noProtokoll) {
+            val chgProtokoll = TappChgProtokoll(
+                timeStamp = System.currentTimeMillis(),
+                datenbank = "TbmvMat",
+                satzID = tbmvMat.id,
+                Aktion = DB_AKTION_UPDATE_DS
+            )
+            tbmvDao.insertChgProtokoll(chgProtokoll)
+            sqlSynchronized  = false
+        }
+    }
+
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe) =
         tbmvDao.insertMatGruppe(tbmvMatGruppe)
 

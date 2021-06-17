@@ -1,24 +1,12 @@
 package de.wsh.wshbmv.ui.fragments
 
-import android.Manifest
-import android.app.Activity.RESULT_OK
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.os.Environment.getExternalStoragePublicDirectory
-import android.os.PatternMatcher
-import android.provider.MediaStore
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
@@ -27,15 +15,10 @@ import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.FragmentMaterialBinding
 import de.wsh.wshbmv.db.entities.relations.BmData
 import de.wsh.wshbmv.other.Constants.TAG
-import de.wsh.wshbmv.other.GlobalVars.myUser
 import de.wsh.wshbmv.ui.viewmodels.MaterialViewModel
-import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
-import java.io.File
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.regex.Pattern
 
 @AndroidEntryPoint
 class MaterialFragment : Fragment(R.layout.fragment_material)  {
@@ -51,7 +34,6 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
 
-        materialId = arguments?.getString("materialId")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -65,6 +47,10 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
         bind.btServiceDetails.setOnClickListener {
             Timber.tag(TAG).d("btServiceDetails wurde gedrückt...")
         }
+
+        materialId = arguments?.getString("materialId")
+        Timber.tag(TAG).d("Fragment Material startet mit Material-ID: $materialId")
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -86,9 +72,18 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
         return true
     }
 
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Import einer neuen Photo-Datei aus dem MainActivity heraus
+     */
+    fun importNewPhoto(bitmap: Bitmap) {viewModel.importNewPhoto(bitmap)}
 
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Aktualisiert alle Objekte mit den Werten aus dem Datensatz bmData (MaterialViewModel-Observer)
+     */
     // schreib die Dateninhalte in die Maske
     private fun writeUiValues(bmData: BmData) {
+        Timber.tag(TAG).d("writeUiValues wurde angestossen...")
         bind.tvMatTyp.text = bmData.tbmvMat?.typ
         bind.tvMatStatus.text = bmData.tbmvMat?.matStatus
         bind.tvMatMatchcode.text = bmData.tbmvMat?.matchcode

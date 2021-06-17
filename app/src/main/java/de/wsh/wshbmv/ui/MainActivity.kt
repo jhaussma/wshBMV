@@ -1,18 +1,23 @@
 package de.wsh.wshbmv.ui
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
@@ -24,9 +29,13 @@ import de.wsh.wshbmv.R
 import de.wsh.wshbmv.cortex_decoder.ScanActivity
 import de.wsh.wshbmv.databinding.ActivityMainBinding
 import de.wsh.wshbmv.db.TbmvDAO
+import de.wsh.wshbmv.other.Constants.PIC_SCALE_FILTERING
+import de.wsh.wshbmv.other.Constants.PIC_SCALE_HEIGHT
 import de.wsh.wshbmv.other.Constants.TAG
+import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.firstSyncCompleted
 import de.wsh.wshbmv.other.GlobalVars.isFirstAppStart
+import de.wsh.wshbmv.other.GlobalVars.sqlSynchronized
 import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.sql_db.SqlConnection
 import de.wsh.wshbmv.sql_db.SqlDbFirstInit
@@ -35,6 +44,10 @@ import de.wsh.wshbmv.ui.fragments.SettingsFragment
 import de.wsh.wshbmv.ui.fragments.TransferlistFragment
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -71,13 +84,17 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.INTERNET
     )
-    val PERMISSION_REQUEST = 5679
+    val PERMISSION_REQUEST = 100
+
+    // für den Photo-Import in Fragments...
+    var photoFile: File? = null
+    val CAPTURE_IMAGE_REQUEST = 1
+    var mCurrentPhotoPath: String? = null
+    lateinit var photoImportFragment: Fragment
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Timber.tag(TAG).d("Start MainActivity mit onCreate")
-
         mainRepo = MainRepository(tbmvDAO)
 
         // erste Statusabklärung...
@@ -86,9 +103,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         // wir starten die MS-SQL-Serververbindung
         db = SqlDbFirstInit(MainRepository(tbmvDAO), isFirstAppStart)
         db.connectionClass = SqlConnection()
-
-        Timber.tag(TAG).d("isFirstAppStart = $isFirstAppStart")
-        Timber.tag(TAG).d("firstSyncCompleted = $firstSyncCompleted")
 
         // wir starten den Layout-Inflater
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -107,6 +121,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         // Click-Reaktionen des Slide-In_Menü  einbinden
         binding.navView.setNavigationItemSelectedListener(this)
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -128,7 +143,11 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                     true
                 }
                 R.id.miMatAddPhoto -> {
-                    Toast.makeText(this, "Bild wird aufgenommen", Toast.LENGTH_SHORT).show()
+                    // ermittle das aktive Fragment und speichere es in photoImpoortFragment...
+                    photoImportFragment = getVisibleFragment()!!
+                    Timber.tag(TAG).d("Bild wird aufgenommen")
+                    Timber.tag(TAG).d("sqlSynchronized = $sqlSynchronized")
+                    captureImage()
                     true
                 }
 
@@ -200,6 +219,97 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         return true
     }
 
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Aufnahme eines Photos
+     */
+    private fun captureImage() {
+        if (EasyPermissions.hasPermissions(this, *PERMISSION_LIST)) {
+            Timber.tag(TAG).d("wir starten den Bildimport...")
+            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            if (takePictureIntent.resolveActivity(packageManager) != null) {
+                // Create the File where the photo should go
+                try {
+                    photoFile = createImageFile()
+                    // Continue only if the File was successfully created
+                    if (photoFile != null) {
+                        val photoURI = FileProvider.getUriForFile(
+                            this,
+                            "de.wsh.wshbmv.fileprovider",
+                            photoFile!!
+                        )
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                        startActivityForResult(takePictureIntent, CAPTURE_IMAGE_REQUEST)
+                    }
+                } catch (ex: Exception) {
+                    // Error occurred while creating the File
+                    Toast.makeText(
+                        applicationContext,
+                        ex.message.toString(),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+            } else {
+                Toast.makeText(applicationContext, "kein Bild", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            EasyPermissions.requestPermissions(
+                this,
+                "Bitte alle Berechtigungen zulassen!",
+                PERMISSION_REQUEST,
+                *PERMISSION_LIST
+            )
+        }
+
+    }
+
+    @Throws(IOException::class)
+    private fun createImageFile(): File {
+        // Create an image file name
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.GERMANY).format(Date())
+        val imageFileName = "JPEG_" + timeStamp + "_"
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val image = File.createTempFile(
+            imageFileName, /* prefix */
+            ".jpg", /* suffix */
+            storageDir      /* directory */
+        )
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.absolutePath
+        return image
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == CAPTURE_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
+            // hier wird das Bild nun in ein Bitmap aufgenommen, scaliert und ans Fragment weitergereicht ...
+            val myBitmap = BitmapFactory.decodeFile(photoFile!!.absolutePath)
+            val aspectRatio = myBitmap.height.toDouble() / myBitmap.width
+            val newHeight = PIC_SCALE_HEIGHT // neue Zielhöhe ist festgelegt in den Konstanten
+            val newWidth = Math.round(newHeight.toDouble() / aspectRatio).toInt() // das Seiten-/Höhenverhältnis bleibt erhalten
+            val myScaledBitmap = Bitmap.createScaledBitmap(myBitmap, newWidth, newHeight, PIC_SCALE_FILTERING)
+            sendPhotoToFragment(myScaledBitmap)
+        } else {
+            Toast.makeText(applicationContext, "Photo-Import wurde abgebrochen.", Toast.LENGTH_LONG)
+                .show()
+        }
+    }
+
+    // sendet das Photo-Bitmap zur Weiterverarbeitung an das jeweilige Fragment
+    private fun sendPhotoToFragment(bitmap: Bitmap){
+        when (photoImportFragment.tag) {
+            "MaterialFragment" -> {
+                val materialFragment: MaterialFragment = photoImportFragment as MaterialFragment
+                materialFragment.importNewPhoto(bitmap)
+            }
+        }
+    }
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Hilfsfunktionen für Fragment-Wechsel und Einstellung
+     */
     private fun setToolbarTitel(title: String) {
         supportActionBar?.title = title
     }
@@ -212,6 +322,23 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         }
     }
 
+    private  fun getVisibleFragment(): Fragment? {
+        val fragmentManager = supportFragmentManager
+        val fragments = fragmentManager.fragments
+        if (fragments.size > 0) {
+            fragments.forEach() {
+                if ( it != null && it.isVisible()) {
+                    return it
+                }
+            }
+        }
+        return  null
+    }
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Übergaben über den FragCommunicator
+     */
+
     override fun passNewPhoto(uri: Uri) {
         TODO("Not yet implemented")
     }
@@ -220,18 +347,19 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
     override fun passBmDataID(materialId: String) {
         val bundle = Bundle()
         bundle.putString("materialId", materialId)
-        Timber.tag(TAG).d("override passBmDataID mit: $materialId")
 
-//        val transaction = supportFragmentManager.beginTransaction()
         val fragmentMaterial = MaterialFragment()
         fragmentMaterial.arguments = bundle
         supportFragmentManager.beginTransaction().apply {
-            replace(R.id.navHostFragment, fragmentMaterial)
+            replace(R.id.navHostFragment, fragmentMaterial,"MaterialFragment")
             addToBackStack(fragmentMaterial::class.java.name)
             commit()
         }
     }
 
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   wir prüfen alle notwendigen Permissions für die APP
+     */
     // die Permissions....
     private fun checkSDKLevel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -241,10 +369,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
                 startActivity(intent)
             }
-
             checkPermission()
-//        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            checkPermission()
         } else {
             checkPermission()
         }
@@ -271,7 +396,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         if (requestCode == PERMISSION_REQUEST && perms.size == PERMISSION_LIST.size) {
             Toast.makeText(this, "Berechtigungen wurden eingetragen", Toast.LENGTH_SHORT).show()
-            Timber.tag(TAG).d("Alle APP-Permissions sind freigegeben...")
         } else {
             Toast.makeText(this, "Bitte alle Brechtigungen zulassen!", Toast.LENGTH_SHORT).show()
         }

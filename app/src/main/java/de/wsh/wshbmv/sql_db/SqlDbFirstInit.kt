@@ -229,7 +229,7 @@ class SqlDbFirstInit @Inject constructor(
                 material.matStatus = resultSet.getString("MatStatus")
                 material.bildBmp = toBitmap(resultSet.getBytes("BildBmp"))
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertMat(material)
+                mainRepository.updateMat(material,true)
             }
         }
 

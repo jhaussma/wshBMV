@@ -1,15 +1,13 @@
 package de.wsh.wshbmv.ui.viewmodels
 
-import androidx.lifecycle.LiveData
+import android.graphics.Bitmap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.wsh.wshbmv.db.entities.relations.BmData
-import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,11 +27,23 @@ class MaterialViewModel @Inject constructor(
      */
     fun setNewMaterialId(materialId: String) {
         myMaterialId.value = materialId
-        Timber.tag(TAG).d("setNewMaterialId gestartet im ViewModel")
         viewModelScope.launch {
             val bmData = mainRepo.getBMDatenZuMatID(materialId)
-            Timber.tag(TAG).d("im ViewModel angekommen: ${bmData?.tbmvMat.toString()}")
             bmDataLive.value = bmData
+        }
+    }
+
+    /**
+     *
+     */
+    fun importNewPhoto(bitmap: Bitmap) {
+        viewModelScope.launch {
+            val bmData = bmDataLive.value
+            bmData?.tbmvMat?.bildBmp = bitmap
+            bmDataLive.value = bmData
+            // speichere die Änderung in die Tabelle TbmvMat
+            bmData?.tbmvMat?.let { mainRepo.updateMat(it)}
+
         }
     }
 

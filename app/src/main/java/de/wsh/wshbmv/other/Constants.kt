@@ -5,7 +5,7 @@ object Constants {
 
     const val TBMV_DATABASE_NAME = "tbmv_db"
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  lokale Speicherung der APP-Userdaten
      */
     const val SHARED_PREFERENCES_NAME = "sharedPrefUser"
@@ -16,7 +16,7 @@ object Constants {
     const val KEY_FIRST_TIME = "KEY_FIRST_TIME"
     const val KEY_FIRST_SYNC_DONE = "KEY_FIRST_SYNC_DONE"
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *   SQL-Server-Daten
      */
     const val SQL_CONN_IP = "192.168.15.11:1433"
@@ -27,4 +27,18 @@ object Constants {
 //    const val SQL_CONN_DB = "wshAPlan"
 //    const val SQL_USER_NAME = "SA"
 //    const val SQL_USER_PWD = "Sy67Ha99"
+
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Datenbank - Konstanten - Parameter
+     */
+    const val DB_AKTION_ADD_DS = 0
+    const val DB_AKTION_UPDATE_DS = 1
+    const val DB_AKTION_DELETE_DS = 2
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Bild-Scale-Einstellungsparameter
+     */
+    const val PIC_SCALE_HEIGHT = 500
+    const val PIC_SCALE_FILTERING = true
 }
