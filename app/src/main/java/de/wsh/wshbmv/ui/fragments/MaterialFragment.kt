@@ -77,6 +77,14 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
      */
     fun importNewPhoto(bitmap: Bitmap) {viewModel.importNewPhoto(bitmap)}
 
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Import eines Barcodes aus der ScanActivity/MainActivity
+     */
+    fun importNewBarcode(barcode: String) {
+        Timber.tag(TAG).d("MaterialFragment hat Barcode $barcode empfangen...")
+
+    }
+
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *   Aktualisiert alle Objekte mit den Werten aus dem Datensatz bmData (MaterialViewModel-Observer)

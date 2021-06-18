@@ -23,6 +23,8 @@ import com.codecorp.util.Utilities
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.databinding.ActivityScanBinding
 import de.wsh.wshbmv.other.Constants.TAG
+import de.wsh.wshbmv.other.GlobalVars.hasNewBarcode
+import de.wsh.wshbmv.other.GlobalVars.newBarcode
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 
@@ -62,10 +64,7 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
                 startActivity(intent)
             }
-
             checkPermission()
-//        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            checkPermission()
         } else {
             checkPermission()
         }
@@ -77,7 +76,7 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
         } else {
             EasyPermissions.requestPermissions(
                 this,
-                "please allow all permissions",
+                "Bitte alle Aktivitäten zulassen!",
                 PERMISSION_REQUEST,
                 *PERMISSION_LIST
             )
@@ -88,22 +87,14 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
     private fun initSDK() {
         Timber.tag(TAG).d("wir starten nun den CortexDecoder")
         mCortexDecoderLibrary = CortexDecoderLibrary.sharedObject(applicationContext, CAMERA_API)
-        Timber.tag(TAG).d(".. vor setLicenseCallback...")
         mCortexDecoderLibrary.setLicenseCallback(this)
-        Timber.tag(TAG).d(".. vor setCallback...")
         mCortexDecoderLibrary.setCallback(this)
-        Timber.tag(TAG).d(".. vor setEDKCustomerID...")
         mCortexDecoderLibrary.setEDKCustomerID(EDK_CUSTOMERID)
-        Timber.tag(TAG).d(".. vor activateLicense...")
         mCortexDecoderLibrary.activateLicense(EDK_ACTIVATE_LICENSE_KEY)
-        Timber.tag(TAG).d(".. vor Eintrag der SDK-Version...")
-
         binding.activityMainButtonToSdkVersion.setText("SDK Version: " + mCortexDecoderLibrary.sdkVersion)
-        Timber.tag(TAG).d(".. initSDK ist durch...")
     }
 
     private fun setSDK() {
-        Timber.tag(TAG).d("setSDK")
         binding.activityScanFrame.addView(mCortexDecoderLibrary.cameraPreview, 0)
         mCortexDecoderLibrary.setDecoderResolution(Resolution.Resolution_1920x1080)
     }
@@ -122,8 +113,7 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
 
     private fun showBarcodeResult(barcode: String?, type: SymbologyType?) {
         val typeStr = Utilities.stringFromSymbologyType(type)
-//        binding.activityScanBarcodeResult.setText(typeStr + "\n" + barcode)
-        binding.activityScanBarcodeResult.setText("$typeStr\n$barcode")
+        binding.activityScanBarcodeResult.text = "$typeStr\n$barcode"
     }
 
     override fun onDestroy() {
@@ -212,9 +202,11 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
     }
 
     override fun receivedDecodedData(barcode: String?, type: SymbologyType?) {
-        Timber.tag(TAG).d("receivedDecodedData")
+        Timber.tag(TAG).d("receivedDecodedData: $barcode -> Datenübergabe organisieren")
+        doStopDecoding()
         runOnUiThread(Runnable { showBarcodeResult(barcode, type) })
-
+        setNewBarcode(barcode)
+        finish()
     }
 
     override fun receivedMultipleDecodedData(
@@ -236,8 +228,6 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
     }
 
     override fun onActivationResult(p0: LicenseStatusCode?) {
-        Timber.tag(TAG).d("onActivationResult")
-
         if (p0 == LicenseStatusCode.LicenseStatus_LicenseValid) {
             enableQR(true)
             enableEAN8(true)
@@ -250,9 +240,16 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
             setSDK()
             doStartDecoding()
         } else {
-            Toast.makeText(this, "license invalid", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "CORTEX-Lizenz ist ungültig!", Toast.LENGTH_LONG).show()
         }
     }
 //CortexScan callback
 
+
+    private fun setNewBarcode(barcode: String?) {
+        if (barcode != "") {
+            newBarcode = barcode
+            hasNewBarcode = true
+        }
+    }
 }

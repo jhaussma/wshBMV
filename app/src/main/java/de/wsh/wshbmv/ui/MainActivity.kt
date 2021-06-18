@@ -4,9 +4,11 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.nfc.tech.NfcBarcode
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -34,12 +36,15 @@ import de.wsh.wshbmv.other.Constants.PIC_SCALE_HEIGHT
 import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.firstSyncCompleted
+import de.wsh.wshbmv.other.GlobalVars.hasNewBarcode
 import de.wsh.wshbmv.other.GlobalVars.isFirstAppStart
+import de.wsh.wshbmv.other.GlobalVars.newBarcode
 import de.wsh.wshbmv.other.GlobalVars.sqlSynchronized
 import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.sql_db.SqlConnection
 import de.wsh.wshbmv.sql_db.SqlDbFirstInit
 import de.wsh.wshbmv.ui.fragments.MaterialFragment
+import de.wsh.wshbmv.ui.fragments.OverviewFragment
 import de.wsh.wshbmv.ui.fragments.SettingsFragment
 import de.wsh.wshbmv.ui.fragments.TransferlistFragment
 import pub.devrel.easypermissions.EasyPermissions
@@ -91,6 +96,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
     val CAPTURE_IMAGE_REQUEST = 1
     var mCurrentPhotoPath: String? = null
     lateinit var photoImportFragment: Fragment
+    lateinit var barcodeImportFragment: Fragment
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,18 +141,19 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         } else {
             when (item.itemId) {
                 R.id.miBarcode -> {
-                    Toast.makeText(this, "Barcode geklickt", Toast.LENGTH_SHORT).show()
-                    false
+                    // ermittle das aktive Fragment und speichere es in barcodeImportFragment
+                    startBarcodeScanner()
+                    true
                 }
+
                 R.id.miSync -> {
                     Toast.makeText(this, "Sync geklickt", Toast.LENGTH_SHORT).show()
                     true
                 }
+
                 R.id.miMatAddPhoto -> {
                     // ermittle das aktive Fragment und speichere es in photoImpoortFragment...
                     photoImportFragment = getVisibleFragment()!!
-                    Timber.tag(TAG).d("Bild wird aufgenommen")
-                    Timber.tag(TAG).d("sqlSynchronized = $sqlSynchronized")
                     captureImage()
                     true
                 }
@@ -155,6 +162,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             }
         }
     }
+
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -196,11 +204,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             }
 
             R.id.miScanner -> {
-                // hier startet der Scanner
-                // entweder:
-                Intent(this, ScanActivity::class.java).also {
-                    startActivity(it)
-                }
+                // hier startet der Barcodescanner
+                startBarcodeScanner()
             }
 
             R.id.miSync -> {
@@ -218,6 +223,16 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         }
         return true
     }
+
+    // hier verarbeiten wir ggf. einen empfangenen Barcode...
+    override fun onResume() {
+        super.onResume()
+        Timber.tag(TAG).d("onResume MainActivity")
+        if (hasNewBarcode) {
+            newBarcode?.let { sendBarcodeToFragment(it) }
+        }
+    }
+
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *   Aufnahme eines Photos
@@ -308,6 +323,40 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
     }
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Import eines Barcodes...
+     */
+    // startet den Barcodescanner und merkt sich das aktive Fragment für die Rückkehr
+    private fun startBarcodeScanner(){
+        // ermittle das aktive Fragment und speichere es in barcodeImportFragment
+        barcodeImportFragment = getVisibleFragment()!!
+        Timber.tag(TAG).d("barcodeImportFragment.tag = ${barcodeImportFragment.tag}")
+        // lösche die Ergebnisfelder für den Barcode
+        hasNewBarcode = false
+        newBarcode = null
+        // starte den Barcode-Scanner
+        Intent(this, ScanActivity::class.java).also {
+            startActivity(it)
+        }
+    }
+
+    // sendet einen Barcode an das zuletzt aktive Fragment der Anwendung
+    private fun sendBarcodeToFragment(barcode: String) {
+        when (barcodeImportFragment.tag) {
+            "MaterialFragment" -> {
+                val materialFragment: MaterialFragment = barcodeImportFragment as MaterialFragment
+                materialFragment.importNewBarcode(barcode)
+            }
+            "OverviewFragment" -> {
+                val overviewFragment: OverviewFragment = barcodeImportFragment as OverviewFragment
+                overviewFragment.importNewBarcode(barcode)
+            }
+
+        }
+
+    }
+
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *   Hilfsfunktionen für Fragment-Wechsel und Einstellung
      */
     private fun setToolbarTitel(title: String) {
@@ -335,13 +384,10 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         return  null
     }
 
-    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-     *   Übergaben über den FragCommunicator
-     */
 
-    override fun passNewPhoto(uri: Uri) {
-        TODO("Not yet implemented")
-    }
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Übergaben über den FragCommunicator (aus Fragmenten oder anderen Activities)
+     */
 
     // Start einer Material-Detailsicht
     override fun passBmDataID(materialId: String) {

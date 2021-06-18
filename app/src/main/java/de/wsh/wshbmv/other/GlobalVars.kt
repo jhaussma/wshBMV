@@ -5,8 +5,8 @@ import de.wsh.wshbmv.db.entities.TsysUser
 
 
 object GlobalVars {
-    /**
-     *  globale Statusinformationen zur aktuellen Benutzung der App
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   globale Statusinformationen zur aktuellen Benutzung der App
      */
     var isFirstAppStart = true          // True: es gibt noch keine lokale DB und USER-Einstellungen
     var firstSyncCompleted = false      // True: erste Komplettsynchronisierung war erfolgreich
@@ -16,8 +16,8 @@ object GlobalVars {
 
 
 
-    /**
-     *  SQL-Statusinformationen
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   SQL-Statusinformationen
      */
     var sqlServerConnected = false      // True: wir haben medi1one-Server-Verbindung
     var sqlStatus : enSqlStatus = enSqlStatus.INIT  // Status der SQL-Serververbindung
@@ -26,4 +26,9 @@ object GlobalVars {
     var sqlSynchronized = true          // FALSE: eine Synchronisierung mit der SQL-Datenbank wäre mal wieder angebracht
 
 
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Steuerung der Barcode-Übergabe zwischen ScanActivity und MainActivity
+     */
+    var hasNewBarcode = false           // Ist ein Barcode zur Übergabe bereit, dann True
+    var newBarcode: String? = null      // da ist der neue Barcode drin...
 }

@@ -139,8 +139,16 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
         }
     }
 
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Import eines Barcodes aus der ScanActivity/MainActivity
+     */
+    fun importNewBarcode(barcode: String) {
+        Timber.tag(TAG).d("OverviewFragment hat Barcode $barcode empfangen...")
 
-    /**
+    }
+
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  klick auf einen Betriebsmitteleintrag verarbeiten
      */
     override fun onMaterialItemClick(tbmvMat: TbmvMat) {
@@ -149,6 +157,9 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
     }
 
 
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   speichert eine Änderung der Lager-Voreinstellung in den Preferences der App
+     */
     private fun writeLagerInfoToSharedPref(
         lagerId: String,
         lagerName: String
