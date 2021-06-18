@@ -335,15 +335,20 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
     // sendet einen Barcode an das zuletzt aktive Fragment der Anwendung
     private fun sendBarcodeToFragment(barcode: String) {
+        Timber.tag(TAG).d("sendBarcodeToFragment gestartet für ${importFragment!!::class.java.name}")
         when (importFragment!!::class.java.name) {
             "de.wsh.wshbmv.ui.fragments.MaterialFragment" -> {
                 val materialFragment: MaterialFragment = importFragment as MaterialFragment
+                Timber.tag(TAG).d("sendBarcodeToFragment verzweigt nach MaterialFragment")
                 materialFragment.importNewBarcode(barcode)
             }
-            "de.wsh.wshbmv.ui.fragments.OverviewFragment" -> {
+            "de.wsh.wshbmv.ui.fragments.OverviewFragment"  -> {
                 val overviewFragment: OverviewFragment =  importFragment as OverviewFragment
+                Timber.tag(TAG).d("sendBarcodeToFragment verzweigt nach OverviewFragment")
                 overviewFragment.importNewBarcode(barcode)
             }
+
+            // , "androidx.navigation.fragment.NavHostFragment"
 
         }
 

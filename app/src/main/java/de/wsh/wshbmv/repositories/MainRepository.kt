@@ -15,7 +15,7 @@ class MainRepository @Inject constructor(
     val tbmvDao: TbmvDAO
 ) {
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      * die User-Zugriffe
      */
     suspend fun insertUser(tsysUser: TsysUser) = tbmvDao.insertUser(tsysUser)
@@ -32,17 +32,17 @@ class MainRepository @Inject constructor(
 
     fun getUsersActive() = tbmvDao.getUsersActive()
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Dokumente
      */
     suspend fun insertDokument(tbmvDokument: TbmvDokument) = tbmvDao.insertDokument(tbmvDokument)
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Lager-Basis
      */
     suspend fun insertLager(tbmvLager: TbmvLager) = tbmvDao.insertLager(tbmvLager)
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Material und -Gruppen
      */
     suspend fun insertMat(tbmvMat: TbmvMat, noProtokoll: Boolean = false) {
@@ -76,10 +76,8 @@ class MainRepository @Inject constructor(
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe) =
         tbmvDao.insertMatGruppe(tbmvMatGruppe)
 
-    suspend fun getMaterialByMatID(materialID: String) = tbmvDao.getMaterialByMatID(materialID)
-    suspend fun getMatGruppeByGruppeID(matGruppeId: String) =
-        tbmvDao.getMatGruppeByGruppeID(matGruppeId)
 
+    suspend fun getMaterialByScancode(scancode: String) = tbmvDao.getMaterialByScancode(scancode)
 
     // Betriebsmittel Datensatz
     suspend fun getBMDatenZuMatID(materialID: String): BmData? {
@@ -113,8 +111,17 @@ class MainRepository @Inject constructor(
         return bmData
     }
 
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *  Relation Material - Lager
+     */
+    suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager) =
+        tbmvDao.insertMat_Lager(tbmvMat_Lager)
 
-    /**
+    suspend fun getLagersWithMaterialId(materialID: String) = tbmvDao.getLagersWithMaterialId(materialID)
+
+
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  lade sortierte und gefilterte Listen der Betriebsmittel/Materialien eines Lagers
      */
     fun getMaterialSortByMatchocde(lagerId: String) = tbmvDao.getMaterialSortByMatchocde(lagerId)
@@ -124,51 +131,46 @@ class MainRepository @Inject constructor(
     fun getMaterialSortByModell(lagerId: String) = tbmvDao.getMaterialSortByModell(lagerId)
     fun getMaterialSortByStatus(lagerId: String) = tbmvDao.getMaterialSortByStatus(lagerId)
 
-    /**
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Service
      */
     suspend fun insertService(tbmvService: TbmvService) = tbmvDao.insertService(tbmvService)
 
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Belege Transfers
      */
     suspend fun insertBeleg(tbmvBeleg: TbmvBeleg) = tbmvDao.insertBeleg(tbmvBeleg)
     suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos) = tbmvDao.insertBelegPos(tbmvBelegPos)
 
-    /**
-     *  Relation Material - Lager
-     */
-    suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager) =
-        tbmvDao.insertMat_Lager(tbmvMat_Lager)
 
-
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Material - Service
      */
     suspend fun insertMat_Service(tbmvMat_Service: TbmvMat_Service) =
         tbmvDao.insertMat_Service(tbmvMat_Service)
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Material/Service - Dokument
      */
     suspend fun insertMatService_Dok(tbmvMatService_Dok: TbmvMatService_Dok) =
         tbmvDao.insertMatService_Dok(tbmvMatService_Dok)
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Material/Service - Historie
      */
     suspend fun insertMatService_Historie(tbmvMatService_Historie: TbmvMatService_Historie) =
         tbmvDao.insertMatService_Historie(tbmvMatService_Historie)
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Service - Dokument
      */
     suspend fun insertService_Dok(tbmvService_Dok: TbmvService_Dok) =
         tbmvDao.insertService_Dok(tbmvService_Dok)
 
 
-    /**
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Änderungs - Protokollierung
      */
     suspend fun insertChgProtokoll(tappChgProtokoll: TappChgProtokoll) =

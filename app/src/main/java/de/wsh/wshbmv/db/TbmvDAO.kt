@@ -76,6 +76,9 @@ interface TbmvDAO {
     @Query("SELECT * FROM TbmvMat WHERE id LIKE :materialGuid")
     suspend fun getMaterialByMatID(materialGuid: String): TbmvMat?
 
+    @Query("SELECT * FROM TbmvMat WHERE scancode LIKE :scancode")
+    suspend fun getMaterialByScancode(scancode: String): TbmvMat?
+
     @Query("SELECT * FROM TbmvMatGruppe WHERE id LIKE :matGruppeGuid")
     suspend fun getMatGruppeByGruppeID(matGruppeGuid: String): TbmvMatGruppe?
 
@@ -106,6 +109,10 @@ interface TbmvDAO {
     @Transaction
     @Query("SELECT * FROM TbmvMat_Lager WHERE lagerId LIKE :lagerId")
     suspend fun getMatlistOfLager(lagerId: String): MatInLager?
+
+    @Transaction
+    @Query("SELECT TbmvLager.* FROM TbmvLager INNER JOIN TbmvMat_Lager ON TbmvLager.id = TbmvMat_Lager.lagerId WHERE TbmvMat_Lager.matId = :matId")
+    suspend fun getLagersWithMaterialId(matId: String): List<TbmvLager>
 
     @Transaction
     @Query("SELECT * FROM TbmvMat_Lager WHERE matId LIKE :matId AND bestand > 0")

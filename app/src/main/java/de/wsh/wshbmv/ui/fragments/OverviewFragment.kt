@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -144,6 +145,16 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
      */
     fun importNewBarcode(barcode: String) {
         Timber.tag(TAG).d("OverviewFragment hat Barcode $barcode empfangen...")
+        //sofern der Barcode einem Lager zugeordnet ist, das wir sehen dürfen, zeigen wir die Details im MaterialFragment an...
+        val tbmvMat = listViewModel.getMaterialFromScancode(barcode)
+
+        if (tbmvMat == null) {
+            Toast.makeText(requireContext(),"Barcode $barcode ist unbekannt oder fehlende Berechtigung!",Toast.LENGTH_LONG)
+        } else {
+            Toast.makeText(requireContext(),"Barcode $barcode ist gefunden und das Material darf gesehen werden...",Toast.LENGTH_LONG)
+        }
+
+
 
     }
 
