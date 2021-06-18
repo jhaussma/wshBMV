@@ -85,6 +85,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 val navOptions = NavOptions.Builder()
                     .setPopUpTo(R.id.setupFragment, true)
                     .build()
+
                 // und wechsle direkt in die Betriebsmittel-Übersichtsansicht
                 findNavController().navigate(
                     R.id.action_setupFragment_to_overviewFragment,

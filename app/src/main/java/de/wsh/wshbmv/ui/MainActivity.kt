@@ -4,11 +4,9 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.nfc.tech.NfcBarcode
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -34,12 +32,10 @@ import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_FILTERING
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_HEIGHT
 import de.wsh.wshbmv.other.Constants.TAG
-import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.firstSyncCompleted
 import de.wsh.wshbmv.other.GlobalVars.hasNewBarcode
 import de.wsh.wshbmv.other.GlobalVars.isFirstAppStart
 import de.wsh.wshbmv.other.GlobalVars.newBarcode
-import de.wsh.wshbmv.other.GlobalVars.sqlSynchronized
 import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.sql_db.SqlConnection
 import de.wsh.wshbmv.sql_db.SqlDbFirstInit
@@ -95,8 +91,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
     var photoFile: File? = null
     val CAPTURE_IMAGE_REQUEST = 1
     var mCurrentPhotoPath: String? = null
-    lateinit var photoImportFragment: Fragment
-    lateinit var barcodeImportFragment: Fragment
+
+    private var importFragment: Fragment? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,6 +138,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             when (item.itemId) {
                 R.id.miBarcode -> {
                     // ermittle das aktive Fragment und speichere es in barcodeImportFragment
+                    importFragment = getVisibleFragment()
                     startBarcodeScanner()
                     true
                 }
@@ -153,7 +150,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
                 R.id.miMatAddPhoto -> {
                     // ermittle das aktive Fragment und speichere es in photoImpoortFragment...
-                    photoImportFragment = getVisibleFragment()!!
+                    importFragment = getVisibleFragment()
                     captureImage()
                     true
                 }
@@ -314,9 +311,9 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
     // sendet das Photo-Bitmap zur Weiterverarbeitung an das jeweilige Fragment
     private fun sendPhotoToFragment(bitmap: Bitmap){
-        when (photoImportFragment.tag) {
-            "MaterialFragment" -> {
-                val materialFragment: MaterialFragment = photoImportFragment as MaterialFragment
+        when (importFragment!!::class.java.name) {
+            "de.wsh.wshbmv.ui.fragments.MaterialFragment" -> {
+                val materialFragment: MaterialFragment = importFragment as MaterialFragment
                 materialFragment.importNewPhoto(bitmap)
             }
         }
@@ -327,9 +324,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
      */
     // startet den Barcodescanner und merkt sich das aktive Fragment für die Rückkehr
     private fun startBarcodeScanner(){
-        // ermittle das aktive Fragment und speichere es in barcodeImportFragment
-        barcodeImportFragment = getVisibleFragment()!!
-        Timber.tag(TAG).d("barcodeImportFragment.tag = ${barcodeImportFragment.tag}")
         // lösche die Ergebnisfelder für den Barcode
         hasNewBarcode = false
         newBarcode = null
@@ -341,13 +335,13 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
     // sendet einen Barcode an das zuletzt aktive Fragment der Anwendung
     private fun sendBarcodeToFragment(barcode: String) {
-        when (barcodeImportFragment.tag) {
-            "MaterialFragment" -> {
-                val materialFragment: MaterialFragment = barcodeImportFragment as MaterialFragment
+        when (importFragment!!::class.java.name) {
+            "de.wsh.wshbmv.ui.fragments.MaterialFragment" -> {
+                val materialFragment: MaterialFragment = importFragment as MaterialFragment
                 materialFragment.importNewBarcode(barcode)
             }
-            "OverviewFragment" -> {
-                val overviewFragment: OverviewFragment = barcodeImportFragment as OverviewFragment
+            "de.wsh.wshbmv.ui.fragments.OverviewFragment" -> {
+                val overviewFragment: OverviewFragment =  importFragment as OverviewFragment
                 overviewFragment.importNewBarcode(barcode)
             }
 
@@ -376,12 +370,12 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         val fragments = fragmentManager.fragments
         if (fragments.size > 0) {
             fragments.forEach() {
-                if ( it != null && it.isVisible()) {
+                if ( it != null && it.isVisible) {
                     return it
                 }
             }
         }
-        return  null
+        return null
     }
 
 
