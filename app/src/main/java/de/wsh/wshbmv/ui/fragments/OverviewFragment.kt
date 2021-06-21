@@ -24,12 +24,16 @@ import de.wsh.wshbmv.other.SortType
 import de.wsh.wshbmv.ui.FragCommunicator
 import de.wsh.wshbmv.ui.viewmodels.MaterialViewModel
 import de.wsh.wshbmv.ui.viewmodels.OverviewViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
-class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.OnItemClickListener {
+class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.OnItemClickListener  {
 
     @Inject
     lateinit var sharedPref: SharedPreferences
@@ -111,6 +115,15 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
         listViewModel.materials.observe(viewLifecycleOwner, Observer {
             overviewAdapter.submitList(it)
         })
+
+        listViewModel.newTbmvMatFromBarcode.observe(viewLifecycleOwner, Observer {
+            if (it == null) {
+                Toast.makeText(requireContext(),"Barcode ist unbekannt oder fehlende Berechtigung!",Toast.LENGTH_LONG).show()
+            } else {
+                onMaterialItemClick(it)
+            }
+
+        })
     }
 
 
@@ -146,16 +159,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
     fun importNewBarcode(barcode: String) {
         Timber.tag(TAG).d("OverviewFragment hat Barcode $barcode empfangen...")
         //sofern der Barcode einem Lager zugeordnet ist, das wir sehen dürfen, zeigen wir die Details im MaterialFragment an...
-        val tbmvMat = listViewModel.getMaterialFromScancode(barcode)
-
-        if (tbmvMat == null) {
-            Toast.makeText(requireContext(),"Barcode $barcode ist unbekannt oder fehlende Berechtigung!",Toast.LENGTH_LONG)
-        } else {
-            Toast.makeText(requireContext(),"Barcode $barcode ist gefunden und das Material darf gesehen werden...",Toast.LENGTH_LONG)
-        }
-
-
-
+        listViewModel.getAllowedMaterialFromScancode(barcode)
     }
 
 
@@ -181,6 +185,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
             .apply()
         return
     }
+
 
 
 }

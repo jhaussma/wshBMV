@@ -1,13 +1,18 @@
 package de.wsh.wshbmv.repositories
 
+import androidx.lifecycle.viewModelScope
 import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
+import de.wsh.wshbmv.other.Constants
 import de.wsh.wshbmv.other.Constants.DB_AKTION_ADD_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_UPDATE_DS
+import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.sqlSynchronized
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 
@@ -76,8 +81,38 @@ class MainRepository @Inject constructor(
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe) =
         tbmvDao.insertMatGruppe(tbmvMatGruppe)
 
-
+    // Materialdatensatz zu einem Scancode/Barcode (alle ohne Berechtigungsprüfung)
     suspend fun getMaterialByScancode(scancode: String) = tbmvDao.getMaterialByScancode(scancode)
+
+     //  Material-Datensatz eines Betriebsmittels zu einem Scancode (inkl. Berechtigungsprüfung)
+    suspend fun getAllowedMaterialFromScancode(scancode: String): TbmvMat? {
+        // zuerst das Material suchen
+         var tbmvMat: TbmvMat?
+         withContext(Dispatchers.IO) {
+            tbmvMat = tbmvDao.getMaterialByScancode(scancode)
+            Timber.tag(Constants.TAG).d("getMaterialFromScancode, tbmvMat = ${tbmvMat.toString()}")
+            if (tbmvMat != null) {
+                // Material gefunden, nun muss es noch in unserer Lagerliste-Berechtigung drin sein
+                val lagers = tbmvDao.getLagersWithMaterialId(tbmvMat!!.id)
+                Timber.tag(Constants.TAG).d("getMaterialFromScancode, Lagerliste = ${lagers.toString()}")
+                if (lagers.isEmpty()) {
+                    // wir haben kein Lager zum Betriebsmittel gefunden...
+                    tbmvMat = null
+                } else {
+                    val resultLagers = lagers.intersect(GlobalVars.myLagers)
+                    Timber.tag(Constants.TAG).d("getMaterialFromScancode, myLagers = ${GlobalVars.myLagers.toString()}")
+                    if (resultLagers.isEmpty()) {
+                        // wir haben keine Berechtigung zu einem dieser Lager...
+                        tbmvMat = null
+                        Timber.tag(Constants.TAG).d("getMaterialFromScancode, keine Lager-Übereinstimmung gefunden")
+                    }
+                }
+            }
+        }
+        // das Ergebnis ist tbmvMat, wenn wir es sehen dürfen, ansonsten null
+        return tbmvMat
+    }
+
 
     // Betriebsmittel Datensatz
     suspend fun getBMDatenZuMatID(materialID: String): BmData? {

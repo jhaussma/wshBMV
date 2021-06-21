@@ -66,7 +66,7 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
                 .show()
             R.id.miSync -> Toast.makeText(requireContext(), "Sync im Fragment geklickt", Toast.LENGTH_SHORT).show()
             R.id.miMatAddPhoto -> {
-                Toast.makeText(requireContext(),"Foto importieren", Toast.LENGTH_SHORT)
+                Toast.makeText(requireContext(),"Foto importieren", Toast.LENGTH_SHORT).show()
             }
         }
         return true

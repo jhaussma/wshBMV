@@ -81,17 +81,22 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 // schreibe die Anmeldedaten in die SharedPreferences zurück
                 writeUserInfoToSharedPref()
 
-                // lösche das Fragement vom BackStack
-                val navOptions = NavOptions.Builder()
-                    .setPopUpTo(R.id.setupFragment, true)
-                    .build()
-
-                // und wechsle direkt in die Betriebsmittel-Übersichtsansicht
                 findNavController().navigate(
                     R.id.action_setupFragment_to_overviewFragment,
-                    savedInstanceState,
-                    navOptions
+                    savedInstanceState
                 )
+
+//                // lösche das Fragement vom BackStack
+//                val navOptions = NavOptions.Builder()
+//                    .setPopUpTo(R.id.setupFragment, true)
+//                    .build()
+//
+//                // und wechsle direkt in die Betriebsmittel-Übersichtsansicht
+//                findNavController().navigate(
+//                    R.id.action_setupFragment_to_overviewFragment,
+//                    savedInstanceState,
+//                    navOptions
+//                )
 
             } else {
                 Snackbar.make(

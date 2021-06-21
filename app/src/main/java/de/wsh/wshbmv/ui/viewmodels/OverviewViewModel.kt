@@ -1,8 +1,7 @@
 package de.wsh.wshbmv.ui.viewmodels
 
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import com.codecorp.util.Barcode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.wsh.wshbmv.db.entities.TbmvMat
 import de.wsh.wshbmv.other.Constants.TAG
@@ -11,6 +10,7 @@ import de.wsh.wshbmv.other.GlobalVars.myLagers
 import de.wsh.wshbmv.other.SortType
 import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
@@ -36,6 +36,10 @@ class OverviewViewModel @Inject constructor(
     val materials = MediatorLiveData<List<TbmvMat>>()
 
     var sortType = SortType.MATCHCODE
+
+    // Überwachung eines neuen Barcode-Scans
+    private val _newTbmvMatFromBarcode = MutableLiveData<TbmvMat?>()
+    val newTbmvMatFromBarcode: LiveData<TbmvMat?> = _newTbmvMatFromBarcode
 
     init {
         /*
@@ -112,31 +116,10 @@ class OverviewViewModel @Inject constructor(
     /**
      *  wir suchen den Material-Datensatz eines Betriebsmittels über den Scancode (inkl. Berechtigungsprüfung)
      */
-    fun getMaterialFromScancode(scancode: String): TbmvMat? {
-        // zuerst das Material suchen
-        var tbmvMat: TbmvMat? = null
-        viewModelScope.launch {
-            tbmvMat = mainRepo.getMaterialByScancode(scancode)
-            Timber.tag(TAG).d("getMaterialFromScancode, tbmvMat = ${tbmvMat.toString()}")
-            if (tbmvMat != null) {
-                // Material gefunden, nun muss es noch in unserer Lagerliste-Berechtigung drin sein
-                val lagers = mainRepo.getLagersWithMaterialId(tbmvMat!!.id)
-                Timber.tag(TAG).d("getMaterialFromScancode, Lagerliste = ${lagers.toString()}")
-                if (lagers.isEmpty()) {
-                    // wir haben kein Lager zum Betriebsmittel gefunden...
-                    tbmvMat = null
-                } else {
-                    val resultLagers = lagers.intersect(myLagers)
-                    Timber.tag(TAG).d("getMaterialFromScancode, myLagers = ${myLagers.toString()}")
-                    if (resultLagers.isEmpty()) {
-                        // wir haben keine Berechtigung zu einem dieser Lager...
-                        tbmvMat = null
-                        Timber.tag(TAG).d("getMaterialFromScancode, keine Lager-Übereinstimmung gefunden")
-                    }
-                }
-            }
-        }
-        // das Ergebnis ist tbmvMat, wenn wir es sehen dürfen, ansonsten null
-        return tbmvMat
+    fun getAllowedMaterialFromScancode(scancode: String) {
+        viewModelScope.launch { _newTbmvMatFromBarcode.value  = mainRepo.getAllowedMaterialFromScancode(scancode) }
     }
+
+
+
 }

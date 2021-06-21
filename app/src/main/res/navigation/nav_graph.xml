@@ -12,7 +12,9 @@
         <action
             android:id="@+id/action_setupFragment_to_overviewFragment"
             app:destination="@id/overviewFragment"
-            app:launchSingleTop="true"/>
+            app:launchSingleTop="true"
+            app:popUpTo="@id/setupFragment"
+            app:popUpToInclusive="true" />
 
     </fragment>
     <fragment
@@ -30,7 +32,8 @@
         <action
             android:id="@+id/action_overviewFragment_to_materialFragment"
             app:destination="@id/materialFragment"
-            app:launchSingleTop="true"/>
+            app:launchSingleTop="false"
+            app:popUpTo="@id/overviewFragment" />
         <action
             android:id="@+id/action_overviewFragment_to_scanActivity"
             app:destination="@id/scanActivity" />
@@ -41,7 +44,9 @@
         android:label="MaterialFragment" >
         <action
             android:id="@+id/action_materialFragment_to_overviewFragment"
-            app:destination="@id/overviewFragment" />
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/overviewFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/transferlistFragment"
@@ -52,8 +57,4 @@
         android:name="de.wsh.wshbmv.cortex_decoder.ScanActivity"
         android:label="activity_scan"
         tools:layout="@layout/activity_scan" />
-    <action
-        android:id="@+id/action_global_materialFragment"
-        app:destination="@id/materialFragment"
-        app:launchSingleTop="true" />
 </navigation>

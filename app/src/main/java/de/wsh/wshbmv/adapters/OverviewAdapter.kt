@@ -90,7 +90,7 @@ class OverviewAdapter(
         return differ.currentList.size
     }
 
-    // Übergabe des Onclick-Listeners des RecyclerView an ein View-Element (der Adapter selbst ist das ja nicht!)
+    // Übergabe des OnClick-Listeners des RecyclerView an ein View-Element (der Adapter selbst ist das ja nicht!)
     interface OnItemClickListener {
         fun onMaterialItemClick(tbmvMat: TbmvMat)
     }

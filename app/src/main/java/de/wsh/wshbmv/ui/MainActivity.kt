@@ -20,6 +20,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.findNavController
 import com.codecorp.cortexdecoderlibrary.BuildConfig
 import com.google.android.material.navigation.NavigationView
@@ -29,6 +31,7 @@ import de.wsh.wshbmv.R
 import de.wsh.wshbmv.cortex_decoder.ScanActivity
 import de.wsh.wshbmv.databinding.ActivityMainBinding
 import de.wsh.wshbmv.db.TbmvDAO
+import de.wsh.wshbmv.db.entities.TbmvMat
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_FILTERING
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_HEIGHT
 import de.wsh.wshbmv.other.Constants.TAG
@@ -43,6 +46,10 @@ import de.wsh.wshbmv.ui.fragments.MaterialFragment
 import de.wsh.wshbmv.ui.fragments.OverviewFragment
 import de.wsh.wshbmv.ui.fragments.SettingsFragment
 import de.wsh.wshbmv.ui.fragments.TransferlistFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import java.io.File
@@ -109,6 +116,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         // wir starten den Layout-Inflater
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Timber.tag(TAG).d("onCreate: ${supportFragmentManager.fragments.toString()}")
+
         checkSDKLevel()
 
         toggle = ActionBarDrawerToggle(
@@ -139,6 +148,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 R.id.miBarcode -> {
                     // ermittle das aktive Fragment und speichere es in barcodeImportFragment
                     importFragment = getVisibleFragment()
+                    Timber.tag(TAG).d("Gespeichertes Import-Fragment: ${importFragment!!::class.java.name}")
                     startBarcodeScanner()
                     true
                 }
@@ -170,9 +180,12 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                     "BM-Liste geklickt",
                     Toast.LENGTH_LONG
                 ).show()
+                Timber.tag(TAG).d("onCreate: ${supportFragmentManager.fragments.toString()}")
+
+
                 // nur für Testzwecke!!
-                binding.navHostFragment.findNavController()
-                    .navigate(R.id.action_global_materialFragment)
+//                binding.navHostFragment.findNavController()
+//                    .navigate(R.id.action_global_materialFragment)
             }
 
             R.id.miTransfer -> {
@@ -300,8 +313,10 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             val myBitmap = BitmapFactory.decodeFile(photoFile!!.absolutePath)
             val aspectRatio = myBitmap.height.toDouble() / myBitmap.width
             val newHeight = PIC_SCALE_HEIGHT // neue Zielhöhe ist festgelegt in den Konstanten
-            val newWidth = Math.round(newHeight.toDouble() / aspectRatio).toInt() // das Seiten-/Höhenverhältnis bleibt erhalten
-            val myScaledBitmap = Bitmap.createScaledBitmap(myBitmap, newWidth, newHeight, PIC_SCALE_FILTERING)
+            val newWidth = Math.round(newHeight.toDouble() / aspectRatio)
+                .toInt() // das Seiten-/Höhenverhältnis bleibt erhalten
+            val myScaledBitmap =
+                Bitmap.createScaledBitmap(myBitmap, newWidth, newHeight, PIC_SCALE_FILTERING)
             sendPhotoToFragment(myScaledBitmap)
         } else {
             Toast.makeText(applicationContext, "Photo-Import wurde abgebrochen.", Toast.LENGTH_LONG)
@@ -310,7 +325,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
     }
 
     // sendet das Photo-Bitmap zur Weiterverarbeitung an das jeweilige Fragment
-    private fun sendPhotoToFragment(bitmap: Bitmap){
+    private fun sendPhotoToFragment(bitmap: Bitmap) {
         when (importFragment!!::class.java.name) {
             "de.wsh.wshbmv.ui.fragments.MaterialFragment" -> {
                 val materialFragment: MaterialFragment = importFragment as MaterialFragment
@@ -323,7 +338,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
      *   Import eines Barcodes...
      */
     // startet den Barcodescanner und merkt sich das aktive Fragment für die Rückkehr
-    private fun startBarcodeScanner(){
+    private fun startBarcodeScanner() {
         // lösche die Ergebnisfelder für den Barcode
         hasNewBarcode = false
         newBarcode = null
@@ -335,23 +350,20 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
     // sendet einen Barcode an das zuletzt aktive Fragment der Anwendung
     private fun sendBarcodeToFragment(barcode: String) {
-        Timber.tag(TAG).d("sendBarcodeToFragment gestartet für ${importFragment!!::class.java.name}")
+        Timber.tag(TAG)
+            .d("sendBarcodeToFragment gestartet für ${importFragment!!::class.java.name}")
         when (importFragment!!::class.java.name) {
             "de.wsh.wshbmv.ui.fragments.MaterialFragment" -> {
                 val materialFragment: MaterialFragment = importFragment as MaterialFragment
                 Timber.tag(TAG).d("sendBarcodeToFragment verzweigt nach MaterialFragment")
                 materialFragment.importNewBarcode(barcode)
             }
-            "de.wsh.wshbmv.ui.fragments.OverviewFragment"  -> {
-                val overviewFragment: OverviewFragment =  importFragment as OverviewFragment
+            "de.wsh.wshbmv.ui.fragments.OverviewFragment" -> {
+                val overviewFragment: OverviewFragment = importFragment as OverviewFragment
                 Timber.tag(TAG).d("sendBarcodeToFragment verzweigt nach OverviewFragment")
                 overviewFragment.importNewBarcode(barcode)
             }
-
-            // , "androidx.navigation.fragment.NavHostFragment"
-
         }
-
     }
 
 
@@ -370,14 +382,37 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         }
     }
 
-    private  fun getVisibleFragment(): Fragment? {
-        val fragmentManager = supportFragmentManager
-        val fragments = fragmentManager.fragments
-        if (fragments.size > 0) {
-            fragments.forEach() {
-                if ( it != null && it.isVisible) {
-                    return it
+    private fun getVisibleFragment(): Fragment? {
+        var fragments = supportFragmentManager.fragments
+        var fragment: Fragment? = null
+        if (fragments.isNotEmpty()) {
+            run loop@{
+                fragments.forEach() {
+                    if (it.isVisible) {
+                        fragment = it
+                        return@loop
+                    }
                 }
+            }
+        }
+        if (fragment != null) {
+            if (fragment!!::class.java.name == "androidx.navigation.fragment.NavHostFragment") {
+                // wir suchen im ChildFragmentManager...
+                fragments = fragment!!.childFragmentManager.fragments
+                fragment = null
+                if (fragments.isNotEmpty()) {
+                    run loop@{
+                        fragments.forEach() {
+                            if (it.isVisible) {
+                                fragment = it
+                                return@loop
+                            }
+                        }
+                    }
+                }
+                return fragment
+            } else {
+                return fragment
             }
         }
         return null
@@ -396,7 +431,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         val fragmentMaterial = MaterialFragment()
         fragmentMaterial.arguments = bundle
         supportFragmentManager.beginTransaction().apply {
-            replace(R.id.navHostFragment, fragmentMaterial,"MaterialFragment")
+            replace(R.id.navHostFragment, fragmentMaterial, "MaterialFragment")
             addToBackStack(fragmentMaterial::class.java.name)
             commit()
         }
