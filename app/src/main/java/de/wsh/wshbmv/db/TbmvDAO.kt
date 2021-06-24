@@ -100,6 +100,12 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos)
 
+    @Transaction
+    @Query("")
+    fun getBelegeToLager(lagerId: String): LiveData<List<BelegAndZielort>>
+
+
+
     /**
      *  Relation Material - Lager
      */
