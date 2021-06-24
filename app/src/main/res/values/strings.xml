@@ -14,4 +14,16 @@
         <item>Modell</item>
         <item>Status</item>
     </string-array>
+
+    <string-array name="filt_transfer_status">
+        <item>Offen</item>
+        <item>in Arbeit</item>
+        <item>Alle</item>
+    </string-array>
+
+    <string-array name="filt_transfer_filter">
+        <item>An mich gesendet</item>
+        <item>Von mir gesendet</item>
+    </string-array>
+
 </resources>

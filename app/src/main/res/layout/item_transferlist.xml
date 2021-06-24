@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/ivTfListTyp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_transfer" />
+
+    <ImageView
+        android:id="@+id/ivTfListStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:visibility="visible"
+        app:layout_constraintStart_toEndOf="@+id/ivTfListTyp"
+        app:layout_constraintTop_toTopOf="@+id/ivTfListTyp"
+        app:srcCompat="@drawable/ic_stat_ready" />
+
+    <TextView
+        android:id="@+id/tvTfListName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:hint="Datum"
+        android:text="21.12.2021"
+        app:layout_constraintBottom_toBottomOf="@+id/ivTfListTyp"
+        app:layout_constraintStart_toEndOf="@+id/ivTfListStatus"
+        app:layout_constraintTop_toTopOf="@+id/ivTfListTyp" />
+
+    <TextView
+        android:id="@+id/tvTfListZielort"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:hint="Ziel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvTfListName"
+        app:layout_constraintTop_toTopOf="@+id/tvTfListName" />
+
+    <TextView
+        android:id="@+id/tvTfListNotiz"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:hint="..."
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/ivTfListStatus"
+        app:layout_constraintTop_toBottomOf="@+id/tvTfListName" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
