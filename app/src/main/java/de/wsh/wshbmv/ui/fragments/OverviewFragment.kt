@@ -7,6 +7,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -18,16 +19,13 @@ import de.wsh.wshbmv.databinding.FragmentOverviewBinding
 import de.wsh.wshbmv.db.entities.TbmvMat
 import de.wsh.wshbmv.other.Constants
 import de.wsh.wshbmv.other.Constants.TAG
+import de.wsh.wshbmv.other.GlobalVars.hasNewBarcode
 import de.wsh.wshbmv.other.GlobalVars.myLager
 import de.wsh.wshbmv.other.GlobalVars.myLagers
 import de.wsh.wshbmv.other.SortType
 import de.wsh.wshbmv.ui.FragCommunicator
 import de.wsh.wshbmv.ui.viewmodels.MaterialViewModel
 import de.wsh.wshbmv.ui.viewmodels.OverviewViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
@@ -54,12 +52,20 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
     private lateinit var bind: FragmentOverviewBinding
 
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+        Timber.tag(TAG).d("OverviewFragment, onCreate")
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.tag(TAG).d("OverviewFragment, onViewCreated")
         // initialisiere die Binding zu den Layout-Objekten
         bind = FragmentOverviewBinding.bind(view)
         // initialisiere die Kommunikation zwischen den Fragments
         fragCommunicator = activity as FragCommunicator
+        (activity as AppCompatActivity).supportActionBar?.title = "Betriebsmittel(BM)"
 
         setupRecyclerView()
         setupLagerFilter()
@@ -100,7 +106,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
                 pos: Int,
                 id: Long
             ) {
-                Timber.tag(TAG).d("spLager, ausgewählt: $pos")
+                Timber.tag(TAG).d("OverviewFragment, spLager -> onItemSelected mit Lager-Position: $pos")
                 myLager = myLagers[pos]
                 lagerId = myLager!!.id
                 listViewModel.filterMatListe(lagerId)
@@ -108,7 +114,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
-                Timber.tag(TAG).d("spLager, nix selektiert!")
+                Timber.tag(TAG).d("OverviewFragment, spLager -> onNothingSelected")
             }
         }
 
@@ -117,12 +123,15 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
         })
 
         listViewModel.newTbmvMatFromBarcode.observe(viewLifecycleOwner, Observer {
-            if (it == null) {
-                Toast.makeText(requireContext(),"Barcode ist unbekannt oder fehlende Berechtigung!",Toast.LENGTH_LONG).show()
-            } else {
-                onMaterialItemClick(it)
+            Timber.tag(TAG).d("OverviewFragment, listViewModel.newTbmvMatFromBarcode.observe...")
+            if (hasNewBarcode) {
+                if (it == null) {
+                    Toast.makeText(requireContext(),"Barcode ist unbekannt oder fehlende Berechtigung!",Toast.LENGTH_LONG).show()
+                } else {
+                    onMaterialItemClick(it)
+                    hasNewBarcode = false
+                }
             }
-
         })
     }
 
@@ -134,7 +143,6 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
     }
 
     private fun setupLagerFilter() {
-        Timber.tag(TAG).d("Meine Lagerliste: ${myLagers.toString()}")
         val spLager: Spinner = bind.spLager
         var lagerNames = arrayListOf<String>()
         var myLagerPos = -1
@@ -157,7 +165,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
      *   Import eines Barcodes aus der ScanActivity/MainActivity
      */
     fun importNewBarcode(barcode: String) {
-        Timber.tag(TAG).d("OverviewFragment hat Barcode $barcode empfangen...")
+        Timber.tag(TAG).d("OverviewFragment, importNewBarcode hat Barcode $barcode empfangen...")
         //sofern der Barcode einem Lager zugeordnet ist, das wir sehen dürfen, zeigen wir die Details im MaterialFragment an...
         listViewModel.getAllowedMaterialFromScancode(barcode)
     }
@@ -167,6 +175,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
      *  klick auf einen Betriebsmitteleintrag verarbeiten
      */
     override fun onMaterialItemClick(tbmvMat: TbmvMat) {
+        Timber.tag(TAG).d("OverviewFragment, onMaterialItemClick mit Mat-ID ${tbmvMat.id}")
         matViewModel.setNewMaterialId(tbmvMat.id)
         fragCommunicator.passBmDataID(tbmvMat.id)
     }

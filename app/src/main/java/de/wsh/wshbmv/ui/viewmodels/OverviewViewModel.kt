@@ -80,7 +80,6 @@ class OverviewViewModel @Inject constructor(
     }
 
     fun initMaterials() {
-        Timber.tag(TAG).d("lädt Materials mit lagerId: $lagerId")
         materials.addSource(materialSortByHersteller) { result ->
             if (sortType == SortType.HERSTELLER) {
                 result?.let { materials.value = it }
@@ -117,6 +116,7 @@ class OverviewViewModel @Inject constructor(
      *  wir suchen den Material-Datensatz eines Betriebsmittels über den Scancode (inkl. Berechtigungsprüfung)
      */
     fun getAllowedMaterialFromScancode(scancode: String) {
+        Timber.tag(TAG).d("OverviewViewModel, getAllowedMaterialFromScancode...")
         viewModelScope.launch { _newTbmvMatFromBarcode.value  = mainRepo.getAllowedMaterialFromScancode(scancode) }
     }
 

@@ -44,8 +44,9 @@
                 android:id="@+id/tvMatMatchcode"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="8dp"
                 android:hint="Matchcode"
                 app:layout_constraintEnd_toStartOf="@+id/ivMatBild"
                 app:layout_constraintStart_toStartOf="parent"
@@ -53,9 +54,9 @@
 
             <TextView
                 android:id="@+id/tvMatStatus"
-                android:layout_width="80dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="8dp"
                 android:hint="Status"
                 android:textAlignment="textEnd"
                 app:layout_constraintEnd_toStartOf="@+id/ivMatBild"
@@ -63,11 +64,11 @@
 
             <TextView
                 android:id="@+id/tvMatTyp"
-                android:layout_width="40dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="16dp"
                 android:hint="Typ"
-                app:layout_constraintEnd_toStartOf="@+id/tvMatStatus"
+                app:layout_constraintStart_toEndOf="@+id/tvView1Matchcode"
                 app:layout_constraintTop_toTopOf="@+id/ivMatBild" />
 
             <TextView
@@ -84,7 +85,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="8dp"
                 android:hint="Scancode"
                 app:layout_constraintEnd_toStartOf="@+id/ivMatBild"
                 app:layout_constraintStart_toEndOf="@+id/tvView2"
@@ -104,10 +105,15 @@
 
             <Button
                 android:id="@+id/btServiceDetails"
+                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Services"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:tooltipText="öffnet die Service-Informationen"
+                app:icon="@drawable/ic_stat_service"
+                app:iconGravity="textEnd"
+                app:iconPadding="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/divider1" />
 
@@ -125,8 +131,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginEnd="32dp"
-                android:hint="Datum"
+                android:layout_marginEnd="16dp"
                 app:layout_constraintEnd_toStartOf="@+id/btServiceDetails"
                 app:layout_constraintStart_toEndOf="@+id/tvView3"
                 app:layout_constraintTop_toTopOf="@+id/tvView3" />

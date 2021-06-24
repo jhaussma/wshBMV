@@ -1,12 +1,14 @@
 package de.wsh.wshbmv.ui.fragments
 
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
@@ -33,24 +35,32 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        Timber.tag(TAG).d("MaterialFragment, onCreate")
 
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bind = FragmentMaterialBinding.bind(view)
-
+        (activity as AppCompatActivity).supportActionBar?.title = "BM-Details"
         viewModel.bmDataLive.observe(viewLifecycleOwner, {
-            writeUiValues(it)
+            if (it != null) {
+                writeUiValues(it)
+            }
+        })
+
+        viewModel.barcodeNotFound.observe(viewLifecycleOwner, {
+            if (it == true) {
+                Toast.makeText(requireContext(),"Barcode ist unbekannt oder fehlende Berechtigung!",Toast.LENGTH_LONG).show()
+            }
         })
 
         bind.btServiceDetails.setOnClickListener {
-            Timber.tag(TAG).d("btServiceDetails wurde gedrückt...")
+            Timber.tag(TAG).d("btServiceDetails wurde gedrückt, NOCH NICHT IMPlEMENTIERT!!!")
         }
 
         materialId = arguments?.getString("materialId")
-        Timber.tag(TAG).d("Fragment Material startet mit Material-ID: $materialId")
-
+        Timber.tag(TAG).d("MaterialFragment, onViewCreated mit Parameter Material-ID: $materialId")
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -66,6 +76,7 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
                 .show()
             R.id.miSync -> Toast.makeText(requireContext(), "Sync im Fragment geklickt", Toast.LENGTH_SHORT).show()
             R.id.miMatAddPhoto -> {
+                // wird schon im MainActivity abgehandelt!!!
                 Toast.makeText(requireContext(),"Foto importieren", Toast.LENGTH_SHORT).show()
             }
         }
@@ -82,7 +93,7 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
      */
     fun importNewBarcode(barcode: String) {
         Timber.tag(TAG).d("MaterialFragment hat Barcode $barcode empfangen...")
-
+        viewModel.setNewMaterialIdByScancode(barcode)
     }
 
 
@@ -91,12 +102,15 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
      */
     // schreib die Dateninhalte in die Maske
     private fun writeUiValues(bmData: BmData) {
-        Timber.tag(TAG).d("writeUiValues wurde angestossen...")
         bind.tvMatTyp.text = bmData.tbmvMat?.typ
         bind.tvMatStatus.text = bmData.tbmvMat?.matStatus
         bind.tvMatMatchcode.text = bmData.tbmvMat?.matchcode
         bind.tvMatScancode.text = bmData.tbmvMat?.scancode
-        bind.tvMatServiceDatum.text = bmData.nextServiceDatum?.formatedDateDE()
+        if (bmData.nextServiceDatum == null) {
+            bind.tvMatServiceDatum.text = ""
+        }else {
+            bind.tvMatServiceDatum.text = bmData.nextServiceDatum?.formatedDateDE()
+        }
         bind.tvMatHersteller.text = bmData.tbmvMat?.hersteller
         bind.tvMatModell.text = bmData.tbmvMat?.modell
         bind.tvMatSeriennr.text = bmData.tbmvMat?.seriennummer
@@ -106,6 +120,13 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
         bind.tvMatLager.text = bmData.matLager?.matchcode
         bind.tvMatHauptlager.text = bmData.matHautpLager?.matchcode
 
+        // bei Serviceinfos ggf. durch Farbe auf kritischen Zustand hinweisen
+        bind.tvMatServiceDatum.setBackgroundColor(Color.TRANSPARENT)
+        if (bmData.nextServiceDatum != null) {
+            if (bmData.nextServiceDatum!! < Date()) {
+                bind.tvMatServiceDatum.setBackgroundColor(Color.RED)
+            }
+        }
         // wir binden das Bild noch mit ein
         Glide.with(this).load(bmData.tbmvMat?.bildBmp).into(bind.ivMatBild)
     }
@@ -115,6 +136,5 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
     private fun Date.formatedDateDE(): String {
         var simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         return simpleDateFormat.format(this)
-
     }
 }

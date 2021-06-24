@@ -85,7 +85,7 @@ interface TbmvDAO {
 
 
     /**
-     *  Service - Planung
+     *  Service - Arten
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertService(tbmvService: TbmvService)
@@ -155,6 +155,12 @@ interface TbmvDAO {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMat_Service(tbmvMat_Service: TbmvMat_Service)
+
+    @Transaction
+    @Query("SELECT * FROM TbmvMat_Service WHERE MatID = :materialId ORDER BY NextServiceDatum")
+    suspend fun getServiceOfMaterial(materialId: String): List<TbmvMat_Service>
+
+
 
     /**
      *  Relation Material/Service - Dokument

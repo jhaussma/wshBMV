@@ -1,10 +1,12 @@
 package de.wsh.wshbmv.ui.viewmodels
 
 import android.graphics.Bitmap
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.wsh.wshbmv.db.entities.TbmvMat
 import de.wsh.wshbmv.db.entities.relations.BmData
 import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.launch
@@ -19,8 +21,11 @@ class MaterialViewModel @Inject constructor(
 
     private var myMaterialId = MutableLiveData("")
 
-    var bmDataLive: MutableLiveData<BmData> = MutableLiveData()
+    private val _bmDataLive = MutableLiveData<BmData?>()
+    val bmDataLive: LiveData<BmData?> = _bmDataLive
 
+    private val _barcodeNotFound = MutableLiveData<Boolean>(false)
+    val barcodeNotFound: LiveData<Boolean> = _barcodeNotFound
 
     /**
      *  eine neue Material-/Betriebsmittel-ID kann damit definiert werden, die dazugehörgen Daten werden erzeugt
@@ -29,7 +34,26 @@ class MaterialViewModel @Inject constructor(
         myMaterialId.value = materialId
         viewModelScope.launch {
             val bmData = mainRepo.getBMDatenZuMatID(materialId)
-            bmDataLive.value = bmData
+            _bmDataLive.value = bmData
+        }
+    }
+
+    /**
+     *  eine neuer Barcode wurde eingelesen -> BmData neu bestimmen (oder Fehlermeldung auslösen)
+     */
+    fun setNewMaterialIdByScancode(scancode: String) {
+        viewModelScope.launch {
+            val tbmvMat  = mainRepo.getAllowedMaterialFromScancode(scancode)
+            var bmData: BmData? = null
+            if (tbmvMat != null) {
+                 bmData = mainRepo.getBMDatenZuMatID(tbmvMat.id)
+            }
+            if (bmData == null) {
+                _barcodeNotFound.value = true // löst Fehlermeldung im UI aus
+            } else {
+                _bmDataLive.value = bmData
+                _barcodeNotFound.value = false
+            }
         }
     }
 
@@ -40,7 +64,7 @@ class MaterialViewModel @Inject constructor(
         viewModelScope.launch {
             val bmData = bmDataLive.value
             bmData?.tbmvMat?.bildBmp = bitmap
-            bmDataLive.value = bmData
+            _bmDataLive.value = bmData
             // speichere die Änderung in die Tabelle TbmvMat
             bmData?.tbmvMat?.let { mainRepo.updateMat(it)}
 
@@ -48,7 +72,7 @@ class MaterialViewModel @Inject constructor(
     }
 
     /**
-     *  mit Hilfe von getMaterialID() kann eine Anwendung die gerade aktive Material-ID der Materialsicht
+     *  mit Hilfe von getMaterialID() kann eine Anwendung die gerade aktive Material-ID der Materialsicht erfragen
      */
     fun getMaterialId() = myMaterialId
 

@@ -26,6 +26,7 @@ class OverviewAdapter(
         }
         override fun onClick(view: View?) {
             val position: Int = adapterPosition
+            Timber.tag(TAG).d("OverviewAdapter, OverviewViewHolder, onClick wurde aktiviert für Position $position")
             if (position != RecyclerView.NO_POSITION) {
                 val tbmvMat = differ.currentList[position]
                 listener.onMaterialItemClick(tbmvMat)

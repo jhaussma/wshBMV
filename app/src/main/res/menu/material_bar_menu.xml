@@ -8,6 +8,4 @@
         android:icon="@drawable/ic_photo"
         app:showAsAction="ifRoom" />
 
-
-
 </menu>

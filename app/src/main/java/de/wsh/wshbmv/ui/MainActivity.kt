@@ -20,9 +20,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.viewModelScope
-import androidx.navigation.findNavController
 import com.codecorp.cortexdecoderlibrary.BuildConfig
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,7 +28,6 @@ import de.wsh.wshbmv.R
 import de.wsh.wshbmv.cortex_decoder.ScanActivity
 import de.wsh.wshbmv.databinding.ActivityMainBinding
 import de.wsh.wshbmv.db.TbmvDAO
-import de.wsh.wshbmv.db.entities.TbmvMat
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_FILTERING
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_HEIGHT
 import de.wsh.wshbmv.other.Constants.TAG
@@ -46,10 +42,6 @@ import de.wsh.wshbmv.ui.fragments.MaterialFragment
 import de.wsh.wshbmv.ui.fragments.OverviewFragment
 import de.wsh.wshbmv.ui.fragments.SettingsFragment
 import de.wsh.wshbmv.ui.fragments.TransferlistFragment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import java.io.File
@@ -58,6 +50,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
+import kotlin.math.roundToInt
+import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.PermissionCallbacks,
@@ -86,24 +80,25 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
     private lateinit var toggle: ActionBarDrawerToggle
 
-    val PERMISSION_LIST: Array<String> = arrayOf(
+    private val PERMISSION_LIST: Array<String> = arrayOf(
         Manifest.permission.CAMERA,
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.INTERNET
     )
-    val PERMISSION_REQUEST = 100
+    private val PERMISSION_REQUEST = 100
 
     // für den Photo-Import in Fragments...
-    var photoFile: File? = null
-    val CAPTURE_IMAGE_REQUEST = 1
-    var mCurrentPhotoPath: String? = null
+    private var photoFile: File? = null
+    private val CAPTURE_IMAGE_REQUEST = 1
+    private var mCurrentPhotoPath: String? = null
 
     private var importFragment: Fragment? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Timber.tag(TAG).d("MainActivity, onCreate")
         mainRepo = MainRepository(tbmvDAO)
 
         // erste Statusabklärung...
@@ -116,7 +111,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         // wir starten den Layout-Inflater
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        Timber.tag(TAG).d("onCreate: ${supportFragmentManager.fragments.toString()}")
 
         checkSDKLevel()
 
@@ -148,7 +142,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 R.id.miBarcode -> {
                     // ermittle das aktive Fragment und speichere es in barcodeImportFragment
                     importFragment = getVisibleFragment()
-                    Timber.tag(TAG).d("Gespeichertes Import-Fragment: ${importFragment!!::class.java.name}")
                     startBarcodeScanner()
                     true
                 }
@@ -180,7 +173,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                     "BM-Liste geklickt",
                     Toast.LENGTH_LONG
                 ).show()
-                Timber.tag(TAG).d("onCreate: ${supportFragmentManager.fragments.toString()}")
 
 
                 // nur für Testzwecke!!
@@ -211,10 +203,12 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                     Toast.LENGTH_SHORT
                 ).show()
                 finish()
+                exitProcess(0)
             }
 
             R.id.miScanner -> {
                 // hier startet der Barcodescanner
+                importFragment = getVisibleFragment()
                 startBarcodeScanner()
             }
 
@@ -237,7 +231,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
     // hier verarbeiten wir ggf. einen empfangenen Barcode...
     override fun onResume() {
         super.onResume()
-        Timber.tag(TAG).d("onResume MainActivity")
+        Timber.tag(TAG).d("MainActivity, onResume ...")
         if (hasNewBarcode) {
             newBarcode?.let { sendBarcodeToFragment(it) }
         }
@@ -249,7 +243,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
      */
     private fun captureImage() {
         if (EasyPermissions.hasPermissions(this, *PERMISSION_LIST)) {
-            Timber.tag(TAG).d("wir starten den Bildimport...")
             val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             if (takePictureIntent.resolveActivity(packageManager) != null) {
                 // Create the File where the photo should go
@@ -313,8 +306,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             val myBitmap = BitmapFactory.decodeFile(photoFile!!.absolutePath)
             val aspectRatio = myBitmap.height.toDouble() / myBitmap.width
             val newHeight = PIC_SCALE_HEIGHT // neue Zielhöhe ist festgelegt in den Konstanten
-            val newWidth = Math.round(newHeight.toDouble() / aspectRatio)
-                .toInt() // das Seiten-/Höhenverhältnis bleibt erhalten
+            val newWidth = (newHeight.toDouble() / aspectRatio).roundToInt() // das Seiten-/Höhenverhältnis bleibt erhalten
             val myScaledBitmap =
                 Bitmap.createScaledBitmap(myBitmap, newWidth, newHeight, PIC_SCALE_FILTERING)
             sendPhotoToFragment(myScaledBitmap)
@@ -350,17 +342,13 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
     // sendet einen Barcode an das zuletzt aktive Fragment der Anwendung
     private fun sendBarcodeToFragment(barcode: String) {
-        Timber.tag(TAG)
-            .d("sendBarcodeToFragment gestartet für ${importFragment!!::class.java.name}")
         when (importFragment!!::class.java.name) {
             "de.wsh.wshbmv.ui.fragments.MaterialFragment" -> {
                 val materialFragment: MaterialFragment = importFragment as MaterialFragment
-                Timber.tag(TAG).d("sendBarcodeToFragment verzweigt nach MaterialFragment")
                 materialFragment.importNewBarcode(barcode)
             }
             "de.wsh.wshbmv.ui.fragments.OverviewFragment" -> {
                 val overviewFragment: OverviewFragment = importFragment as OverviewFragment
-                Timber.tag(TAG).d("sendBarcodeToFragment verzweigt nach OverviewFragment")
                 overviewFragment.importNewBarcode(barcode)
             }
         }
@@ -387,7 +375,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         var fragment: Fragment? = null
         if (fragments.isNotEmpty()) {
             run loop@{
-                fragments.forEach() {
+                fragments.forEach {
                     if (it.isVisible) {
                         fragment = it
                         return@loop
@@ -402,7 +390,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 fragment = null
                 if (fragments.isNotEmpty()) {
                     run loop@{
-                        fragments.forEach() {
+                        fragments.forEach {
                             if (it.isVisible) {
                                 fragment = it
                                 return@loop
@@ -425,13 +413,14 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
     // Start einer Material-Detailsicht
     override fun passBmDataID(materialId: String) {
+        Timber.tag(TAG).d("MainActivity, passBmDataID mit materialID $materialId gestartet")
         val bundle = Bundle()
         bundle.putString("materialId", materialId)
 
         val fragmentMaterial = MaterialFragment()
         fragmentMaterial.arguments = bundle
         supportFragmentManager.beginTransaction().apply {
-            replace(R.id.navHostFragment, fragmentMaterial, "MaterialFragment")
+            replace(R.id.navHostFragment, fragmentMaterial)
             addToBackStack(fragmentMaterial::class.java.name)
             commit()
         }
@@ -445,7 +434,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
                 val uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID)
-                Timber.tag(TAG).d("Uri: ${uri.toString()}")
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
                 startActivity(intent)
             }

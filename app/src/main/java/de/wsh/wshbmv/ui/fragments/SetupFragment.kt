@@ -177,7 +177,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                         writeSyncDoneToSharedPref()
                     }
 
-                    // zum Abschluss wechseln wir in die Haupt-Übersicht...
+                    // zum Abschluss wechseln wir in die Haupt-Übersicht, werfen das setupFragment aber vom Backstack...
                     val navOptions = NavOptions.Builder()
                         .setPopUpTo(R.id.setupFragment, true)
                         .build()

@@ -90,21 +90,17 @@ class MainRepository @Inject constructor(
          var tbmvMat: TbmvMat?
          withContext(Dispatchers.IO) {
             tbmvMat = tbmvDao.getMaterialByScancode(scancode)
-            Timber.tag(Constants.TAG).d("getMaterialFromScancode, tbmvMat = ${tbmvMat.toString()}")
             if (tbmvMat != null) {
                 // Material gefunden, nun muss es noch in unserer Lagerliste-Berechtigung drin sein
                 val lagers = tbmvDao.getLagersWithMaterialId(tbmvMat!!.id)
-                Timber.tag(Constants.TAG).d("getMaterialFromScancode, Lagerliste = ${lagers.toString()}")
                 if (lagers.isEmpty()) {
                     // wir haben kein Lager zum Betriebsmittel gefunden...
                     tbmvMat = null
                 } else {
                     val resultLagers = lagers.intersect(GlobalVars.myLagers)
-                    Timber.tag(Constants.TAG).d("getMaterialFromScancode, myLagers = ${GlobalVars.myLagers.toString()}")
                     if (resultLagers.isEmpty()) {
                         // wir haben keine Berechtigung zu einem dieser Lager...
                         tbmvMat = null
-                        Timber.tag(Constants.TAG).d("getMaterialFromScancode, keine Lager-Übereinstimmung gefunden")
                     }
                 }
             }
@@ -134,13 +130,25 @@ class MainRepository @Inject constructor(
             } else {
                 null
             }
+            val services = tbmvDao.getServiceOfMaterial(materialID)
+            var nextServiceDatum: Date? = null
+            if (services.size > 0) {
+                run loop@{
+                    services.forEach() {
+                        if (it.nextServiceDatum != null) {
+                            nextServiceDatum = it.nextServiceDatum
+                            return@loop
+                        }
+                    }
+                }
+            }
             bmData = BmData(
                 tbmvMat = material,
                 tbmvMatGruppe = matGruppe,
                 tsysUser = user,
                 matLager = lager,
                 matHautpLager = hauptLager,
-                nextServiceDatum = Date()
+                nextServiceDatum = nextServiceDatum
             )
         }
         return bmData

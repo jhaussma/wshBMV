@@ -118,6 +118,7 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
 
     override fun onDestroy() {
         super.onDestroy()
+        Timber.tag(TAG).d("ScanActivity, onDestroy...")
         doStopDecoding()
         mCortexDecoderLibrary.closeCamera()
         mCortexDecoderLibrary.closeSharedObject()
