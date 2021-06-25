@@ -61,7 +61,7 @@ interface TbmvDAO {
     fun getLagerByName(lagerName: String): LiveData<TbmvLager>?
 
     @Query("SELECT * FROM TbmvLager ORDER BY Typ, Matchcode")
-    suspend fun getLagerListSorted() : MutableList<TbmvLager>
+    suspend fun getLagerListSorted(): MutableList<TbmvLager>
 
 
     /**
@@ -83,7 +83,6 @@ interface TbmvDAO {
     suspend fun getMatGruppeByGruppeID(matGruppeGuid: String): TbmvMatGruppe?
 
 
-
     /**
      *  Service - Arten
      */
@@ -100,10 +99,38 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos)
 
+    // Abfragen Transferlisten...
     @Transaction
-    @Query("")
-    fun getBelegeToLager(lagerId: String): LiveData<List<BelegAndZielort>>
+    @Query("SELECT * FROM TbmvBeleg WHERE zielLagerGuid = :lagerId ORDER BY belegDatum DESC")
+    fun getBelegeToLagerAlle(lagerId: String): LiveData<List<BelegAndZielort>>
 
+    @Transaction
+    @Query("SELECT * FROM TbmvBeleg WHERE zielLagerGuid = :lagerId AND belegStatus = 'Offen' ORDER BY belegDatum DESC")
+    fun getBelegeToLagerOffen(lagerId: String): LiveData<List<BelegAndZielort>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvBeleg WHERE zielLagerGuid = :lagerId AND belegStatus = 'In Arbeit' ORDER BY belegDatum DESC")
+    fun getBelegeToLagerInArbeit(lagerId: String): LiveData<List<BelegAndZielort>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvBeleg WHERE zielLagerGuid = :lagerId AND belegStatus IN ('Fertig','Storniert')  ORDER BY belegDatum DESC")
+    fun getBelegeToLagerErledigt(lagerId: String): LiveData<List<BelegAndZielort>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvBeleg WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) ORDER BY belegDatum DESC")
+    fun getBelegeVonLagerAlle(lagerId: String): LiveData<List<BelegAndZielort>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvBeleg WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus = 'Offen' ORDER BY belegDatum DESC")
+    fun getBelegeVonLagerOffen(lagerId: String): LiveData<List<BelegAndZielort>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvBeleg WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus = 'In Arbeit' ORDER BY belegDatum DESC")
+    fun getBelegeVonLagerInArbeit(lagerId: String): LiveData<List<BelegAndZielort>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvBeleg WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus IN ('Fertig','Storniert') ORDER BY belegDatum DESC")
+    fun getBelegeVonLagerErledigt(lagerId: String): LiveData<List<BelegAndZielort>>
 
 
     /**
@@ -154,8 +181,6 @@ interface TbmvDAO {
     fun getMaterialSortByStatus(lagerId: String): LiveData<List<TbmvMat>>
 
 
-
-
     /**
      *  Relation Material - Service
      */
@@ -165,7 +190,6 @@ interface TbmvDAO {
     @Transaction
     @Query("SELECT * FROM TbmvMat_Service WHERE MatID = :materialId ORDER BY NextServiceDatum")
     suspend fun getServiceOfMaterial(materialId: String): List<TbmvMat_Service>
-
 
 
     /**

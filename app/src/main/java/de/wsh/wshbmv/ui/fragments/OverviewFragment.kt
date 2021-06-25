@@ -26,6 +26,7 @@ import de.wsh.wshbmv.other.SortType
 import de.wsh.wshbmv.ui.FragCommunicator
 import de.wsh.wshbmv.ui.viewmodels.MaterialViewModel
 import de.wsh.wshbmv.ui.viewmodels.OverviewViewModel
+import de.wsh.wshbmv.ui.viewmodels.TransferlistViewModel
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
@@ -43,6 +44,8 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
 
     private val listViewModel: OverviewViewModel by activityViewModels()
     private val matViewModel: MaterialViewModel by activityViewModels()
+    private val transViewModel: TransferlistViewModel by activityViewModels()
+
 
     private lateinit var overviewAdapter: OverviewAdapter
 
@@ -70,6 +73,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
         setupRecyclerView()
         setupLagerFilter()
 
+        // initialisiere den Sortier-Spinner
         when (listViewModel.sortType) {
             SortType.MATCHCODE -> bind.spMatFilter.setSelection(0)
             SortType.SCANCODE -> bind.spMatFilter.setSelection(1)
@@ -111,6 +115,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
                 lagerId = myLager!!.id
                 listViewModel.filterMatListe(lagerId)
                 writeLagerInfoToSharedPref(lagerId, myLager!!.matchcode)
+                transViewModel.filterBelegliste(lagerId)
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {

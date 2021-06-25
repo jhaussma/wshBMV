@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="Filter"
-        app:layout_constraintStart_toStartOf="@+id/spTfListFilter"
+        app:layout_constraintStart_toStartOf="@+id/spTfListDirection"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
@@ -28,16 +28,16 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:entries="@array/filt_transfer_status"
-        app:layout_constraintEnd_toStartOf="@+id/spTfListFilter"
+        app:layout_constraintEnd_toStartOf="@+id/spTfListDirection"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvTfListFilterStatus" />
 
     <Spinner
-        android:id="@+id/spTfListFilter"
+        android:id="@+id/spTfListDirection"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:entries="@array/filt_transfer_filter"
+        android:entries="@array/filt_transfer_direction"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/spTfListStatus"

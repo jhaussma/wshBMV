@@ -187,6 +187,17 @@ class MainRepository @Inject constructor(
     suspend fun insertBeleg(tbmvBeleg: TbmvBeleg) = tbmvDao.insertBeleg(tbmvBeleg)
     suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos) = tbmvDao.insertBelegPos(tbmvBelegPos)
 
+    fun getBelegeToLagerAlle(lagerId: String) = tbmvDao.getBelegeToLagerAlle(lagerId)
+    fun getBelegeToLagerOffen(lagerId: String) = tbmvDao.getBelegeToLagerOffen(lagerId)
+    fun getBelegeToLagerInArbeit(lagerId: String) = tbmvDao.getBelegeToLagerInArbeit(lagerId)
+    fun getBelegeToLagerErledigt(lagerId: String) = tbmvDao.getBelegeToLagerErledigt(lagerId)
+    fun getBelegeVonLagerAlle(lagerId: String) = tbmvDao.getBelegeVonLagerAlle(lagerId)
+    fun getBelegeVonLagerOffen(lagerId: String) = tbmvDao.getBelegeVonLagerOffen(lagerId)
+    fun getBelegeVonLagerInArbeit(lagerId: String) = tbmvDao.getBelegeVonLagerInArbeit(lagerId)
+    fun getBelegeVonLagerErledigt(lagerId: String) = tbmvDao.getBelegeVonLagerErledigt(lagerId)
+
+
+
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Material - Service

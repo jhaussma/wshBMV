@@ -16,12 +16,13 @@
     </string-array>
 
     <string-array name="filt_transfer_status">
-        <item>Offen</item>
+        <item>offen</item>
         <item>in Arbeit</item>
-        <item>Alle</item>
+        <item>erledigt</item>
+        <item>alle</item>
     </string-array>
 
-    <string-array name="filt_transfer_filter">
+    <string-array name="filt_transfer_direction">
         <item>An mich gesendet</item>
         <item>Von mir gesendet</item>
     </string-array>

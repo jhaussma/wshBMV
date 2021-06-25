@@ -16,7 +16,7 @@
 
     <item
         android:id="@+id/miTransfer"
-        android:title="Transferlisten"
+        android:title="Beleglisten"
         android:icon="@drawable/ic_transfer"
         app:showAsAction="ifRoom" />
 
