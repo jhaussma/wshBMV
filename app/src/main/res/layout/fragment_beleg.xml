@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/tvBelegTypHL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Typ"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvBelegDatumHL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:text="Datum"
+        app:layout_constraintStart_toEndOf="@+id/tvBelegTyp"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegTypHL" />
+
+    <TextView
+        android:id="@+id/tvBelegStatusHL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:text="Status"
+        app:layout_constraintEnd_toStartOf="@+id/tvBelegStatus"
+        app:layout_constraintTop_toBottomOf="@+id/tvBelegZielHL" />
+
+    <TextView
+        android:id="@+id/tvBelegTyp"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:hint="Belegtyp"
+        app:layout_constraintStart_toEndOf="@+id/tvBelegTypHL"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegTypHL" />
+
+    <TextView
+        android:id="@+id/tvBelegDatum"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:hint="tt.mm.jjjj"
+        app:layout_constraintStart_toEndOf="@+id/tvBelegDatumHL"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegTypHL" />
+
+    <TextView
+        android:id="@+id/tvBelegStatus"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:hint="Status"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegStatusHL" />
+
+    <TextView
+        android:id="@+id/tvBelegZielHL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="Zielort"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvBelegTypHL" />
+
+    <AutoCompleteTextView
+        android:id="@+id/actvBelegZielort"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:hint="Zielort"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/tvBelegZielHL"
+        app:layout_constraintEnd_toStartOf="@+id/tvBelegZielUser"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/tvBelegZielHL"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegZielHL" />
+
+    <TextView
+        android:id="@+id/tvBelegZielUser"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:hint="Person"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/actvBelegZielort"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegZielHL" />
+
+    <TextView
+        android:id="@+id/tvBelegNotizHL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="Notiz"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvBelegZielHL" />
+
+    <EditText
+        android:id="@+id/etBelegNotiz"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:ems="10"
+        android:gravity="start|top"
+        android:hint="Notiz"
+        android:inputType="textMultiLine"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvBelegNotizHL" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvBelegPos"
+        android:layout_width="409dp"
+        android:layout_height="584dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etBelegNotiz"
+        app:layout_constraintVertical_bias="0.285" />
+
+    <TextView
+        android:id="@+id/tvBelegUser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:hint="verantwortlich"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegTypHL" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

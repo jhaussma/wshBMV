@@ -38,10 +38,7 @@ import de.wsh.wshbmv.other.GlobalVars.newBarcode
 import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.sql_db.SqlConnection
 import de.wsh.wshbmv.sql_db.SqlDbFirstInit
-import de.wsh.wshbmv.ui.fragments.MaterialFragment
-import de.wsh.wshbmv.ui.fragments.OverviewFragment
-import de.wsh.wshbmv.ui.fragments.SettingsFragment
-import de.wsh.wshbmv.ui.fragments.TransferlistFragment
+import de.wsh.wshbmv.ui.fragments.*
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import java.io.File
@@ -425,6 +422,22 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             commit()
         }
     }
+
+    // Start einer Beleg-Detailsicht
+    override fun passBelegID(belegId: String) {
+        Timber.tag(TAG).d("MainActivity, passBelegID mit belegID $belegId gestartet")
+        val bundle = Bundle()
+        bundle.putString("belegId", belegId)
+
+        val fragmentBeleg = BelegFragment()
+        fragmentBeleg.arguments = bundle
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.navHostFragment, fragmentBeleg)
+            addToBackStack(fragmentBeleg::class.java.name)
+            commit()
+        }
+    }
+
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *   wir prüfen alle notwendigen Permissions für die APP
