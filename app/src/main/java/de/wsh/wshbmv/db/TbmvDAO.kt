@@ -133,6 +133,19 @@ interface TbmvDAO {
     fun getBelegeVonLagerErledigt(lagerId: String): LiveData<List<BelegAndZielort>>
 
 
+
+    // Abfrage Einzelbelege (und -positionen)
+    @Transaction
+    @Query("SELECT * FROM TbmvBeleg WHERE id = :belegId")
+    suspend fun getBelegZuBelegId(belegId: String): TbmvBeleg?
+
+    @Transaction
+    @Query("SELECT * FROM TbmvBelegPos WHERE belegId = :belegId ORDER BY pos")
+    fun getBelegposVonBeleg(belegId : String): LiveData<List<BelegposAndMaterialAndLager>>
+
+
+
+
     /**
      *  Relation Material - Lager
      */

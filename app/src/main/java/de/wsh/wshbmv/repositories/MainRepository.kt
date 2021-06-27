@@ -196,6 +196,24 @@ class MainRepository @Inject constructor(
     fun getBelegeVonLagerInArbeit(lagerId: String) = tbmvDao.getBelegeVonLagerInArbeit(lagerId)
     fun getBelegeVonLagerErledigt(lagerId: String) = tbmvDao.getBelegeVonLagerErledigt(lagerId)
 
+    suspend fun getBelegDatenZuBelegId(belegId: String): BelegData? {
+        var belegData: BelegData
+        withContext(Dispatchers.IO) {
+            val beleg = tbmvDao.getBelegZuBelegId(belegId)
+            val belegUser = beleg.let { it?.let { it1 -> tbmvDao.getUserById(it1.belegUserGuid) } }
+            var zielLager = beleg.let { it?.let { it1 -> tbmvDao.getLagerByID(it1.zielLagerGuid) } }
+            var zielUser = beleg.let { it?.let { it1 -> tbmvDao.getUserById(it1.zielUserGuid) } }
+            belegData = BelegData(
+                tbmvBeleg = beleg,
+                belegUser = belegUser,
+                zielLager = zielLager,
+                zielUser = zielUser
+            )
+        }
+        return belegData
+    }
+
+    fun getBelegposVonBeleg(belegId: String) = tbmvDao.getBelegposVonBeleg(belegId)
 
 
 

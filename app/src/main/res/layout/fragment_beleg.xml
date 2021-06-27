@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -45,7 +44,7 @@
 
     <TextView
         android:id="@+id/tvBelegDatum"
-        android:layout_width="70dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:hint="tt.mm.jjjj"
@@ -71,13 +70,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvBelegTypHL" />
 
+    <TextView
+        android:id="@+id/tvBelegZielort"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/tvBelegZielHL"
+        app:layout_constraintEnd_toStartOf="@+id/tvBelegZielUser"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/tvBelegZielHL"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegZielHL" />
+
     <AutoCompleteTextView
         android:id="@+id/actvBelegZielort"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:hint="Zielort"
         android:textSize="14sp"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/tvBelegZielHL"
         app:layout_constraintEnd_toStartOf="@+id/tvBelegZielUser"
         app:layout_constraintHorizontal_bias="0.5"
@@ -90,7 +100,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:hint="Person"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/actvBelegZielort"
@@ -113,25 +122,35 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:ems="10"
+        android:autofillHints="Notiz"
         android:gravity="start|top"
-        android:hint="Notiz"
         android:inputType="textMultiLine"
         android:textSize="14sp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegNotiz" />
+
+    <TextView
+        android:id="@+id/tvBelegNotiz"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="start|top"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvBelegNotizHL" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvBelegPos"
-        android:layout_width="409dp"
-        android:layout_height="584dp"
-        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etBelegNotiz"
-        app:layout_constraintVertical_bias="0.285" />
+        app:layout_constraintTop_toBottomOf="@+id/tvBelegPosHL" />
 
     <TextView
         android:id="@+id/tvBelegUser"
@@ -141,5 +160,47 @@
         android:hint="verantwortlich"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tvBelegTypHL" />
+
+    <TextView
+        android:id="@+id/tvBelegPosHL"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Pos"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etBelegNotiz" />
+
+    <TextView
+        android:id="@+id/tvBelegposMatNameHL"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Betriebsmittel"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/tvBelegPosHL"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegPosHL" />
+
+    <TextView
+        android:id="@+id/tvBelegposAckDatumHL"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="bestätigt"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/tvBelegposMatNameHL"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegPosHL" />
+
+    <TextView
+        android:id="@+id/tvBelegposVonHL"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="von Standort"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvBelegposAckDatumHL"
+        app:layout_constraintTop_toTopOf="@+id/tvBelegPosHL" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

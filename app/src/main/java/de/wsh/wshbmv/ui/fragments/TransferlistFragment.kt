@@ -20,6 +20,7 @@ import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.TransDir
 import de.wsh.wshbmv.other.TransStatus
 import de.wsh.wshbmv.ui.FragCommunicator
+import de.wsh.wshbmv.ui.viewmodels.BelegViewModel
 import de.wsh.wshbmv.ui.viewmodels.OverviewViewModel
 import de.wsh.wshbmv.ui.viewmodels.TransferlistViewModel
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +33,7 @@ import javax.inject.Inject
 class TransferlistFragment : Fragment(R.layout.fragment_transferlist), TransferlistAdapter.OnItemClickListener {
 
     private val viewModel: TransferlistViewModel by activityViewModels()
+    private val belegViewModel: BelegViewModel by activityViewModels()
 
     private lateinit var tranferlistAdapter: TransferlistAdapter
 
@@ -113,8 +115,8 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist), Transferl
 
     override fun onTransferlistItemClick(belegAndZielort: BelegAndZielort) {
         Timber.tag(TAG).d("TransferlistFragment, onTransferlistItemClick mit Beleg-ID ${belegAndZielort.tmbvBeleg.id}")
+        belegViewModel.setNewBelegId(belegAndZielort.tmbvBeleg.id)
         fragCommunicator.passBelegID(belegAndZielort.tmbvBeleg.id)
-
     }
 
     private fun setupRecyclerView() = bind.rvTransferlists.apply {

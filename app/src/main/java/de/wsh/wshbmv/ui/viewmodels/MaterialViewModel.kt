@@ -17,7 +17,7 @@ class MaterialViewModel @Inject constructor(
     mainRepository: MainRepository
 ) : ViewModel() {
 
-    private var mainRepo = mainRepository
+    private val mainRepo = mainRepository
 
     private var myMaterialId = MutableLiveData("")
 
@@ -70,10 +70,5 @@ class MaterialViewModel @Inject constructor(
 
         }
     }
-
-    /**
-     *  mit Hilfe von getMaterialID() kann eine Anwendung die gerade aktive Material-ID der Materialsicht erfragen
-     */
-    fun getMaterialId() = myMaterialId
 
 }

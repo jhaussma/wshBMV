@@ -14,4 +14,4 @@ data class BmData(
     var nextServiceDatum: Date? = null,
     @Embedded var matLager: TbmvLager? = null,
     @Embedded var matHautpLager: TbmvLager? = null
-    )
+)

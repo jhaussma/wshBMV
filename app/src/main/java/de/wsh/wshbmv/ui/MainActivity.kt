@@ -39,6 +39,9 @@ import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.sql_db.SqlConnection
 import de.wsh.wshbmv.sql_db.SqlDbFirstInit
 import de.wsh.wshbmv.ui.fragments.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import java.io.File
@@ -187,11 +190,13 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 changeFragment(TransferlistFragment())
             }
 
-            R.id.miInventur -> Toast.makeText(
-                applicationContext,
-                "Inventur geklickt",
-                Toast.LENGTH_LONG
-            ).show()
+            R.id.miInventur -> {
+                Toast.makeText(
+                    applicationContext,
+                    "Inventur geklickt",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
 
             R.id.miEndApp -> {
                 Toast.makeText(
