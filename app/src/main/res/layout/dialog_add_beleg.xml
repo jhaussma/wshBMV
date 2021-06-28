@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minWidth="380dp">
+
+    <TextView
+        android:id="@+id/tvAddBelegOK"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:text="Anlegen"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvAddBelegCancel" />
+
+    <TextView
+        android:id="@+id/tvAddBelegHL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Transfer (Beleg) anlegen"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvAddBelegTypHL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Typ"
+        app:layout_constraintStart_toStartOf="@+id/tvAddBelegZiellagerHL"
+        app:layout_constraintTop_toBottomOf="@+id/tvAddBelegHL" />
+
+    <TextView
+        android:id="@+id/tvAddBelegTyp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Transfer"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@+id/tvAddBelegTypHL"
+        app:layout_constraintStart_toStartOf="@+id/actvAddBelegZiellager"
+        app:layout_constraintTop_toTopOf="@+id/tvAddBelegTypHL" />
+
+    <TextView
+        android:id="@+id/tvAddBelegZiellagerHL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="Zielort"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvAddBelegTypHL" />
+
+    <AutoCompleteTextView
+        android:id="@+id/actvAddBelegZiellager"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="20"
+        app:layout_constraintBottom_toBottomOf="@+id/tvAddBelegZiellagerHL"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvAddBelegZiellagerHL"
+        app:layout_constraintTop_toTopOf="@+id/tvAddBelegZiellagerHL" />
+
+    <TextView
+        android:id="@+id/tvAddBelegCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
+        android:text="Abbrechen"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/tvAddBelegOK"
+        app:layout_constraintTop_toBottomOf="@+id/actvAddBelegZiellager" />
+</androidx.constraintlayout.widget.ConstraintLayout>

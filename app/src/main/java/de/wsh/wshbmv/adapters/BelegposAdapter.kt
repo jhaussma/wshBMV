@@ -50,8 +50,8 @@ class BelegposAdapter(
         // befülle die Sicht eines Datensatz-Eintrags aus der Belegpos-Liste
         val myBelegPos = belegPosn[position]
         bind = ItemBelegposBinding.bind(holder.itemView)
-        holder.itemView?.apply {
-            bind.tvBelegposPos.text = myBelegPos.tbmvBelegPos.pos?.toString()
+        holder.itemView.apply {
+            bind.tvBelegposPos.text = myBelegPos.tbmvBelegPos.pos.toString()
             bind.tvBelegposMatName.text = myBelegPos.tbmvMat?.matchcode
             bind.tvBelegposAckDatum.text = myBelegPos.tbmvBelegPos.ackDatum?.formatedDateDE()
             bind.tvBelegposVon.text = myBelegPos.tbmvLager?.matchcode

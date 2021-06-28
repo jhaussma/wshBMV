@@ -82,7 +82,6 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
         bind.tvBelegDatum.text = belegData.tbmvBeleg?.belegDatum?.formatedDateDE()
         bind.tvBelegUser.text = belegData.belegUser?.userKennung
         bind.tvBelegZielort.text = belegData.zielLager?.matchcode
-        bind.actvBelegZielort.setText(belegData.zielLager?.matchcode)
         bind.tvBelegZielUser.text = belegData.zielUser?.userKennung
         bind.tvBelegNotiz.text = belegData.tbmvBeleg?.notiz
         bind.etBelegNotiz.setText(belegData.tbmvBeleg?.notiz)

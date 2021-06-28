@@ -27,7 +27,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Matchcode"
-                android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/ivMatBild" />
 
@@ -48,6 +47,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:hint="Matchcode"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/ivMatBild"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvView1Matchcode" />
@@ -59,6 +59,7 @@
                 android:layout_marginEnd="8dp"
                 android:hint="Status"
                 android:textAlignment="textEnd"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/ivMatBild"
                 app:layout_constraintTop_toTopOf="@+id/ivMatBild" />
 
@@ -68,6 +69,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:hint="Typ"
+                android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@+id/tvView1Matchcode"
                 app:layout_constraintTop_toTopOf="@+id/ivMatBild" />
 
@@ -87,6 +89,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="8dp"
                 android:hint="Scancode"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/ivMatBild"
                 app:layout_constraintStart_toEndOf="@+id/tvView2"
                 app:layout_constraintTop_toTopOf="@+id/tvView2" />
@@ -132,6 +135,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/btServiceDetails"
                 app:layout_constraintStart_toEndOf="@+id/tvView3"
                 app:layout_constraintTop_toTopOf="@+id/tvView3" />
@@ -163,6 +167,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView4"
                 app:layout_constraintTop_toTopOf="@+id/tvView4" />
@@ -182,6 +187,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView5"
                 app:layout_constraintTop_toTopOf="@+id/tvView5" />
@@ -201,6 +207,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView6"
                 app:layout_constraintTop_toTopOf="@+id/tvView6" />
@@ -221,6 +228,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:hint="tbd."
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView7"
                 app:layout_constraintTop_toTopOf="@+id/tvView7" />
@@ -232,7 +240,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Beschreibung"
-                android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvView7" />
 
@@ -240,6 +247,7 @@
                 android:id="@+id/tvMatBeschreibung"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvView8" />
@@ -272,6 +280,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:hint="tbd."
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView9"
                 app:layout_constraintTop_toTopOf="@+id/tvView9" />
@@ -292,6 +301,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:hint="unbekannt"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView10"
                 app:layout_constraintTop_toTopOf="@+id/tvView10" />
@@ -312,6 +322,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:hint="unbekannt"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView11"
                 app:layout_constraintTop_toTopOf="@+id/tvView11" />

@@ -69,7 +69,7 @@ class TransferlistAdapter(
         // befülle die Sicht eines Datensatz-Eintrags aus der Transferlistenliste
         val myTransferList = differ.currentList[position]
         bind = ItemTransferlistBinding.bind(holder.itemView)
-        holder.itemView?.apply {
+        holder.itemView.apply {
             // hier erfolgt die Datenübergabe in die Zeile
             when (myTransferList.tmbvBeleg.belegTyp) {
                 "Transfer" -> Glide.with(this).load(R.drawable.ic_transfer).into(bind.ivTfListTyp)

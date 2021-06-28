@@ -39,6 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:hint="Belegtyp"
+        android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/tvBelegTypHL"
         app:layout_constraintTop_toTopOf="@+id/tvBelegTypHL" />
 
@@ -48,6 +49,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:hint="tt.mm.jjjj"
+        android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/tvBelegDatumHL"
         app:layout_constraintTop_toTopOf="@+id/tvBelegTypHL" />
 
@@ -57,6 +59,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:hint="Status"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tvBelegStatusHL" />
 
@@ -75,19 +78,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        app:layout_constraintBottom_toBottomOf="@+id/tvBelegZielHL"
-        app:layout_constraintEnd_toStartOf="@+id/tvBelegZielUser"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/tvBelegZielHL"
-        app:layout_constraintTop_toTopOf="@+id/tvBelegZielHL" />
-
-    <AutoCompleteTextView
-        android:id="@+id/actvBelegZielort"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:textSize="14sp"
-        android:visibility="invisible"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/tvBelegZielHL"
         app:layout_constraintEnd_toStartOf="@+id/tvBelegZielUser"
         app:layout_constraintHorizontal_bias="0.5"
@@ -100,6 +91,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/actvBelegZielort"
@@ -112,7 +104,6 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:text="Notiz"
-        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvBelegZielHL" />
 
@@ -138,6 +129,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:gravity="start|top"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvBelegNotizHL" />
@@ -158,6 +150,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:hint="verantwortlich"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tvBelegTypHL" />
 

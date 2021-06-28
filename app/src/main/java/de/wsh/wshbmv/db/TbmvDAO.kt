@@ -61,7 +61,7 @@ interface TbmvDAO {
     fun getLagerByName(lagerName: String): LiveData<TbmvLager>?
 
     @Query("SELECT * FROM TbmvLager ORDER BY Typ, Matchcode")
-    suspend fun getLagerListSorted(): MutableList<TbmvLager>
+    suspend fun getLagerListSorted(): List<TbmvLager>
 
 
     /**

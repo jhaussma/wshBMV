@@ -17,6 +17,7 @@ import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.FragmentMaterialBinding
 import de.wsh.wshbmv.db.entities.relations.BmData
 import de.wsh.wshbmv.other.Constants.TAG
+import de.wsh.wshbmv.other.GlobalVars.myUser
 import de.wsh.wshbmv.ui.viewmodels.MaterialViewModel
 import timber.log.Timber
 import java.text.SimpleDateFormat
@@ -66,7 +67,7 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.material_bar_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
-//        menu.getItem(R.id.miMatAddPhoto).setVisible(myUser?.bmvW != 0)
+        menu.getItem(2).isVisible = (myUser?.bmvW != 0)
 
     }
 

@@ -28,6 +28,7 @@ import de.wsh.wshbmv.R
 import de.wsh.wshbmv.cortex_decoder.ScanActivity
 import de.wsh.wshbmv.databinding.ActivityMainBinding
 import de.wsh.wshbmv.db.TbmvDAO
+import de.wsh.wshbmv.db.entities.TbmvLager
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_FILTERING
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_HEIGHT
 import de.wsh.wshbmv.other.Constants.TAG
@@ -38,6 +39,8 @@ import de.wsh.wshbmv.other.GlobalVars.newBarcode
 import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.sql_db.SqlConnection
 import de.wsh.wshbmv.sql_db.SqlDbFirstInit
+import de.wsh.wshbmv.ui.dialog.AddBelegDialog
+import de.wsh.wshbmv.ui.dialog.AddDialogListener
 import de.wsh.wshbmv.ui.fragments.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -158,7 +161,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                     true
                 }
 
-                else -> true
+
+                else -> false
             }
         }
     }
@@ -308,7 +312,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             val myBitmap = BitmapFactory.decodeFile(photoFile!!.absolutePath)
             val aspectRatio = myBitmap.height.toDouble() / myBitmap.width
             val newHeight = PIC_SCALE_HEIGHT // neue Zielhöhe ist festgelegt in den Konstanten
-            val newWidth = (newHeight.toDouble() / aspectRatio).roundToInt() // das Seiten-/Höhenverhältnis bleibt erhalten
+            val newWidth =
+                (newHeight.toDouble() / aspectRatio).roundToInt() // das Seiten-/Höhenverhältnis bleibt erhalten
             val myScaledBitmap =
                 Bitmap.createScaledBitmap(myBitmap, newWidth, newHeight, PIC_SCALE_FILTERING)
             sendPhotoToFragment(myScaledBitmap)
@@ -353,6 +358,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 val overviewFragment: OverviewFragment = importFragment as OverviewFragment
                 overviewFragment.importNewBarcode(barcode)
             }
+            else -> Timber.tag(TAG)
+                .d("sendBarcodeToFragment mit Fragment ${importFragment!!::class.java.name}")
         }
     }
 

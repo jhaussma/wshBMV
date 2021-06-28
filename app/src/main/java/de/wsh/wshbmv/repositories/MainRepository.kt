@@ -161,8 +161,7 @@ class MainRepository @Inject constructor(
         tbmvDao.insertMat_Lager(tbmvMat_Lager)
 
     suspend fun getLagersWithMaterialId(materialID: String) = tbmvDao.getLagersWithMaterialId(materialID)
-
-
+    suspend fun getLagerListSorted() = tbmvDao.getLagerListSorted()
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  lade sortierte und gefilterte Listen der Betriebsmittel/Materialien eines Lagers

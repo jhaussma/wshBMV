@@ -9,4 +9,6 @@ interface FragCommunicator {
     // Übergabe einer BelegID zu einem Beleg mit Positionen
     fun passBelegID(belegId: String)
 
+
+
 }
