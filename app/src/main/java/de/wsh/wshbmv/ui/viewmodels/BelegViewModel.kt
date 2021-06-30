@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.wsh.wshbmv.db.entities.TbmvLager
 import de.wsh.wshbmv.db.entities.relations.BelegData
 import de.wsh.wshbmv.db.entities.relations.BelegposAndMaterialAndLager
 import de.wsh.wshbmv.repositories.MainRepository
@@ -31,6 +32,17 @@ class BelegViewModel @Inject constructor(
         }
     }
 
+    /**
+     *  wir legen einen neuen Beleg an (Transfer)
+     */
+    fun addNewBeleg(tbmvLager: TbmvLager) {
+        viewModelScope.launch {
+            val belegId = mainRepo.insertBelegTransfer(tbmvLager)
+
+        }
+
+
+    }
 
     fun getBelegposVonBeleg(belegId: String) = mainRepo.getBelegposVonBeleg(belegId)
 

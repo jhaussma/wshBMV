@@ -9,7 +9,6 @@ import android.view.Window
 import android.widget.*
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatDialog
-import androidx.core.content.ContentProviderCompat.requireContext
 import de.wsh.wshbmv.databinding.DialogAddBelegBinding
 import de.wsh.wshbmv.db.entities.TbmvLager
 import de.wsh.wshbmv.other.Constants.TAG

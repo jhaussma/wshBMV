@@ -6,6 +6,7 @@ import de.wsh.wshbmv.other.Constants.SQL_CONN_DB
 import de.wsh.wshbmv.other.Constants.SQL_CONN_IP
 import de.wsh.wshbmv.other.Constants.SQL_USER_NAME
 import de.wsh.wshbmv.other.Constants.SQL_USER_PWD
+import de.wsh.wshbmv.other.Constants.TAG
 import timber.log.Timber
 import java.lang.Exception
 import java.sql.Connection
@@ -27,13 +28,14 @@ class SqlConnection {
         try {
             Class.forName("net.sourceforge.jtds.jdbc.Driver")
             connString = "jdbc:jtds:sqlserver://$ip/$db;instance=SQLEXPRESS;encrypt=false;user=$username;password=$password;"
+//            connString = "jdbc:jtds:sqlserver://192.168.101.22:1433/wshAPlan;instance=SQLEXPRESS;user=SA;password=Sy67Ha99;"
             conn = DriverManager.getConnection(connString)
         } catch (ex : SQLException) {
-            Log.e("Error : ", ex.message ?:"")
+            Log.e(TAG, ex.message ?:"")
         } catch (ex1 : ClassNotFoundException) {
-            Log.e("Error : ", ex1.message ?:"")
+            Log.e(TAG, ex1.message ?:"")
         } catch (ex2 : Exception) {
-            Log.e("Error : ", ex2.message ?:"")
+            Log.e(TAG, ex2.message ?:"")
         }
         return  conn
     }

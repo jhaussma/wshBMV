@@ -136,6 +136,7 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
                     object : AddDialogListener {
                         override fun onAddButtonClicked(clickItem: TbmvLager) {
                             Timber.tag(TAG).d("onOptionsItemSelected meldet Lagerauswahl ${clickItem.matchcode} zurück...")
+                            belegViewModel.addNewBeleg(clickItem)
                         }
                     },
                     MainRepository(tbmvDAO)

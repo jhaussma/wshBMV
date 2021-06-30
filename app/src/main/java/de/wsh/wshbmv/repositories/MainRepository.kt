@@ -8,11 +8,13 @@ import de.wsh.wshbmv.other.Constants
 import de.wsh.wshbmv.other.Constants.DB_AKTION_ADD_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_UPDATE_DS
 import de.wsh.wshbmv.other.GlobalVars
+import de.wsh.wshbmv.other.GlobalVars.myUser
 import de.wsh.wshbmv.other.GlobalVars.sqlSynchronized
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 
@@ -214,6 +216,28 @@ class MainRepository @Inject constructor(
 
     fun getBelegposVonBeleg(belegId: String) = tbmvDao.getBelegposVonBeleg(belegId)
 
+    suspend fun insertBelegTransfer(tbmvLager: TbmvLager): String {
+        val belegId: String = UUID.randomUUID().toString()
+        withContext(Dispatchers.IO) {
+            val belegTyp = "Transfer"
+            val belegDatum = Date()
+            val belegUserId = myUser!!.id
+            val zielLagerGuid = tbmvLager.id
+            val zielUserGuid = tbmvLager.userGuid
+            val belegStatus = "In Arbeit"
+            var tbmvBeleg = TbmvBeleg(
+                belegId,
+                belegTyp,
+                belegDatum,
+                belegUserId,
+                zielLagerGuid,
+                zielUserGuid,
+                belegStatus
+            )
+            tbmvDao.insertBeleg(tbmvBeleg)
+        }
+        return belegId
+    }
 
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
