@@ -6,6 +6,7 @@ import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
 import de.wsh.wshbmv.other.Constants
 import de.wsh.wshbmv.other.Constants.DB_AKTION_ADD_DS
+import de.wsh.wshbmv.other.Constants.DB_AKTION_DELETE_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_UPDATE_DS
 import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.myUser
@@ -185,9 +186,11 @@ class MainRepository @Inject constructor(
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Belege Transfers
      */
+    // rudimentäre Neuanlagen (z.B. für Synchronisierungen)
     suspend fun insertBeleg(tbmvBeleg: TbmvBeleg) = tbmvDao.insertBeleg(tbmvBeleg)
     suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos) = tbmvDao.insertBelegPos(tbmvBelegPos)
 
+    // lade alle Belege abhängig von den Filtereinstellungen
     fun getBelegeToLagerAlle(lagerId: String) = tbmvDao.getBelegeToLagerAlle(lagerId)
     fun getBelegeToLagerOffen(lagerId: String) = tbmvDao.getBelegeToLagerOffen(lagerId)
     fun getBelegeToLagerInArbeit(lagerId: String) = tbmvDao.getBelegeToLagerInArbeit(lagerId)
@@ -197,6 +200,7 @@ class MainRepository @Inject constructor(
     fun getBelegeVonLagerInArbeit(lagerId: String) = tbmvDao.getBelegeVonLagerInArbeit(lagerId)
     fun getBelegeVonLagerErledigt(lagerId: String) = tbmvDao.getBelegeVonLagerErledigt(lagerId)
 
+    // lade alle Daten zu einem Beleg
     suspend fun getBelegDatenZuBelegId(belegId: String): BelegData? {
         var belegData: BelegData
         withContext(Dispatchers.IO) {
@@ -214,9 +218,11 @@ class MainRepository @Inject constructor(
         return belegData
     }
 
+    // lade alle Belegpositionen zu einer BelegId, sortiert nach Pos
     fun getBelegposVonBeleg(belegId: String) = tbmvDao.getBelegposVonBeleg(belegId)
 
-    suspend fun insertBelegTransfer(tbmvLager: TbmvLager): String {
+    // Neuanlage eines Transfer-Belegs mit Ziellager
+    suspend fun insertBelegTransfer(tbmvLager: TbmvLager, noProtokoll: Boolean = false): String {
         val belegId: String = UUID.randomUUID().toString()
         withContext(Dispatchers.IO) {
             val belegTyp = "Transfer"
@@ -235,9 +241,39 @@ class MainRepository @Inject constructor(
                 belegStatus
             )
             tbmvDao.insertBeleg(tbmvBeleg)
+
+            if (!noProtokoll) {
+                val chgProtokoll = TappChgProtokoll(
+                    timeStamp = System.currentTimeMillis(),
+                    datenbank = "TbmvBeleg",
+                    satzID = belegId,
+                    Aktion = DB_AKTION_ADD_DS
+                )
+                tbmvDao.insertChgProtokoll(chgProtokoll)
+                sqlSynchronized  = false
+            }
         }
         return belegId
     }
+
+    // Löschbefehle mit Protokollierung
+    suspend fun deleteBeleg(tbmvBeleg: TbmvBeleg, noProtokoll: Boolean = false) {
+        val belegId = tbmvBeleg.id
+        withContext(Dispatchers.IO) {
+            tbmvDao.deleteBeleg(tbmvBeleg)
+            if (!noProtokoll) {
+                val chgProtokoll = TappChgProtokoll(
+                    timeStamp = System.currentTimeMillis(),
+                    datenbank = "TbmvBeleg",
+                    satzID = belegId,
+                    Aktion = DB_AKTION_DELETE_DS
+                )
+                tbmvDao.insertChgProtokoll(chgProtokoll)
+                sqlSynchronized  = false
+            }
+        }
+    }
+
 
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

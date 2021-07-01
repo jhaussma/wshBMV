@@ -1,16 +1,13 @@
 package de.wsh.wshbmv.ui.viewmodels
 
 import androidx.lifecycle.*
-import com.codecorp.util.Barcode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.wsh.wshbmv.db.entities.TbmvMat
 import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars.myLager
-import de.wsh.wshbmv.other.GlobalVars.myLagers
 import de.wsh.wshbmv.other.SortType
 import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named

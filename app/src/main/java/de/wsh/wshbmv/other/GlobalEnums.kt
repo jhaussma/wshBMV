@@ -12,6 +12,7 @@ enum class TransDir {
     ANMICH, VONMIR
 }
 
-enum class TransStatus {
+enum class BelegStatus {
     OFFEN,INARBEIT,ERLEDIGT,ALLE
 }
+

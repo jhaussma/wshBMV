@@ -6,7 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.wsh.wshbmv.db.entities.relations.BelegAndZielort
 import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.TransDir
-import de.wsh.wshbmv.other.TransStatus
+import de.wsh.wshbmv.other.BelegStatus
 import de.wsh.wshbmv.repositories.MainRepository
 import javax.inject.Inject
 import javax.inject.Named
@@ -34,7 +34,7 @@ class TransferlistViewModel @Inject constructor(
     val belegliste = MediatorLiveData<List<BelegAndZielort>>()
 
     var transDir = TransDir.ANMICH
-    var transStatus = TransStatus.OFFEN
+    var transStatus = BelegStatus.OFFEN
 
     init {
         initTransfers()
@@ -42,28 +42,28 @@ class TransferlistViewModel @Inject constructor(
 
 
     fun filterDirection(transDir: TransDir) = when (transStatus) {
-        TransStatus.ALLE -> {
+        BelegStatus.ALLE -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerAlle.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerAlle.value?.let { belegliste.value = it }
             }
         }
-        TransStatus.OFFEN -> {
+        BelegStatus.OFFEN -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerOffen.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerOffen.value?.let { belegliste.value = it }
             }
         }
-        TransStatus.INARBEIT -> {
+        BelegStatus.INARBEIT -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerInArbeit.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerInArbeit.value?.let { belegliste.value = it }
             }
         }
-        TransStatus.ERLEDIGT -> {
+        BelegStatus.ERLEDIGT -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerErledigt.value?.let { belegliste.value = it }
             } else {
@@ -75,29 +75,29 @@ class TransferlistViewModel @Inject constructor(
     }
 
 
-    fun filterStatus(transStatus: TransStatus) = when (transStatus) {
-        TransStatus.ALLE -> {
+    fun filterStatus(belegStatus: BelegStatus) = when (belegStatus) {
+        BelegStatus.ALLE -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerAlle.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerAlle.value?.let { belegliste.value = it }
             }
         }
-        TransStatus.OFFEN -> {
+        BelegStatus.OFFEN -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerOffen.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerOffen.value?.let { belegliste.value = it }
             }
         }
-        TransStatus.INARBEIT -> {
+        BelegStatus.INARBEIT -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerInArbeit.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerInArbeit.value?.let { belegliste.value = it }
             }
         }
-        TransStatus.ERLEDIGT -> {
+        BelegStatus.ERLEDIGT -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerErledigt.value?.let { belegliste.value = it }
             } else {
@@ -105,7 +105,7 @@ class TransferlistViewModel @Inject constructor(
             }
         }
     }.also {
-        this.transStatus = transStatus
+        this.transStatus = belegStatus
     }
 
     fun filterBelegliste(newLagerId: String) {
@@ -134,42 +134,42 @@ class TransferlistViewModel @Inject constructor(
 
     fun initTransfers() {
         belegliste.addSource(belegeToLagerAlle) { result ->
-            if (transDir == TransDir.ANMICH && transStatus == TransStatus.ALLE) {
+            if (transDir == TransDir.ANMICH && transStatus == BelegStatus.ALLE) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeToLagerOffen) { result ->
-            if (transDir == TransDir.ANMICH && transStatus == TransStatus.OFFEN) {
+            if (transDir == TransDir.ANMICH && transStatus == BelegStatus.OFFEN) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeToLagerInArbeit) { result ->
-            if (transDir == TransDir.ANMICH && transStatus == TransStatus.INARBEIT) {
+            if (transDir == TransDir.ANMICH && transStatus == BelegStatus.INARBEIT) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeToLagerErledigt) { result ->
-            if (transDir == TransDir.ANMICH && transStatus == TransStatus.ERLEDIGT) {
+            if (transDir == TransDir.ANMICH && transStatus == BelegStatus.ERLEDIGT) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeVonLagerAlle) { result ->
-            if (transDir == TransDir.VONMIR && transStatus == TransStatus.ALLE) {
+            if (transDir == TransDir.VONMIR && transStatus == BelegStatus.ALLE) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeVonLagerOffen) { result ->
-            if (transDir == TransDir.VONMIR && transStatus == TransStatus.OFFEN) {
+            if (transDir == TransDir.VONMIR && transStatus == BelegStatus.OFFEN) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeVonLagerInArbeit) { result ->
-            if (transDir == TransDir.VONMIR && transStatus == TransStatus.INARBEIT) {
+            if (transDir == TransDir.VONMIR && transStatus == BelegStatus.INARBEIT) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeVonLagerErledigt) { result ->
-            if (transDir == TransDir.VONMIR && transStatus == TransStatus.ERLEDIGT) {
+            if (transDir == TransDir.VONMIR && transStatus == BelegStatus.ERLEDIGT) {
                 result?.let { belegliste.value = it }
             }
         }

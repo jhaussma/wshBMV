@@ -1,11 +1,11 @@
 package de.wsh.wshbmv.ui.fragments
 
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +16,7 @@ import de.wsh.wshbmv.databinding.FragmentBelegBinding
 import de.wsh.wshbmv.db.entities.relations.BelegData
 import de.wsh.wshbmv.db.entities.relations.BelegposAndMaterialAndLager
 import de.wsh.wshbmv.other.Constants.TAG
+import de.wsh.wshbmv.other.GlobalVars.myUser
 import de.wsh.wshbmv.ui.viewmodels.BelegViewModel
 import timber.log.Timber
 import java.text.SimpleDateFormat
@@ -31,7 +32,12 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
 
     private lateinit var bind: FragmentBelegBinding
 
+    private lateinit var delMenuItem: MenuItem
+    private lateinit var addMenuItem: MenuItem
+
     private var belegId: String? = null
+    private var ignoreNotizChange = false
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,8 +58,11 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
 
         belegViewModel.belegDataLive.observe(viewLifecycleOwner, {
             if (it != null) {
+                belegId = it.tbmvBeleg?.id
                 writeUiValues(it)
                 belegposAdapter.notifyDataSetChanged()
+                // wir bestimmen noch den richtigen Bearbeitungsstatus des Belegs
+                setVisiblesToFragment()
             }
         })
 
@@ -62,22 +71,74 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
             belegposAdapter.notifyDataSetChanged()
         })
 
+        bind.etBelegNotiz.doAfterTextChanged {
+            if (ignoreNotizChange) {
+                ignoreNotizChange = false
+            } else {
+                Timber.tag(TAG).d("etBelegNotiz hat sich geändert - wir müssen Notiz-Änderung speichern!!!")
+
+            }
+        }
         Timber.tag(TAG).d("BelegFragment, onViewCreated mit Parameter Beleg-ID $belegId")
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.beleg_bar_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+        menu.getItem(0).isVisible = false
+        addMenuItem = menu.findItem(R.id.miBarcode)
+        addMenuItem.isVisible = false
+        delMenuItem = menu.findItem(R.id.miBelegDel)
+        delMenuItem.isVisible = false
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.miBelegDel -> {
+                // lösche einen (Transfer-)Beleg aus der Belegliste, und raus aus dem Fragment
+                belegViewModel.deleteBeleg(belegViewModel.belegDataLive.value?.tbmvBeleg!!)
+                parentFragmentManager.popBackStack()
+            }
+        }
+        return true
+    }
+
     override fun onBelegposlistItemClick(belegPosMaterialLager: BelegposAndMaterialAndLager) {
-        Timber.tag(TAG).d("BelegFragment, onBelegposListItemClick mit BelegposID: ${belegPosMaterialLager.tbmvBelegPos.id}")
+        Timber.tag(TAG)
+            .d("BelegFragment, onBelegposListItemClick mit BelegposID: ${belegPosMaterialLager.tbmvBelegPos.id}")
 
     }
 
     private fun setupRecyclerView() = bind.rvBelegPos.apply {
-        belegposAdapter = BelegposAdapter( listOf(),this@BelegFragment)
+        belegposAdapter = BelegposAdapter(listOf(), this@BelegFragment)
         adapter = belegposAdapter
         layoutManager = LinearLayoutManager(requireContext())
     }
 
 
+    /**
+     *  steuert die Sichtbarkeit / Freigabe der Elemente im Fragement Belege
+     */
+    private fun setVisiblesToFragment() {
+        val belegData = belegViewModel.belegDataLive.value!!
+
+        bind.etBelegNotiz.isVisible =
+            (belegData.tbmvBeleg?.belegStatus == "In Arbeit" && belegData.tbmvBeleg?.belegUserGuid == myUser!!.id)
+                    || (belegData.tbmvBeleg?.belegStatus == "Erfasst" && belegData.tbmvBeleg?.belegUserGuid == myUser!!.id)
+                    || (belegData.tbmvBeleg?.belegStatus == "Erfasst" && belegData.zielUser?.id == myUser!!.id)
+        bind.tvBelegNotiz.isVisible = !bind.etBelegNotiz.isVisible
+        delMenuItem.isVisible = (belegposAdapter.itemCount == 0)
+        addMenuItem.isVisible =
+            (belegData.tbmvBeleg?.belegStatus == "In Arbeit" && belegData.tbmvBeleg?.belegUserGuid == myUser!!.id)
+
+
+    }
+
+    /**
+     *  aktualisiert die Anzeigenfelder im Fragment Belege
+     */
     private fun writeUiValues(belegData: BelegData) {
+        ignoreNotizChange = true
         bind.tvBelegTyp.text = belegData.tbmvBeleg?.belegTyp
         bind.tvBelegDatum.text = belegData.tbmvBeleg?.belegDatum?.formatedDateDE()
         bind.tvBelegUser.text = belegData.belegUser?.userKennung

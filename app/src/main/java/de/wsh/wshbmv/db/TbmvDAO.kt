@@ -96,8 +96,15 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBeleg(tbmvBeleg: TbmvBeleg)
 
+    @Delete
+    suspend fun deleteBeleg(tbmvBeleg: TbmvBeleg)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos)
+
+    @Delete
+    suspend fun deleteBelegPos(tbmvBelegPos: TbmvBelegPos)
+
 
     // Abfragen Transferlisten...
     @Transaction

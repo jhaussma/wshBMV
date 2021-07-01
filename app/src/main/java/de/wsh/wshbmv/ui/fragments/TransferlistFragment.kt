@@ -21,7 +21,7 @@ import de.wsh.wshbmv.db.entities.TbmvLager
 import de.wsh.wshbmv.db.entities.relations.BelegAndZielort
 import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.TransDir
-import de.wsh.wshbmv.other.TransStatus
+import de.wsh.wshbmv.other.BelegStatus
 import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.ui.FragCommunicator
 import de.wsh.wshbmv.ui.dialog.AddBelegDialog
@@ -44,6 +44,8 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
 
     private lateinit var bind: FragmentTransferlistBinding
 
+    private var newAddBelegId: String = ""
+
     @Inject
     lateinit var tbmvDAO: TbmvDAO
 
@@ -56,6 +58,7 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         // initialisiere das Binding
+        Timber.tag(TAG).d("TransferlistFragment, onViewCreated")
         bind = FragmentTransferlistBinding.bind(view)
         fragCommunicator = activity as FragCommunicator
         (activity as AppCompatActivity).supportActionBar?.title = "Belege"
@@ -64,10 +67,10 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
 
         // initialisiere die Spinner
         when (viewModel.transStatus) {
-            TransStatus.OFFEN -> bind.spTfListStatus.setSelection(0)
-            TransStatus.INARBEIT -> bind.spTfListStatus.setSelection(1)
-            TransStatus.ERLEDIGT -> bind.spTfListStatus.setSelection(2)
-            TransStatus.ALLE -> bind.spTfListStatus.setSelection(3)
+            BelegStatus.OFFEN -> bind.spTfListStatus.setSelection(0)
+            BelegStatus.INARBEIT -> bind.spTfListStatus.setSelection(1)
+            BelegStatus.ERLEDIGT -> bind.spTfListStatus.setSelection(2)
+            BelegStatus.ALLE -> bind.spTfListStatus.setSelection(3)
         }
         when (viewModel.transDir) {
             TransDir.ANMICH -> bind.spTfListDirection.setSelection(0)
@@ -75,7 +78,6 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
         }
 
         // die Listeners für die Spinner einrichten
-
         bind.spTfListStatus.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(p0: AdapterView<*>?) {}
 
@@ -86,14 +88,13 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
                 id: Long
             ) {
                 when (pos) {
-                    0 -> viewModel.filterStatus(TransStatus.OFFEN)
-                    1 -> viewModel.filterStatus(TransStatus.INARBEIT)
-                    2 -> viewModel.filterStatus(TransStatus.ERLEDIGT)
-                    3 -> viewModel.filterStatus(TransStatus.ALLE)
+                    0 -> viewModel.filterStatus(BelegStatus.OFFEN)
+                    1 -> viewModel.filterStatus(BelegStatus.INARBEIT)
+                    2 -> viewModel.filterStatus(BelegStatus.ERLEDIGT)
+                    3 -> viewModel.filterStatus(BelegStatus.ALLE)
                 }
             }
         }
-
         bind.spTfListDirection.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -111,8 +112,18 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
 
+        // Reaktion auf geänderte Beleglistenübersicht einleiten
         viewModel.belegliste.observe(viewLifecycleOwner, Observer {
             tranferlistAdapter.submitList(it)
+        })
+
+        // Reaktion auf neu angelegten Transfer-Beleg einleiten
+        belegViewModel.newBelegId.observe(viewLifecycleOwner, Observer {
+            if (it != "" && newAddBelegId != it) {
+                newAddBelegId = it
+                belegViewModel.setNewBelegId(newAddBelegId)
+                fragCommunicator.passBelegID(newAddBelegId)
+            }
         })
     }
 
@@ -125,11 +136,6 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.miTransAddListe -> {
-                Toast.makeText(
-                    requireContext(),
-                    "Wir fügen eine neue Transferliste hinzu",
-                    Toast.LENGTH_LONG
-                ).show()
                 // starte den Dialog zur Auswahl eines Lagers
                 AddBelegDialog(
                     requireContext(),
@@ -159,7 +165,4 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
         layoutManager = LinearLayoutManager(requireContext())
     }
 
-    private fun addNewBeleg() {
-
-    }
 }
