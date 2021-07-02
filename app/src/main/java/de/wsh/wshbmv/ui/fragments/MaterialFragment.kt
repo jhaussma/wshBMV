@@ -67,7 +67,7 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.material_bar_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
-        menu.getItem(2).isVisible = (myUser?.bmvW != 0)
+        menu.findItem(R.id.miMatAddPhoto).isVisible = (myUser?.bmvW != 0)
 
     }
 

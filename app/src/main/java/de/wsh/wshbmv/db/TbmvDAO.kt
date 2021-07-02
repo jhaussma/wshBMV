@@ -105,6 +105,9 @@ interface TbmvDAO {
     @Delete
     suspend fun deleteBelegPos(tbmvBelegPos: TbmvBelegPos)
 
+    @Update
+    suspend fun updateBeleg(tbmvBeleg: TbmvBeleg)
+
 
     // Abfragen Transferlisten...
     @Transaction
@@ -140,7 +143,6 @@ interface TbmvDAO {
     fun getBelegeVonLagerErledigt(lagerId: String): LiveData<List<BelegAndZielort>>
 
 
-
     // Abfrage Einzelbelege (und -positionen)
     @Transaction
     @Query("SELECT * FROM TbmvBeleg WHERE id = :belegId")
@@ -148,9 +150,7 @@ interface TbmvDAO {
 
     @Transaction
     @Query("SELECT * FROM TbmvBelegPos WHERE belegId = :belegId ORDER BY pos")
-    fun getBelegposVonBeleg(belegId : String): LiveData<List<BelegposAndMaterialAndLager>>
-
-
+    fun getBelegposVonBeleg(belegId: String): LiveData<List<BelegposAndMaterialAndLager>>
 
 
     /**

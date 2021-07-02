@@ -8,11 +8,5 @@
         android:icon="@drawable/ic_barcode"
         app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/miSync"
-        android:title="Datenbank synchronisieren"
-        android:icon="@drawable/ic_sync"
-        app:showAsAction="ifRoom" />
-
 
 </menu>

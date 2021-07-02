@@ -149,11 +149,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                     true
                 }
 
-                R.id.miSync -> {
-                    Toast.makeText(this, "Sync geklickt", Toast.LENGTH_SHORT).show()
-                    true
-                }
-
                 R.id.miMatAddPhoto -> {
                     // ermittle das aktive Fragment und speichere es in photoImpoortFragment...
                     importFragment = getVisibleFragment()
@@ -185,12 +180,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             }
 
             R.id.miTransfer -> {
-                Toast.makeText(
-                    applicationContext,
-                    "Transferlisten geklickt",
-                    Toast.LENGTH_LONG
-                ).show()
-                setToolbarTitel("Transfer")
                 changeFragment(TransferlistFragment())
             }
 
@@ -358,6 +347,11 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 val overviewFragment: OverviewFragment = importFragment as OverviewFragment
                 overviewFragment.importNewBarcode(barcode)
             }
+            "de.wsh.wshbmv.ui.fragments.BelegFragment" -> {
+                val belegFragment: BelegFragment = importFragment as BelegFragment
+                belegFragment.importNewBarcode(barcode)
+            }
+
             else -> Timber.tag(TAG)
                 .d("sendBarcodeToFragment mit Fragment ${importFragment!!::class.java.name}")
         }

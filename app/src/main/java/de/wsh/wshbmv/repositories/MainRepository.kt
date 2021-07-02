@@ -1,10 +1,8 @@
 package de.wsh.wshbmv.repositories
 
-import androidx.lifecycle.viewModelScope
 import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
-import de.wsh.wshbmv.other.Constants
 import de.wsh.wshbmv.other.Constants.DB_AKTION_ADD_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_DELETE_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_UPDATE_DS
@@ -12,10 +10,7 @@ import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.myUser
 import de.wsh.wshbmv.other.GlobalVars.sqlSynchronized
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
-import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 
@@ -77,7 +72,7 @@ class MainRepository @Inject constructor(
                 Aktion = DB_AKTION_UPDATE_DS
             )
             tbmvDao.insertChgProtokoll(chgProtokoll)
-            sqlSynchronized  = false
+            sqlSynchronized = false
         }
     }
 
@@ -87,11 +82,11 @@ class MainRepository @Inject constructor(
     // Materialdatensatz zu einem Scancode/Barcode (alle ohne Berechtigungsprüfung)
     suspend fun getMaterialByScancode(scancode: String) = tbmvDao.getMaterialByScancode(scancode)
 
-     //  Material-Datensatz eines Betriebsmittels zu einem Scancode (inkl. Berechtigungsprüfung)
+    //  Material-Datensatz eines Betriebsmittels zu einem Scancode (inkl. Berechtigungsprüfung)
     suspend fun getAllowedMaterialFromScancode(scancode: String): TbmvMat? {
         // zuerst das Material suchen
-         var tbmvMat: TbmvMat?
-         withContext(Dispatchers.IO) {
+        var tbmvMat: TbmvMat?
+        withContext(Dispatchers.IO) {
             tbmvMat = tbmvDao.getMaterialByScancode(scancode)
             if (tbmvMat != null) {
                 // Material gefunden, nun muss es noch in unserer Lagerliste-Berechtigung drin sein
@@ -163,7 +158,9 @@ class MainRepository @Inject constructor(
     suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager) =
         tbmvDao.insertMat_Lager(tbmvMat_Lager)
 
-    suspend fun getLagersWithMaterialId(materialID: String) = tbmvDao.getLagersWithMaterialId(materialID)
+    suspend fun getLagersWithMaterialId(materialID: String) =
+        tbmvDao.getLagersWithMaterialId(materialID)
+
     suspend fun getLagerListSorted() = tbmvDao.getLagerListSorted()
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -188,7 +185,6 @@ class MainRepository @Inject constructor(
      */
     // rudimentäre Neuanlagen (z.B. für Synchronisierungen)
     suspend fun insertBeleg(tbmvBeleg: TbmvBeleg) = tbmvDao.insertBeleg(tbmvBeleg)
-    suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos) = tbmvDao.insertBelegPos(tbmvBelegPos)
 
     // lade alle Belege abhängig von den Filtereinstellungen
     fun getBelegeToLagerAlle(lagerId: String) = tbmvDao.getBelegeToLagerAlle(lagerId)
@@ -250,13 +246,52 @@ class MainRepository @Inject constructor(
                     Aktion = DB_AKTION_ADD_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
-                sqlSynchronized  = false
+                sqlSynchronized = false
             }
         }
         return belegId
     }
 
-    // Löschbefehle mit Protokollierung
+    // Neuanlage eines Betriebsmittels in BelegPos
+    suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos, noProtokoll: Boolean = false) {
+        val belegPosId: String = UUID.randomUUID().toString()
+        withContext(Dispatchers.IO) {
+            tbmvBelegPos.id = belegPosId
+            tbmvDao.insertBelegPos(tbmvBelegPos)
+
+            if (!noProtokoll) {
+                val chgProtokoll = TappChgProtokoll(
+                    timeStamp = System.currentTimeMillis(),
+                    datenbank = "TbmvBelegPos",
+                    satzID = belegPosId,
+                    Aktion = DB_AKTION_ADD_DS
+                )
+                tbmvDao.insertChgProtokoll(chgProtokoll)
+                sqlSynchronized = false
+            }
+        }
+    }
+
+    // Änderung eines Belegs mit opt. Protokollierung
+    suspend fun updateBeleg(tbmvBeleg: TbmvBeleg, noProtokoll: Boolean = false) {
+        val belegId = tbmvBeleg.id
+        withContext(Dispatchers.IO) {
+            tbmvDao.updateBeleg(tbmvBeleg)
+            if (!noProtokoll) {
+                val chgProtokoll = TappChgProtokoll(
+                    timeStamp = System.currentTimeMillis(),
+                    datenbank = "TbmvBeleg",
+                    satzID = belegId,
+                    Aktion = DB_AKTION_UPDATE_DS
+                )
+                tbmvDao.insertChgProtokoll(chgProtokoll)
+                sqlSynchronized = false
+            }
+        }
+    }
+
+
+    // Löschbefehle mit opt. Protokollierung
     suspend fun deleteBeleg(tbmvBeleg: TbmvBeleg, noProtokoll: Boolean = false) {
         val belegId = tbmvBeleg.id
         withContext(Dispatchers.IO) {
@@ -269,11 +304,10 @@ class MainRepository @Inject constructor(
                     Aktion = DB_AKTION_DELETE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
-                sqlSynchronized  = false
+                sqlSynchronized = false
             }
         }
     }
-
 
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

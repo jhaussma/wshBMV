@@ -299,7 +299,7 @@ class SqlDbFirstInit @Inject constructor(
                 belegPos.vonLagerGuid = resultSet.getString("VonLagerGUID")
                 belegPos.ackDatum = resultSet.getTimestamp("AckDatum")
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertBelegPos(belegPos)
+                mainRepository.insertBelegPos(belegPos, false)
             }
         }
 
