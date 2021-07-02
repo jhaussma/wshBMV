@@ -30,7 +30,13 @@ class BelegViewModel @Inject constructor(
     private val _newBelegId = MutableLiveData<String>("")
     val newBelegId: LiveData<String> = _newBelegId
 
+    fun clearBelegData() {
+        Timber.tag(TAG).d("BelegViewModel, clearBelegData...")
+        _belegDataLive.value = null
+    }
+
     fun setNewBelegId(belegId: String) {
+        Timber.tag(TAG).d("BelegViewModel, setNewBelegId mit $belegId aufgerufen")
         viewModelScope.launch {
             val belegData = mainRepo.getBelegDatenZuBelegId(belegId)
             _belegDataLive.value = belegData

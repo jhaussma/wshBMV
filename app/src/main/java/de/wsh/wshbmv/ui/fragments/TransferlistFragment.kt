@@ -155,7 +155,7 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
     override fun onTransferlistItemClick(belegAndZielort: BelegAndZielort) {
         Timber.tag(TAG)
             .d("TransferlistFragment, onTransferlistItemClick mit Beleg-ID ${belegAndZielort.tmbvBeleg.id}")
-        belegViewModel.setNewBelegId(belegAndZielort.tmbvBeleg.id)
+//        belegViewModel.setNewBelegId(belegAndZielort.tmbvBeleg.id)
         fragCommunicator.passBelegID(belegAndZielort.tmbvBeleg.id)
     }
 

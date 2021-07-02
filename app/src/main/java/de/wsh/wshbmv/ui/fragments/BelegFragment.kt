@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import de.wsh.wshbmv.MyApplication
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.adapters.BelegposAdapter
 import de.wsh.wshbmv.databinding.FragmentBelegBinding
@@ -21,6 +22,7 @@ import de.wsh.wshbmv.ui.viewmodels.BelegViewModel
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemClickListener {
@@ -34,10 +36,10 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
 
     private lateinit var delMenuItem: MenuItem
     private lateinit var addMenuItem: MenuItem
+    private lateinit var saveMenuItem: MenuItem
 
     private var belegId: String? = null
     private var ignoreNotizChange = false
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,11 +55,18 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
 
         (activity as AppCompatActivity).supportActionBar?.title = "Beleg"
         belegId = arguments?.getString("belegId")
+        Timber.tag(TAG).d("BelegFragment, onViewCreated mit Parameter Beleg-ID $belegId")
+
+        belegViewModel.clearBelegData()
 
         setupRecyclerView()
+        bind.fabSave.isVisible = false
+        bind.fabUndo.isVisible = false
 
         belegViewModel.belegDataLive.observe(viewLifecycleOwner, {
             if (it != null) {
+                Timber.tag(TAG)
+                    .d("belegViewModel.belegDataLive.observer meldet neue Anzeigedaten: ${it.tbmvBeleg?.id}")
                 belegId = it.tbmvBeleg?.id
                 writeUiValues(it)
                 belegposAdapter.notifyDataSetChanged()
@@ -75,16 +84,33 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
             if (ignoreNotizChange) {
                 ignoreNotizChange = false
             } else {
-                Timber.tag(TAG).d("etBelegNotiz hat sich geändert - wir müssen Notiz-Änderung speichern!!!")
-
+                bind.fabSave.isVisible =
+                    (bind.etBelegNotiz.text.toString() != belegViewModel.belegDataLive.value?.tbmvBeleg?.notiz)
+                bind.fabUndo.isVisible = bind.fabSave.isVisible
             }
         }
-        Timber.tag(TAG).d("BelegFragment, onViewCreated mit Parameter Beleg-ID $belegId")
+
+        bind.fabSave.setOnClickListener {
+            Timber.tag(TAG).d("fabSave wurde gedrückt -> implementieren")
+        }
+
+        bind.fabUndo.setOnClickListener {
+            Timber.tag(TAG).d("fabUndo gedrückt -> implementieren...")
+        }
     }
+
+    override fun onResume() {
+        super.onResume()
+        Timber.tag(TAG).d("BelegFragment, onResume...")
+        // nun aktivieren wir die Anzeige..
+        belegViewModel.setNewBelegId(belegId!!)
+    }
+
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.beleg_bar_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
+        Timber.tag(TAG).d("BelegFragment, OnCreateOptionsMenu...")
         menu.getItem(0).isVisible = false
         addMenuItem = menu.findItem(R.id.miBarcode)
         addMenuItem.isVisible = false
