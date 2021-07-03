@@ -6,7 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.wsh.wshbmv.db.entities.relations.BelegAndZielort
 import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.TransDir
-import de.wsh.wshbmv.other.BelegStatus
+import de.wsh.wshbmv.other.BelegFilterStatus
 import de.wsh.wshbmv.repositories.MainRepository
 import javax.inject.Inject
 import javax.inject.Named
@@ -34,7 +34,7 @@ class TransferlistViewModel @Inject constructor(
     val belegliste = MediatorLiveData<List<BelegAndZielort>>()
 
     var transDir = TransDir.ANMICH
-    var transStatus = BelegStatus.OFFEN
+    var transStatus = BelegFilterStatus.OFFEN
 
     init {
         initTransfers()
@@ -42,28 +42,28 @@ class TransferlistViewModel @Inject constructor(
 
 
     fun filterDirection(transDir: TransDir) = when (transStatus) {
-        BelegStatus.ALLE -> {
+        BelegFilterStatus.ALLE -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerAlle.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerAlle.value?.let { belegliste.value = it }
             }
         }
-        BelegStatus.OFFEN -> {
+        BelegFilterStatus.OFFEN -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerOffen.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerOffen.value?.let { belegliste.value = it }
             }
         }
-        BelegStatus.INARBEIT -> {
+        BelegFilterStatus.INARBEIT -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerInArbeit.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerInArbeit.value?.let { belegliste.value = it }
             }
         }
-        BelegStatus.ERLEDIGT -> {
+        BelegFilterStatus.ERLEDIGT -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerErledigt.value?.let { belegliste.value = it }
             } else {
@@ -75,29 +75,29 @@ class TransferlistViewModel @Inject constructor(
     }
 
 
-    fun filterStatus(belegStatus: BelegStatus) = when (belegStatus) {
-        BelegStatus.ALLE -> {
+    fun filterStatus(belegStatus: BelegFilterStatus) = when (belegStatus) {
+        BelegFilterStatus.ALLE -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerAlle.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerAlle.value?.let { belegliste.value = it }
             }
         }
-        BelegStatus.OFFEN -> {
+        BelegFilterStatus.OFFEN -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerOffen.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerOffen.value?.let { belegliste.value = it }
             }
         }
-        BelegStatus.INARBEIT -> {
+        BelegFilterStatus.INARBEIT -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerInArbeit.value?.let { belegliste.value = it }
             } else {
                 belegeVonLagerInArbeit.value?.let { belegliste.value = it }
             }
         }
-        BelegStatus.ERLEDIGT -> {
+        BelegFilterStatus.ERLEDIGT -> {
             if (transDir == TransDir.ANMICH) {
                 belegeToLagerErledigt.value?.let { belegliste.value = it }
             } else {
@@ -134,42 +134,42 @@ class TransferlistViewModel @Inject constructor(
 
     fun initTransfers() {
         belegliste.addSource(belegeToLagerAlle) { result ->
-            if (transDir == TransDir.ANMICH && transStatus == BelegStatus.ALLE) {
+            if (transDir == TransDir.ANMICH && transStatus == BelegFilterStatus.ALLE) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeToLagerOffen) { result ->
-            if (transDir == TransDir.ANMICH && transStatus == BelegStatus.OFFEN) {
+            if (transDir == TransDir.ANMICH && transStatus == BelegFilterStatus.OFFEN) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeToLagerInArbeit) { result ->
-            if (transDir == TransDir.ANMICH && transStatus == BelegStatus.INARBEIT) {
+            if (transDir == TransDir.ANMICH && transStatus == BelegFilterStatus.INARBEIT) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeToLagerErledigt) { result ->
-            if (transDir == TransDir.ANMICH && transStatus == BelegStatus.ERLEDIGT) {
+            if (transDir == TransDir.ANMICH && transStatus == BelegFilterStatus.ERLEDIGT) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeVonLagerAlle) { result ->
-            if (transDir == TransDir.VONMIR && transStatus == BelegStatus.ALLE) {
+            if (transDir == TransDir.VONMIR && transStatus == BelegFilterStatus.ALLE) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeVonLagerOffen) { result ->
-            if (transDir == TransDir.VONMIR && transStatus == BelegStatus.OFFEN) {
+            if (transDir == TransDir.VONMIR && transStatus == BelegFilterStatus.OFFEN) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeVonLagerInArbeit) { result ->
-            if (transDir == TransDir.VONMIR && transStatus == BelegStatus.INARBEIT) {
+            if (transDir == TransDir.VONMIR && transStatus == BelegFilterStatus.INARBEIT) {
                 result?.let { belegliste.value = it }
             }
         }
         belegliste.addSource(belegeVonLagerErledigt) { result ->
-            if (transDir == TransDir.VONMIR && transStatus == BelegStatus.ERLEDIGT) {
+            if (transDir == TransDir.VONMIR && transStatus == BelegFilterStatus.ERLEDIGT) {
                 result?.let { belegliste.value = it }
             }
         }

@@ -214,8 +214,10 @@ class MainRepository @Inject constructor(
         return belegData
     }
 
-    // lade alle Belegpositionen zu einer BelegId, sortiert nach Pos
-    fun getBelegposVonBeleg(belegId: String) = tbmvDao.getBelegposVonBeleg(belegId)
+    // lade alle Belegpositionen zu einer BelegId, sortiert nach Pos (einmal als Livedata für Anzeige, einmal zu Abfragen als Pure-Liste)
+    fun getBelegposVonBelegLive(belegId: String) = tbmvDao.getBelegposVonBelegLive(belegId)
+    suspend fun getBelegposVonBeleg(belegId: String) = tbmvDao.getBelegposVonBeleg(belegId)
+
 
     // Neuanlage eines Transfer-Belegs mit Ziellager
     suspend fun insertBelegTransfer(tbmvLager: TbmvLager, noProtokoll: Boolean = false): String {
@@ -290,6 +292,21 @@ class MainRepository @Inject constructor(
         }
     }
 
+    suspend fun updateBelegPos(tbmvBelegPos: TbmvBelegPos, noProtokoll: Boolean = false) {
+        withContext(Dispatchers.IO) {
+            tbmvDao.updateBelegPos(tbmvBelegPos)
+            if (!noProtokoll) {
+                val chgProtokoll = TappChgProtokoll(
+                    timeStamp = System.currentTimeMillis(),
+                    datenbank = "TbmvBelegPos",
+                    satzID = tbmvBelegPos.id,
+                    Aktion = DB_AKTION_UPDATE_DS
+                )
+                tbmvDao.insertChgProtokoll(chgProtokoll)
+                sqlSynchronized = false
+            }
+        }
+    }
 
     // Löschbefehle mit opt. Protokollierung
     suspend fun deleteBeleg(tbmvBeleg: TbmvBeleg, noProtokoll: Boolean = false) {
@@ -309,6 +326,22 @@ class MainRepository @Inject constructor(
         }
     }
 
+    suspend fun deleteBelegPos(tbmvBelegPos: TbmvBelegPos, noProtokoll: Boolean = false) {
+        val belegPosId = tbmvBelegPos.id
+        withContext(Dispatchers.IO) {
+            tbmvDao.deleteBelegPos(tbmvBelegPos)
+            if (!noProtokoll) {
+                val chgProtokoll = TappChgProtokoll(
+                    timeStamp = System.currentTimeMillis(),
+                    datenbank = "TbmvBelegPos",
+                    satzID = belegPosId,
+                    Aktion = DB_AKTION_DELETE_DS
+                )
+                tbmvDao.insertChgProtokoll(chgProtokoll)
+                sqlSynchronized = false
+            }
+        }
+    }
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Material - Service

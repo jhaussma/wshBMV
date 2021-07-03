@@ -12,7 +12,10 @@ enum class TransDir {
     ANMICH, VONMIR
 }
 
-enum class BelegStatus {
+enum class BelegFilterStatus {
     OFFEN,INARBEIT,ERLEDIGT,ALLE
 }
 
+enum class BelegStatus {
+    UNDEFINED,USEREDIT,USERDELETE,ZIELACK,READONLY
+}

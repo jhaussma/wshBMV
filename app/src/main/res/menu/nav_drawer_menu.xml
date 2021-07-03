@@ -6,12 +6,14 @@
         android:id="@+id/miScanner"
         android:title="Scanner"
         android:icon="@drawable/ic_barcode"
+        android:visible="false"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/miBMListe"
         android:title="BM Liste"
         android:icon="@drawable/ic_bm_liste"
+        android:visible="false"
         app:showAsAction="ifRoom"         />
 
     <item
@@ -36,6 +38,7 @@
         android:id="@+id/miSettings"
         android:title="Einstellungen"
         android:icon="@drawable/ic_settings"
+        android:visible="false"
         app:showAsAction="ifRoom"/>
 
     <item

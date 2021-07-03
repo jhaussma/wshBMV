@@ -108,6 +108,9 @@ interface TbmvDAO {
     @Update
     suspend fun updateBeleg(tbmvBeleg: TbmvBeleg)
 
+    @Update
+    suspend fun updateBelegPos(tbmvBelegPos: TbmvBelegPos)
+
 
     // Abfragen Transferlisten...
     @Transaction
@@ -150,7 +153,11 @@ interface TbmvDAO {
 
     @Transaction
     @Query("SELECT * FROM TbmvBelegPos WHERE belegId = :belegId ORDER BY pos")
-    fun getBelegposVonBeleg(belegId: String): LiveData<List<BelegposAndMaterialAndLager>>
+    fun getBelegposVonBelegLive(belegId: String): LiveData<List<BelegposAndMaterialAndLager>>
+
+    @Transaction
+    @Query("SELECT * FROM TbmvBelegPos WHERE belegId = :belegId ORDER BY pos")
+    suspend fun getBelegposVonBeleg(belegId: String): List<TbmvBelegPos>
 
 
     /**

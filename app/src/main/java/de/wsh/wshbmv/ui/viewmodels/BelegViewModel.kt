@@ -13,7 +13,9 @@ import de.wsh.wshbmv.db.entities.relations.BmData
 import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,13 +36,18 @@ class BelegViewModel @Inject constructor(
     val barcodeErrorResponse: LiveData<String> = _barcodeErrorResponse
 
 
+    /** ############################################################################################
+     * wir löschen initial alle Belegdaten in den LiveData s
+     */
     fun clearBelegData() {
         Timber.tag(TAG).d("BelegViewModel, clearBelegData...")
         _belegDataLive.value = null
     }
 
+    /** ############################################################################################
+     *  eine neue BelegId wird aktiviert und die Daten hierzu aktualisiert (...die Observer)
+     */
     fun setNewBelegId(belegId: String) {
-        Timber.tag(TAG).d("BelegViewModel, setNewBelegId mit $belegId aufgerufen")
         viewModelScope.launch {
             val belegData = mainRepo.getBelegDatenZuBelegId(belegId)
             _belegDataLive.value = belegData
@@ -51,14 +58,11 @@ class BelegViewModel @Inject constructor(
      *  wir legen einen neuen Beleg an (Transfer)
      */
     fun addNewBeleg(tbmvLager: TbmvLager) {
-        Timber.tag(TAG).d("BelegViewModel, addNewBeleg aufgerufen")
         viewModelScope.launch {
             val belegId = mainRepo.insertBelegTransfer(tbmvLager)
             // wir starten eine neue Beleganzeige mit dem neuen Beleg...
             _newBelegId.value = belegId
         }
-
-
     }
 
     /** ############################################################################################
@@ -84,7 +88,10 @@ class BelegViewModel @Inject constructor(
         }
     }
 
-    fun getBelegposVonBeleg(belegId: String) = mainRepo.getBelegposVonBeleg(belegId)
+    /**
+     *  wir laden die LiveData-BelegPos-Liste zur Überwachung im Fragment...
+     */
+    fun getBelegposVonBeleg(belegId: String) = mainRepo.getBelegposVonBelegLive(belegId)
 
 
     /** ############################################################################################
@@ -110,22 +117,17 @@ class BelegViewModel @Inject constructor(
                     var access: Boolean = true
                     val belegId: String = _belegDataLive.value!!.tbmvBeleg!!.id
                     var pos = 1
-                    val belegPosListe = mainRepo.getBelegposVonBeleg(belegId).value
-                    if (belegPosListe != null) {
-                        if (belegPosListe.isNotEmpty()) {
-                            pos = belegPosListe.size +1
-                            // gibt es dieses BM schon in der Liste?
-                            belegPosListe.forEach {
-                                Timber.tag(TAG).d("Liste: ${it.tbmvBelegPos.matGuid}, Barcode: ${tbmvMat!!.id}")
-                                if (it.tbmvBelegPos.matGuid == tbmvMat!!.id) {
-                                    _barcodeErrorResponse.value =
-                                        "Das Betriebsmittel befindet sich schon in der Liste!"
-                                    access = false
-                                }
+                    val belegPosListe = mainRepo.getBelegposVonBeleg(belegId)
+                    if (belegPosListe.isNotEmpty()) {
+                        pos = belegPosListe.size + 1
+                        // gibt es dieses BM schon in der Liste?
+                        belegPosListe.forEach {
+                            if (it.matGuid == tbmvMat!!.id) {
+                                _barcodeErrorResponse.value =
+                                    "Das Betriebsmittel befindet sich schon in der Liste!"
+                                access = false
                             }
                         }
-                        Timber.tag(TAG).d("BelegViewModel: es gibt noch keine BelegPos-Liste!")
-                        access = true
                     }
 
                     if (access) {
@@ -138,10 +140,61 @@ class BelegViewModel @Inject constructor(
                             vonLagerGuid = bmData.matLager?.id
                         )
                         mainRepo.insertBelegPos(tbmvBelegPos)
+                    }
+                }
+            }
+        }
+    }
 
-                        // wir müssen noch den Adapter aktualisieren
+    /** ############################################################################################
+     *  wir empfangen einen Barcode zur Bestätigung einer Betriebsmittel-Übergabe
+     */
 
+    fun acknowledgeMaterialByScancode(scancode: String) {
+        viewModelScope.launch {
+            val tbmvMat = mainRepo.getAllowedMaterialFromScancode(scancode)
+            var bmData: BmData? = null
+            if (tbmvMat != null) {
+                bmData = mainRepo.getBMDatenZuMatID(tbmvMat.id)
+            }
+            if (bmData == null) {
+                _barcodeErrorResponse.value =
+                    "Barcode $scancode ist unbekannt oder fehlende Berechtigung!" // löst Fehlermeldung im UI aus
+            } else {
+                // nun prüfen wir, ob der Barcode verwendet werden kann
+                    //TODO() Hier muss das neu definiert werden (Copy and Paste)
 
+                if (bmData.matLager?.id == _belegDataLive.value?.tbmvBeleg?.zielLagerGuid) {
+                    _barcodeErrorResponse.value =
+                        "Das Betriebsmittel befindet sich schon im Ziel-Lager!"
+                } else {
+                    // prüfe auf Doppelanlage
+                    var access: Boolean = true
+                    val belegId: String = _belegDataLive.value!!.tbmvBeleg!!.id
+                    var pos = 1
+                    val belegPosListe = mainRepo.getBelegposVonBeleg(belegId)
+                    if (belegPosListe.isNotEmpty()) {
+                        pos = belegPosListe.size + 1
+                        // gibt es dieses BM schon in der Liste?
+                        belegPosListe.forEach {
+                            if (it.matGuid == tbmvMat!!.id) {
+                                _barcodeErrorResponse.value =
+                                    "Das Betriebsmittel befindet sich schon in der Liste!"
+                                access = false
+                            }
+                        }
+                    }
+
+                    if (access) {
+                        // nun wird angelegt!!
+                        var tbmvBelegPos = TbmvBelegPos(
+                            belegId = belegId,
+                            pos = pos,
+                            matGuid = tbmvMat!!.id,
+                            menge = 1f,
+                            vonLagerGuid = bmData.matLager?.id
+                        )
+                        mainRepo.insertBelegPos(tbmvBelegPos)
                     }
                 }
             }
@@ -149,5 +202,40 @@ class BelegViewModel @Inject constructor(
         }
 
     }
+
+    /** ############################################################################################
+     *  wir löschen einen Betriebsmitteleintrag in der BelegPos-Liste raus
+     */
+    fun deleteBelegPos(tbmvBelegPos: TbmvBelegPos) {
+        viewModelScope.launch {
+            val pos = tbmvBelegPos.pos
+            val belegId = tbmvBelegPos.belegId
+            val belegPosListe = mainRepo.getBelegposVonBeleg(belegId)
+            // ggf. die nachfolgenden Pos-Nummern 1 runtersetzen...
+            belegPosListe.forEach {
+                if (it.pos > pos) {
+                    it.pos -= 1
+                    mainRepo.updateBelegPos(it)
+                }
+            }
+
+            // und nun den Datensatz löschen
+            mainRepo.deleteBelegPos(tbmvBelegPos)
+            _belegDataLive.value = _belegDataLive.value //initiiert den Observer
+        }
+    }
+
+    /**
+     *  ändere den Status des aktuellen Belegs von In Arbeit auf Erfasst
+     */
+    fun setBelegStatusToReleased() {
+        viewModelScope.launch {
+            val tbmvBeleg = _belegDataLive.value!!.tbmvBeleg!!
+            tbmvBeleg.belegStatus = "Erfasst"
+            tbmvBeleg.belegDatum = Date()
+            mainRepo.updateBeleg(tbmvBeleg)
+        }
+    }
+
 
 }

@@ -6,7 +6,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -21,7 +20,7 @@ import de.wsh.wshbmv.db.entities.TbmvLager
 import de.wsh.wshbmv.db.entities.relations.BelegAndZielort
 import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.TransDir
-import de.wsh.wshbmv.other.BelegStatus
+import de.wsh.wshbmv.other.BelegFilterStatus
 import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.ui.FragCommunicator
 import de.wsh.wshbmv.ui.dialog.AddBelegDialog
@@ -67,10 +66,10 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
 
         // initialisiere die Spinner
         when (viewModel.transStatus) {
-            BelegStatus.OFFEN -> bind.spTfListStatus.setSelection(0)
-            BelegStatus.INARBEIT -> bind.spTfListStatus.setSelection(1)
-            BelegStatus.ERLEDIGT -> bind.spTfListStatus.setSelection(2)
-            BelegStatus.ALLE -> bind.spTfListStatus.setSelection(3)
+            BelegFilterStatus.OFFEN -> bind.spTfListStatus.setSelection(0)
+            BelegFilterStatus.INARBEIT -> bind.spTfListStatus.setSelection(1)
+            BelegFilterStatus.ERLEDIGT -> bind.spTfListStatus.setSelection(2)
+            BelegFilterStatus.ALLE -> bind.spTfListStatus.setSelection(3)
         }
         when (viewModel.transDir) {
             TransDir.ANMICH -> bind.spTfListDirection.setSelection(0)
@@ -88,10 +87,10 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
                 id: Long
             ) {
                 when (pos) {
-                    0 -> viewModel.filterStatus(BelegStatus.OFFEN)
-                    1 -> viewModel.filterStatus(BelegStatus.INARBEIT)
-                    2 -> viewModel.filterStatus(BelegStatus.ERLEDIGT)
-                    3 -> viewModel.filterStatus(BelegStatus.ALLE)
+                    0 -> viewModel.filterStatus(BelegFilterStatus.OFFEN)
+                    1 -> viewModel.filterStatus(BelegFilterStatus.INARBEIT)
+                    2 -> viewModel.filterStatus(BelegFilterStatus.ERLEDIGT)
+                    3 -> viewModel.filterStatus(BelegFilterStatus.ALLE)
                 }
             }
         }

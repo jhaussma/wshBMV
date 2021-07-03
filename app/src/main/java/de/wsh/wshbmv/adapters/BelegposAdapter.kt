@@ -31,6 +31,7 @@ class BelegposAdapter(
                 listener.onBelegposlistItemClick(belegposMaterialLager)
             }
         }
+
     }
 
     private lateinit var bind: ItemBelegposBinding
@@ -55,7 +56,6 @@ class BelegposAdapter(
             bind.tvBelegposMatName.text = myBelegPos.tbmvMat?.matchcode
             bind.tvBelegposAckDatum.text = myBelegPos.tbmvBelegPos.ackDatum?.formatedDateDE()
             bind.tvBelegposVon.text = myBelegPos.tbmvLager?.matchcode
-            Timber.tag(TAG).d("Belegpos: ${myBelegPos.toString()}")
         }
     }
 
