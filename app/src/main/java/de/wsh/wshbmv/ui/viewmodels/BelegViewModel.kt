@@ -39,9 +39,10 @@ class BelegViewModel @Inject constructor(
     /** ############################################################################################
      * wir löschen initial alle Belegdaten in den LiveData s
      */
-    fun clearBelegData() {
+    fun clearViewModelLiveData() {
         Timber.tag(TAG).d("BelegViewModel, clearBelegData...")
         _belegDataLive.value = null
+        _barcodeErrorResponse.value = ""
     }
 
     /** ############################################################################################
@@ -149,8 +150,8 @@ class BelegViewModel @Inject constructor(
     /** ############################################################################################
      *  wir empfangen einen Barcode zur Bestätigung einer Betriebsmittel-Übergabe
      */
-
     fun acknowledgeMaterialByScancode(scancode: String) {
+        Timber.tag(TAG).d("acknowledgeMaterialByScancode...")
         viewModelScope.launch {
             val tbmvMat = mainRepo.getAllowedMaterialFromScancode(scancode)
             var bmData: BmData? = null
@@ -162,45 +163,44 @@ class BelegViewModel @Inject constructor(
                     "Barcode $scancode ist unbekannt oder fehlende Berechtigung!" // löst Fehlermeldung im UI aus
             } else {
                 // nun prüfen wir, ob der Barcode verwendet werden kann
-                    //TODO() Hier muss das neu definiert werden (Copy and Paste)
-
-                if (bmData.matLager?.id == _belegDataLive.value?.tbmvBeleg?.zielLagerGuid) {
-                    _barcodeErrorResponse.value =
-                        "Das Betriebsmittel befindet sich schon im Ziel-Lager!"
-                } else {
-                    // prüfe auf Doppelanlage
-                    var access: Boolean = true
-                    val belegId: String = _belegDataLive.value!!.tbmvBeleg!!.id
-                    var pos = 1
-                    val belegPosListe = mainRepo.getBelegposVonBeleg(belegId)
-                    if (belegPosListe.isNotEmpty()) {
-                        pos = belegPosListe.size + 1
-                        // gibt es dieses BM schon in der Liste?
-                        belegPosListe.forEach {
-                            if (it.matGuid == tbmvMat!!.id) {
+                var cntNoAck = 0
+                var tbmvBelegPos: TbmvBelegPos? = null
+                val belegId: String = _belegDataLive.value!!.tbmvBeleg!!.id
+                val belegPosListe = mainRepo.getBelegposVonBeleg(belegId)
+                if (belegPosListe.isNotEmpty()) {
+                    // ist dies ein Betriebsmittel des Belegs?
+                    belegPosListe.forEach {
+                        if (it.ackDatum == null) cntNoAck += 1
+                        if (it.matGuid == tbmvMat!!.id) {
+                            if (it.ackDatum == null) {
+                                tbmvBelegPos = it
+                            } else {
                                 _barcodeErrorResponse.value =
-                                    "Das Betriebsmittel befindet sich schon in der Liste!"
-                                access = false
+                                    "Das Betriebsmittel wurde bereits bestätigt!"
                             }
                         }
                     }
+                }
 
-                    if (access) {
-                        // nun wird angelegt!!
-                        var tbmvBelegPos = TbmvBelegPos(
-                            belegId = belegId,
-                            pos = pos,
-                            matGuid = tbmvMat!!.id,
-                            menge = 1f,
-                            vonLagerGuid = bmData.matLager?.id
-                        )
-                        mainRepo.insertBelegPos(tbmvBelegPos)
+                if (tbmvBelegPos == null) {
+                    _barcodeErrorResponse.value =
+                        "Das Betriebsmittel gehört nicht zur Liste dieses Belegs!"
+                } else {
+                    tbmvBelegPos!!.ackDatum = Date()
+                    Timber.tag(TAG).d("acknowledgeMaterialByScancode, updateBelegPos mit ${tbmvBelegPos.toString()}")
+                    mainRepo.updateBelegPos(tbmvBelegPos!!)
+                    if (cntNoAck <= 1) {
+                        // es wurden alle Positionen bestätigt (die letzte Position mit diesem Vorgang...)
+                        // .. wir aktualisieren den BelegStatus
+                        val tbmvBeleg = _belegDataLive.value!!.tbmvBeleg!!
+                        tbmvBeleg.belegStatus = "Fertig"
+                        tbmvBeleg.belegDatum = Date()
+                        mainRepo.updateBeleg(tbmvBeleg)
+                        _belegDataLive.value = _belegDataLive.value //initiiert den Observer
                     }
                 }
             }
-
         }
-
     }
 
     /** ############################################################################################

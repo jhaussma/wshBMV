@@ -67,7 +67,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
         belegId = arguments?.getString("belegId")
         Timber.tag(TAG).d("BelegFragment, onViewCreated mit Parameter Beleg-ID $belegId")
 
-        belegViewModel.clearBelegData()
+        belegViewModel.clearViewModelLiveData()
 
         setupRecyclerView()
         bind.fabSave.isVisible = false
@@ -302,8 +302,8 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
         Timber.tag(TAG).d("BelegFragment hat Barcode $barcode empfangen...")
         if (belegFragStatus == BelegStatus.USEREDIT) {
             belegViewModel.setNewMaterialIdByScancode(barcode)
-        } else if (belegFragStatus == BelegStatus.USEREDIT) {
-
+        } else if (belegFragStatus == BelegStatus.ZIELACK) {
+            belegViewModel.acknowledgeMaterialByScancode(barcode)
         }
     }
 

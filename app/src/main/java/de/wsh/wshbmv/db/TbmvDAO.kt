@@ -118,7 +118,7 @@ interface TbmvDAO {
     fun getBelegeToLagerAlle(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE zielLagerGuid = :lagerId AND belegStatus = 'Offen' ORDER BY belegDatum DESC")
+    @Query("SELECT * FROM TbmvBeleg WHERE zielLagerGuid = :lagerId AND belegStatus = 'Erfasst' ORDER BY belegDatum DESC")
     fun getBelegeToLagerOffen(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
@@ -134,7 +134,7 @@ interface TbmvDAO {
     fun getBelegeVonLagerAlle(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus = 'Offen' ORDER BY belegDatum DESC")
+    @Query("SELECT * FROM TbmvBeleg WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus = 'Erfasst' ORDER BY belegDatum DESC")
     fun getBelegeVonLagerOffen(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
