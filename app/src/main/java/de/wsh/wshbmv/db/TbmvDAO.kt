@@ -166,13 +166,19 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager)
 
+    @Update
+    suspend fun updateMat_Lager(tbmvMat_Lager: TbmvMat_Lager)
+
+    @Delete
+    suspend fun deleteMat_Lager(tbmvMat_Lager: TbmvMat_Lager)
+
     @Transaction
     @Query("SELECT * FROM TbmvMat_Lager WHERE lagerId LIKE :lagerId")
     suspend fun getMatlistOfLager(lagerId: String): MatInLager?
 
     @Transaction
-    @Query("SELECT TbmvLager.* FROM TbmvLager INNER JOIN TbmvMat_Lager ON TbmvLager.id = TbmvMat_Lager.lagerId WHERE TbmvMat_Lager.matId = :matId")
-    suspend fun getLagersWithMaterialId(matId: String): List<TbmvLager>
+    @Query("SELECT * FROM TbmvMat_Lager WHERE matId = :matId ORDER BY Bestand DESC")
+    suspend fun getLagersBestandOfMaterialID(matId: String): List<TbmvMat_Lager>
 
     @Transaction
     @Query("SELECT * FROM TbmvMat_Lager WHERE matId LIKE :matId AND bestand > 0")

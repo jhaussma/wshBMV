@@ -90,7 +90,7 @@ class MainRepository @Inject constructor(
             tbmvMat = tbmvDao.getMaterialByScancode(scancode)
             if (tbmvMat != null) {
                 // Material gefunden, nun muss es noch in unserer Lagerliste-Berechtigung drin sein
-                val lagers = tbmvDao.getLagersWithMaterialId(tbmvMat!!.id)
+                val lagers = tbmvDao.getLagersBestandOfMaterialID(tbmvMat!!.id)
                 if (lagers.isEmpty()) {
                     // wir haben kein Lager zum Betriebsmittel gefunden...
                     tbmvMat = null
@@ -155,13 +155,61 @@ class MainRepository @Inject constructor(
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Material - Lager
      */
-    suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager) =
-        tbmvDao.insertMat_Lager(tbmvMat_Lager)
+    suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager, noProtokoll: Boolean = false) {
+        val matLagerId: String = UUID.randomUUID().toString()
+        withContext(Dispatchers.IO) {
+            if (!noProtokoll) tbmvMat_Lager.id = matLagerId
+            tbmvDao.insertMat_Lager(tbmvMat_Lager)
+            if (!noProtokoll) {
+                val chgProtokoll = TappChgProtokoll(
+                    timeStamp = System.currentTimeMillis(),
+                    datenbank = "TbmvMat_Lager",
+                    satzID = matLagerId,
+                    Aktion = DB_AKTION_ADD_DS
+                )
+                tbmvDao.insertChgProtokoll(chgProtokoll)
+                sqlSynchronized = false
+            }
+        }
+    }
 
-    suspend fun getLagersWithMaterialId(materialID: String) =
-        tbmvDao.getLagersWithMaterialId(materialID)
+    suspend fun updateMat_Lager(tbmvMat_Lager: TbmvMat_Lager, noProtokoll: Boolean = false) {
+        withContext(Dispatchers.IO) {
+            tbmvDao.updateMat_Lager(tbmvMat_Lager)
+            if (!noProtokoll) {
+                val chgProtokoll = TappChgProtokoll(
+                    timeStamp = System.currentTimeMillis(),
+                    datenbank = "TbmvMat_Lager",
+                    satzID = tbmvMat_Lager.id,
+                    Aktion = DB_AKTION_UPDATE_DS
+                )
+                tbmvDao.insertChgProtokoll(chgProtokoll)
+                sqlSynchronized = false
+            }
+        }
+    }
+
+    suspend fun deleteMat_Lager(tbmvMat_Lager: TbmvMat_Lager, noProtokoll: Boolean = false) {
+        withContext(Dispatchers.IO) {
+            tbmvDao.deleteMat_Lager(tbmvMat_Lager)
+            if (!noProtokoll) {
+                val chgProtokoll = TappChgProtokoll(
+                    timeStamp = System.currentTimeMillis(),
+                    datenbank = "TbmvMat_Lager",
+                    satzID = tbmvMat_Lager.id,
+                    Aktion = DB_AKTION_DELETE_DS
+                )
+                tbmvDao.insertChgProtokoll(chgProtokoll)
+                sqlSynchronized = false
+            }
+        }
+    }
+
+    suspend fun getLagersBestandOfMaterialID(materialID: String) =
+        tbmvDao.getLagersBestandOfMaterialID(materialID)
 
     suspend fun getLagerListSorted() = tbmvDao.getLagerListSorted()
+
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  lade sortierte und gefilterte Listen der Betriebsmittel/Materialien eines Lagers
@@ -258,7 +306,7 @@ class MainRepository @Inject constructor(
     suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos, noProtokoll: Boolean = false) {
         val belegPosId: String = UUID.randomUUID().toString()
         withContext(Dispatchers.IO) {
-            tbmvBelegPos.id = belegPosId
+            if (!noProtokoll) tbmvBelegPos.id = belegPosId
             tbmvDao.insertBelegPos(tbmvBelegPos)
 
             if (!noProtokoll) {

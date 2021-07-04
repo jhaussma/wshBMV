@@ -10,10 +10,10 @@ import de.wsh.wshbmv.db.entities.TbmvBelegPos
 import de.wsh.wshbmv.db.entities.TbmvLager
 import de.wsh.wshbmv.db.entities.relations.BelegData
 import de.wsh.wshbmv.db.entities.relations.BmData
+import de.wsh.wshbmv.db.entities.relations.TbmvMat_Lager
 import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
@@ -187,8 +187,61 @@ class BelegViewModel @Inject constructor(
                         "Das Betriebsmittel gehört nicht zur Liste dieses Belegs!"
                 } else {
                     tbmvBelegPos!!.ackDatum = Date()
-                    Timber.tag(TAG).d("acknowledgeMaterialByScancode, updateBelegPos mit ${tbmvBelegPos.toString()}")
+                    Timber.tag(TAG)
+                        .d("acknowledgeMaterialByScancode, updateBelegPos mit ${tbmvBelegPos.toString()}")
                     mainRepo.updateBelegPos(tbmvBelegPos!!)
+                    // aktualisiere die Material-Lager-Einträge (Bestand 1 zuerst...)
+                    val zielLagerId = _belegDataLive.value!!.zielLager!!.id
+                    var bestandIsPlaced = false
+                    val lagersBestand = mainRepo.getLagersBestandOfMaterialID(tbmvMat!!.id)
+                    if (lagersBestand.isEmpty()) {
+                        // eher untypisch, da fehlte offensichtlich bisher eine Materialzuordnung!!
+                        // -> in diesem Falle wird einfach ein Hauptlager angelegt
+                        val tbmvMatLager = TbmvMat_Lager(
+                            id = "",
+                            matId = tbmvMat.id,
+                            lagerId = zielLagerId,
+                            isDefault = 1,
+                            bestand = 1f
+                        )
+                        mainRepo.insertMat_Lager(tbmvMatLager)
+                        bestandIsPlaced = true
+                    } else {
+                        // wir entscheiden je nach Hauptlager-Belegung...
+                        // Start mit dem ersten Eintrag (normalerweise der mit Bestand !) -> muss ich löschen oder 0-setzen?
+                        var tbmvMatLager = lagersBestand[0]
+                        if (tbmvMatLager.bestand == 0f && tbmvMatLager.isDefault == 1) {
+                            // es fehlt bisher ein Bestand, d.h. der Materialstatus ändert sich ebenfalls...
+                            //TODO Materialstatus ändern...
+
+                        } else {
+                            // Wenn Default-Lager, Bestand auf 0 setzen, ansonsten Eintrag löschen
+                            if (tbmvMatLager.isDefault == 1) {
+                                tbmvMatLager.bestand = 0f
+                                mainRepo.updateMat_Lager(tbmvMatLager)
+                            } else {
+                                mainRepo.deleteMat_Lager(tbmvMatLager)
+                            }
+                        }
+                        // sofern ein 2. Eintrag da ist, sollte das das Hauptlager sein, welches den Bestand 0 hat
+                        if (lagersBestand.size > 1) {
+                            tbmvMatLager = lagersBestand[1]
+                            // ist das Lager identisch mit dem Ziellager, wird hier der Bestand korrigiert
+                            if (tbmvMatLager.lagerId == zielLagerId) {
+
+
+                            }
+
+                        }
+
+
+                        // hat der erste Eintrag Bestand und ist Hauptlager, wird Lager genullt und Ziellager mit Bestand angelegt
+                        // hat der erste Eintrag Bestand und ist nicht Hauptlager, wird der Lager-Eintrag gelöscht
+
+
+                    }
+
+
                     if (cntNoAck <= 1) {
                         // es wurden alle Positionen bestätigt (die letzte Position mit diesem Vorgang...)
                         // .. wir aktualisieren den BelegStatus

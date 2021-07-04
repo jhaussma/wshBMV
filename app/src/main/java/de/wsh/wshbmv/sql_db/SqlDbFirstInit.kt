@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.lang.Exception
+import java.security.KeyStore
 import java.sql.Connection
 import javax.inject.Inject
 
@@ -299,7 +300,7 @@ class SqlDbFirstInit @Inject constructor(
                 belegPos.vonLagerGuid = resultSet.getString("VonLagerGUID")
                 belegPos.ackDatum = resultSet.getTimestamp("AckDatum")
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertBelegPos(belegPos, false)
+                mainRepository.insertBelegPos(belegPos, true)
             }
         }
 
@@ -341,7 +342,7 @@ class SqlDbFirstInit @Inject constructor(
                 matInLager.isDefault = resultSet.getInt("Default")
                 matInLager.bestand = resultSet.getFloat("Bestand")
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertMat_Lager(matInLager)
+                mainRepository.insertMat_Lager(matInLager, true)
             }
         }
 
