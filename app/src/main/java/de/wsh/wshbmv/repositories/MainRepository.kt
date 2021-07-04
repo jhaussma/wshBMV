@@ -6,11 +6,13 @@ import de.wsh.wshbmv.db.entities.relations.*
 import de.wsh.wshbmv.other.Constants.DB_AKTION_ADD_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_DELETE_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_UPDATE_DS
+import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.myUser
 import de.wsh.wshbmv.other.GlobalVars.sqlSynchronized
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 
@@ -89,16 +91,18 @@ class MainRepository @Inject constructor(
         withContext(Dispatchers.IO) {
             tbmvMat = tbmvDao.getMaterialByScancode(scancode)
             if (tbmvMat != null) {
-                // Material gefunden, nun muss es noch in unserer Lagerliste-Berechtigung drin sein
-                val lagers = tbmvDao.getLagersBestandOfMaterialID(tbmvMat!!.id)
-                if (lagers.isEmpty()) {
-                    // wir haben kein Lager zum Betriebsmittel gefunden...
-                    tbmvMat = null
-                } else {
-                    val resultLagers = lagers.intersect(GlobalVars.myLagers)
-                    if (resultLagers.isEmpty()) {
-                        // wir haben keine Berechtigung zu einem dieser Lager...
+                // Material gefunden, nun muss es noch in unserer (Lagerliste-)Berechtigung drin sein
+                if (myUser!!.bmvAdmin == 0) {
+                    val lagers = tbmvDao.getLagersOfMaterialID(tbmvMat!!.id)
+                    if (lagers.isEmpty()) {
+                        // wir haben kein Lager zum Betriebsmittel gefunden...
                         tbmvMat = null
+                    } else {
+                        val resultLagers = lagers.intersect(GlobalVars.myLagers)
+                        if (resultLagers.isEmpty()) {
+                            // wir haben keine Berechtigung zu einem dieser Lager...
+                            tbmvMat = null
+                        }
                     }
                 }
             }

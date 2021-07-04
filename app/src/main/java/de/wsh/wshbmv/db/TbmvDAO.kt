@@ -177,6 +177,10 @@ interface TbmvDAO {
     suspend fun getMatlistOfLager(lagerId: String): MatInLager?
 
     @Transaction
+    @Query("SELECT TbmvLager.* FROM TbmvLager INNER JOIN TbmvMat_Lager ON TbmvLager.id = TbmvMat_Lager.lagerId WHERE TbmvMat_Lager.matId = :matId")
+    suspend fun getLagersOfMaterialID(matId: String): List<TbmvLager>
+
+    @Transaction
     @Query("SELECT * FROM TbmvMat_Lager WHERE matId = :matId ORDER BY Bestand DESC")
     suspend fun getLagersBestandOfMaterialID(matId: String): List<TbmvMat_Lager>
 

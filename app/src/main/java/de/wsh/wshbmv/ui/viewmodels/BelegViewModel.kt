@@ -228,19 +228,23 @@ class BelegViewModel @Inject constructor(
                             tbmvMatLager = lagersBestand[1]
                             // ist das Lager identisch mit dem Ziellager, wird hier der Bestand korrigiert
                             if (tbmvMatLager.lagerId == zielLagerId) {
-
-
+                                tbmvMatLager.bestand = 1f
+                                mainRepo.updateMat_Lager(tbmvMatLager)
+                                bestandIsPlaced
                             }
-
                         }
-
-
-                        // hat der erste Eintrag Bestand und ist Hauptlager, wird Lager genullt und Ziellager mit Bestand angelegt
-                        // hat der erste Eintrag Bestand und ist nicht Hauptlager, wird der Lager-Eintrag gelöscht
-
-
+                        // ist nun der neue Bestand noch nicht eingetragen, legen wir einen neuen Eintrag an
+                        if (!bestandIsPlaced) {
+                            val tbmvMatLager = TbmvMat_Lager(
+                                id = "",
+                                matId = tbmvMat.id,
+                                lagerId = zielLagerId,
+                                isDefault = 1,
+                                bestand = 1f
+                            )
+                            mainRepo.insertMat_Lager(tbmvMatLager)
+                        }
                     }
-
 
                     if (cntNoAck <= 1) {
                         // es wurden alle Positionen bestätigt (die letzte Position mit diesem Vorgang...)
