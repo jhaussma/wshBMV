@@ -8,5 +8,11 @@
         android:icon="@drawable/ic_barcode"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/miAddMaterial"
+        android:title="Betriebsmittel anlegen"
+        android:icon="@drawable/ic_plus"
+        app:showAsAction="ifRoom" />
+
 
 </menu>

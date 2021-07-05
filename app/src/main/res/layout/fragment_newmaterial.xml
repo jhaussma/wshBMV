@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="invisible"
+    tools:visibility="visible">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp">
+
+
+            <TextView
+                android:id="@+id/tvView1Matchcode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Matchcode"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/ivMatBild" />
+
+            <ImageView
+                android:id="@+id/ivMatBild"
+                android:layout_width="120dp"
+                android:layout_height="140dp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:srcCompat="@tools:sample/avatars" />
+
+            <TextView
+                android:id="@+id/tvMatStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:hint="Status"
+                android:textAlignment="textEnd"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@+id/ivMatBild"
+                app:layout_constraintTop_toTopOf="@+id/ivMatBild" />
+
+            <TextView
+                android:id="@+id/tvMatTyp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:hint="Typ"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/tvView1Matchcode"
+                app:layout_constraintTop_toTopOf="@+id/ivMatBild" />
+
+            <TextView
+                android:id="@+id/tvView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Scancode"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/etMatMatchcode" />
+
+            <View
+                android:id="@+id/divider1"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/colorAccent"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ivMatBild" />
+
+            <TextView
+                android:id="@+id/tvView4"
+                android:layout_width="106dp"
+                android:layout_height="wrap_content"
+                android:text="Hersteller"
+                app:layout_constraintBottom_toBottomOf="@+id/etMatHersteller"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/etMatHersteller" />
+
+            <TextView
+                android:id="@+id/tvView5"
+                android:layout_width="106dp"
+                android:layout_height="wrap_content"
+                android:text="Modell"
+                app:layout_constraintBottom_toBottomOf="@+id/etMatModell"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/etMatModell" />
+
+            <TextView
+                android:id="@+id/tvView6"
+                android:layout_width="106dp"
+                android:layout_height="wrap_content"
+                android:text="Seriennummer
+"
+                app:layout_constraintBottom_toBottomOf="@+id/etMatSeriennr"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/etMatSeriennr" />
+
+            <TextView
+                android:id="@+id/tvView7"
+                android:layout_width="106dp"
+                android:layout_height="wrap_content"
+                android:text="Betriebsmittel\nGruppe"
+                app:layout_constraintBottom_toBottomOf="@+id/actvMatGruppe"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/actvMatGruppe" />
+
+
+            <TextView
+                android:id="@+id/tvView8"
+                android:layout_width="106dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Beschreibung"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/actvMatGruppe" />
+
+            <View
+                android:id="@+id/divider3"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/colorAccent"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/etMatBeschreibung" />
+
+            <TextView
+                android:id="@+id/tvView9"
+                android:layout_width="106dp"
+                android:layout_height="wrap_content"
+                android:text="Verantwortlich"
+                app:layout_constraintBottom_toBottomOf="@+id/actvMatVerantwortlich"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/actvMatVerantwortlich" />
+
+            <TextView
+                android:id="@+id/tvView11"
+                android:layout_width="106dp"
+                android:layout_height="wrap_content"
+                android:text="Haupt-Standort"
+                app:layout_constraintBottom_toBottomOf="@+id/actvMatHauptlager"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/actvMatHauptlager" />
+
+            <EditText
+                android:id="@+id/etMatMatchcode"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:ems="10"
+                android:hint="Matchcode"
+                android:inputType="textPersonName"
+                android:maxLength="50"
+                app:layout_constraintEnd_toStartOf="@+id/ivMatBild"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvView1Matchcode" />
+
+            <EditText
+                android:id="@+id/etMatScancode"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:ems="9"
+                android:inputType="number"
+                android:maxLength="9"
+                app:layout_constraintBottom_toBottomOf="@+id/tvView2"
+                app:layout_constraintEnd_toStartOf="@+id/ivMatBild"
+                app:layout_constraintStart_toEndOf="@+id/tvView2"
+                app:layout_constraintTop_toTopOf="@+id/tvView2" />
+
+            <EditText
+                android:id="@+id/etMatHersteller"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:maxLength="80"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tvView4"
+                app:layout_constraintTop_toBottomOf="@+id/divider1" />
+
+            <EditText
+                android:id="@+id/etMatModell"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:maxLength="80"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tvView5"
+                app:layout_constraintTop_toBottomOf="@+id/etMatHersteller" />
+
+            <EditText
+                android:id="@+id/etMatSeriennr"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:maxLength="80"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/tvView6"
+                app:layout_constraintTop_toBottomOf="@+id/etMatModell" />
+
+            <AutoCompleteTextView
+                android:id="@+id/actvMatGruppe"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tvView7"
+                app:layout_constraintTop_toBottomOf="@+id/etMatSeriennr" />
+
+            <EditText
+                android:id="@+id/etMatBeschreibung"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:ems="10"
+                android:gravity="start|top"
+                android:inputType="textMultiLine"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvView8" />
+
+            <AutoCompleteTextView
+                android:id="@+id/actvMatVerantwortlich"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tvView9"
+                app:layout_constraintTop_toBottomOf="@+id/divider3" />
+
+            <AutoCompleteTextView
+                android:id="@+id/actvMatHauptlager"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="AutoCompleteTextView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tvView11"
+                app:layout_constraintTop_toBottomOf="@+id/actvMatVerantwortlich" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

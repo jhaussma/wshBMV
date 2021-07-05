@@ -143,19 +143,25 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         } else {
             when (item.itemId) {
                 R.id.miBarcode -> {
-                    // ermittle das aktive Fragment und speichere es in barcodeImportFragment
+                    // ermittle das aktive Fragment und speichere es
                     importFragment = getVisibleFragment()
                     startBarcodeScanner()
                     true
                 }
 
                 R.id.miMatAddPhoto -> {
-                    // ermittle das aktive Fragment und speichere es in photoImpoortFragment...
+                    // ermittle das aktive Fragment und speichere es
                     importFragment = getVisibleFragment()
                     captureImage()
                     true
                 }
 
+                R.id.miAddMaterial -> {
+                    // leg ein neues Betriebsmittel an (nur für Admins...)
+
+
+                    true
+                }
 
                 else -> false
             }

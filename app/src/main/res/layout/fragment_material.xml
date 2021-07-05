@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:visibility="invisible"
+    tools:visibility="visible">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -118,7 +120,8 @@
                 app:iconGravity="textEnd"
                 app:iconPadding="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/divider1" />
+                app:layout_constraintTop_toBottomOf="@+id/divider1"
+                tools:visibility="visible" />
 
             <TextView
                 android:id="@+id/tvView3"
@@ -198,7 +201,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Seriennummer
-"                app:layout_constraintStart_toStartOf="parent"
+"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvMatModell" />
 
             <TextView

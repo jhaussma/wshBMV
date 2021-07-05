@@ -197,6 +197,7 @@ class BelegViewModel @Inject constructor(
                     if (lagersBestand.isEmpty()) {
                         // eher untypisch, da fehlte offensichtlich bisher eine Materialzuordnung!!
                         // -> in diesem Falle wird einfach ein Hauptlager angelegt
+                            Timber.tag(TAG).d("acknowledgeMaterialByScancode, kein Lagerbestand gefunden")
                         val tbmvMatLager = TbmvMat_Lager(
                             id = "",
                             matId = tbmvMat.id,
@@ -207,39 +208,56 @@ class BelegViewModel @Inject constructor(
                         mainRepo.insertMat_Lager(tbmvMatLager)
                         bestandIsPlaced = true
                     } else {
-                        // wir entscheiden je nach Hauptlager-Belegung...
+                        // wir entscheiden je nach aktueller Lager-Belegung...
                         // Start mit dem ersten Eintrag (normalerweise der mit Bestand !) -> muss ich löschen oder 0-setzen?
                         var tbmvMatLager = lagersBestand[0]
                         if (tbmvMatLager.bestand == 0f && tbmvMatLager.isDefault == 1) {
                             // es fehlt bisher ein Bestand, d.h. der Materialstatus ändert sich ebenfalls...
-                            //TODO Materialstatus ändern...
+                            Timber.tag(TAG).d("acknowledgeMaterialByScancode, Bestand (im Default) war schon auf 0...")
+                            if (tbmvMatLager.id == zielLagerId) {
+                                // wir setzen den Bestand auf 1
+                                Timber.tag(TAG).d("acknowledgeMaterialByScancode, Bestand im Hauptlager auf 1 gesetzt..")
+                                tbmvMatLager.bestand = 1f
+                                mainRepo.updateMat_Lager(tbmvMatLager)
+                                bestandIsPlaced = true
+                            }
+                            if (tbmvMat.matStatus == "Vermisst") {
+                                tbmvMat.matStatus = "Aktiv"
+                                mainRepo.updateMat(tbmvMat)
+                            }
 
                         } else {
-                            // Wenn Default-Lager, Bestand auf 0 setzen, ansonsten Eintrag löschen
+                            // Wenn erster Eintrag = Default-Lager, Bestand auf 0 setzen, ansonsten Eintrag löschen
                             if (tbmvMatLager.isDefault == 1) {
+                                Timber.tag(TAG).d("acknowledgeMaterialByScancode, Hauptlagerbestand wird 0 gesetzt...")
                                 tbmvMatLager.bestand = 0f
                                 mainRepo.updateMat_Lager(tbmvMatLager)
                             } else {
+                                Timber.tag(TAG).d("acknowledgeMaterialByScancode, NICHT-Hauptlager wird gelöscht")
                                 mainRepo.deleteMat_Lager(tbmvMatLager)
                             }
                         }
                         // sofern ein 2. Eintrag da ist, sollte das das Hauptlager sein, welches den Bestand 0 hat
                         if (lagersBestand.size > 1) {
+                            Timber.tag(TAG).d("acknowledgeMaterialByScancode, zweites Lager gefunden...")
                             tbmvMatLager = lagersBestand[1]
-                            // ist das Lager identisch mit dem Ziellager, wird hier der Bestand korrigiert
+                            // ist das Lager identisch mit dem Ziellager, wird hier der Bestand korrigiert, ansonsten später ein neuer Datensatz angehängt...
                             if (tbmvMatLager.lagerId == zielLagerId) {
+                                Timber.tag(TAG).d("acknowledgeMaterialByScancode, 2. Lager ist Ziellager, Bestand auf 1 gesetzt...")
                                 tbmvMatLager.bestand = 1f
                                 mainRepo.updateMat_Lager(tbmvMatLager)
-                                bestandIsPlaced
+                                bestandIsPlaced = true
                             }
                         }
-                        // ist nun der neue Bestand noch nicht eingetragen, legen wir einen neuen Eintrag an
+
+                        // ist nun der neue Bestand noch nicht eingetragen, legen wir einen neuen Eintrag an - das kann dann aber nicht das Hauptlager sein!
                         if (!bestandIsPlaced) {
+                            Timber.tag(TAG).d("acknowledgeMaterialByScancode, neuer Eintrag für Ziellager mit Bestand = 1 gesetzt...")
                             val tbmvMatLager = TbmvMat_Lager(
                                 id = "",
                                 matId = tbmvMat.id,
                                 lagerId = zielLagerId,
-                                isDefault = 1,
+                                isDefault = 0,
                                 bestand = 1f
                             )
                             mainRepo.insertMat_Lager(tbmvMatLager)

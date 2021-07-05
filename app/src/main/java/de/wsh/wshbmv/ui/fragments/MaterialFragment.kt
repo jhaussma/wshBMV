@@ -67,7 +67,9 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.material_bar_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
-        menu.findItem(R.id.miMatAddPhoto).isVisible = (myUser?.bmvW != 0)
+        menu.findItem(R.id.miAddMaterial).isVisible = false
+        menu.findItem(R.id.miMatAddPhoto).isVisible = (myUser?.bmvAdmin != 0)
+        menu.findItem(R.id.miBarcode).isVisible = false
 
     }
 
@@ -75,7 +77,6 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
         when (item.itemId) {
             R.id.miBarcode -> Toast.makeText(requireContext(), "Barcode im Fragment geklickt", Toast.LENGTH_SHORT)
                 .show()
-            R.id.miSync -> Toast.makeText(requireContext(), "Sync im Fragment geklickt", Toast.LENGTH_SHORT).show()
             R.id.miMatAddPhoto -> {
                 // wird schon im MainActivity abgehandelt!!!
                 Toast.makeText(requireContext(),"Foto importieren", Toast.LENGTH_SHORT).show()
