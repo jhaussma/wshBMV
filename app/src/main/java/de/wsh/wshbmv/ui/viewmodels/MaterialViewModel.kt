@@ -97,5 +97,9 @@ class MaterialViewModel @Inject constructor(
         }
     }
 
+    fun insertNewBM(bmData: BmData) {
+        // TODO Neuanlage tbmvMat und tbmvMat_Lager für's Hauptlager...
+
+    }
 
 }

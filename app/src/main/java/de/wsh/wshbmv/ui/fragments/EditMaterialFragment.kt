@@ -1,6 +1,7 @@
 package de.wsh.wshbmv.ui.fragments
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -39,6 +40,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
     private var selLager: TbmvLager? = null
     private var selUser: TsysUser? = null
     private var selMatGruppe: TbmvMatGruppe? = null
+    private var selBild: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,8 +113,45 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
 
         // Speichern-/Abbrechen- Reaktionen abnehmen
         bind.tvMatSaveOK.setOnClickListener {
-            // TODO Speichern-Reaktion hier einbauen
+            // wir verifizieren die Eingaben und legen ggf. den Datensatz an
+            if (materialId == null) {
+                // eine Neuanlage wird durchgeführt
+                if (verifyNewUiValues()) {
+                    var newBmData = BmData(
+                        tbmvMat = TbmvMat(
+                            "",
+                            scancode = bind.etMatScancode.text.toString(),
+                            typ = "BM",
+                            matchcode = bind.etMatMatchcode.text.toString(),
+                            matGruppeGuid = selMatGruppe!!.matGruppe,
+                            beschreibung = bind.etMatBeschreibung.text.toString(),
+                            hersteller = bind.etMatHersteller.text.toString(),
+                            modell = bind.etMatModell.text.toString(),
+                            seriennummer = bind.etMatSeriennr.text.toString(),
+                            userGuid = selUser!!.id,
+                            matStatus = if (selLager == null) {
+                                "Vermisst"
+                            } else {
+                                "Aktiv"
+                            },
+                            bildBmp = selBild
+                        ),
+                        matLager = selLager,
+                        matHautpLager = selLager
+                    )
+                    viewModel.insertNewBM(newBmData)
+                    // und raus aus dem Fragment
+                    getActivity()?.supportFragmentManager?.popBackStack()
+                }
+
+            } else {
+                // ein Betriebsmittel soll geändert werden
+                // aktuell nicht implementiert...
+
+            }
+
         }
+
 
         bind.tvMatSaveCancel.setOnClickListener {
             // wir verwerfen die komplette Eingaben
@@ -140,6 +179,12 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
 
         // wir binden das Bild noch mit ein
         Glide.with(this).load(bmData.tbmvMat?.bildBmp).into(bind.ivMatBild)
+    }
+
+    private fun verifyNewUiValues(): Boolean {
+
+
+        return true
     }
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -299,8 +344,6 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
             }
         }
     }
-
-
 
 
 }
