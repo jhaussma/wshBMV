@@ -6,9 +6,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.wsh.wshbmv.db.entities.TbmvLager
 import de.wsh.wshbmv.db.entities.TbmvMat
+import de.wsh.wshbmv.db.entities.TbmvMatGruppe
+import de.wsh.wshbmv.db.entities.TsysUser
 import de.wsh.wshbmv.db.entities.relations.BmData
 import de.wsh.wshbmv.repositories.MainRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,6 +32,17 @@ class MaterialViewModel @Inject constructor(
     val barcodeNotFound: LiveData<Boolean> = _barcodeNotFound
 
     /**
+     *  Auswahllisten speziell für EditMaterialFragment
+     */
+    private val _editMatGruppen = MutableLiveData<List<TbmvMatGruppe>>()
+    val editMatGruppen: LiveData<List<TbmvMatGruppe>> = _editMatGruppen
+    private val _userListe = MutableLiveData<List<TsysUser>>()
+    val userListe: LiveData<List<TsysUser>> = _userListe
+    private val _lagerListe = MutableLiveData<List<TbmvLager>>()
+    val lagerListe: LiveData<List<TbmvLager>> = _lagerListe
+
+
+    /**
      *  eine neue Material-/Betriebsmittel-ID kann damit definiert werden, die dazugehörgen Daten werden erzeugt
      */
     fun setNewMaterialId(materialId: String) {
@@ -43,10 +58,10 @@ class MaterialViewModel @Inject constructor(
      */
     fun setNewMaterialIdByScancode(scancode: String) {
         viewModelScope.launch {
-            val tbmvMat  = mainRepo.getAllowedMaterialFromScancode(scancode)
+            val tbmvMat = mainRepo.getAllowedMaterialFromScancode(scancode)
             var bmData: BmData? = null
             if (tbmvMat != null) {
-                 bmData = mainRepo.getBMDatenZuMatID(tbmvMat.id)
+                bmData = mainRepo.getBMDatenZuMatID(tbmvMat.id)
             }
             if (bmData == null) {
                 _barcodeNotFound.value = true // löst Fehlermeldung im UI aus
@@ -66,9 +81,21 @@ class MaterialViewModel @Inject constructor(
             bmData?.tbmvMat?.bildBmp = bitmap
             _bmDataLive.value = bmData
             // speichere die Änderung in die Tabelle TbmvMat
-            bmData?.tbmvMat?.let { mainRepo.updateMat(it)}
+            bmData?.tbmvMat?.let { mainRepo.updateMat(it) }
 
         }
     }
+
+    /**
+     *  Initialisierung der Auswahllisten (nur) für EditMaterialFragment
+     */
+    fun initSelectsForEditMaterialFragment() {
+        viewModelScope.launch {
+            _editMatGruppen.value = mainRepo.getMatGruppeAlle()
+            _userListe.value = mainRepo.getUsersOfLagersAll()
+            _lagerListe.value = mainRepo.getLagerListAktivSorted()
+        }
+    }
+
 
 }

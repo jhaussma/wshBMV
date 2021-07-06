@@ -94,11 +94,6 @@ class AddBelegDialog(context: Context, var addDialogListener: AddDialogListener,
             return mLagers[position]
         }
 
-//        override fun getItemId(position: Int): Long {
-//            return 0
-//            // benötigen wir nicht...
-//        }
-
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val view: TextView = convertView as TextView? ?: LayoutInflater.from(context)
                 .inflate(layoutResource, parent, false) as TextView

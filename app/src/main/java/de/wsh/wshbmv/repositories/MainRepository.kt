@@ -34,6 +34,7 @@ class MainRepository @Inject constructor(
 
     suspend fun getUserByID(userID: String) = tbmvDao.getUserById(userID)
     fun getUserByLogName(userLogName: String) = tbmvDao.getUserByLogName(userLogName)
+    suspend fun getUsersOfLagersAll() = tbmvDao.getUsersOfLagersAll()
 
     fun getUsersActive() = tbmvDao.getUsersActive()
 
@@ -46,6 +47,7 @@ class MainRepository @Inject constructor(
      *  Lager-Basis
      */
     suspend fun insertLager(tbmvLager: TbmvLager) = tbmvDao.insertLager(tbmvLager)
+    suspend fun getLagerListAktivSorted() = tbmvDao.getLagerListAktivSorted()
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Material und -Gruppen
@@ -80,6 +82,8 @@ class MainRepository @Inject constructor(
 
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe) =
         tbmvDao.insertMatGruppe(tbmvMatGruppe)
+
+    suspend fun getMatGruppeAlle() = tbmvDao.getMatGruppeAll()
 
     // Materialdatensatz zu einem Scancode/Barcode (alle ohne Berechtigungsprüfung)
     suspend fun getMaterialByScancode(scancode: String) = tbmvDao.getMaterialByScancode(scancode)

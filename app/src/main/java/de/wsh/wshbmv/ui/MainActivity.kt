@@ -28,7 +28,6 @@ import de.wsh.wshbmv.R
 import de.wsh.wshbmv.cortex_decoder.ScanActivity
 import de.wsh.wshbmv.databinding.ActivityMainBinding
 import de.wsh.wshbmv.db.TbmvDAO
-import de.wsh.wshbmv.db.entities.TbmvLager
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_FILTERING
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_HEIGHT
 import de.wsh.wshbmv.other.Constants.TAG
@@ -39,12 +38,7 @@ import de.wsh.wshbmv.other.GlobalVars.newBarcode
 import de.wsh.wshbmv.repositories.MainRepository
 import de.wsh.wshbmv.sql_db.SqlConnection
 import de.wsh.wshbmv.sql_db.SqlDbFirstInit
-import de.wsh.wshbmv.ui.dialog.AddBelegDialog
-import de.wsh.wshbmv.ui.dialog.AddDialogListener
 import de.wsh.wshbmv.ui.fragments.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import java.io.File
@@ -158,6 +152,16 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
                 R.id.miAddMaterial -> {
                     // leg ein neues Betriebsmittel an (nur für Admins...)
+                    val bundle = Bundle()
+                    bundle.putString("materialId", "")
+
+                    val fragmentEditMaterial = EditMaterialFragment()
+                    fragmentEditMaterial.arguments = bundle
+                    supportFragmentManager.beginTransaction().apply {
+                        replace(R.id.navHostFragment, fragmentEditMaterial)
+                        addToBackStack(fragmentEditMaterial::class.java.name)
+                        commit()
+                    }
 
 
                     true

@@ -23,8 +23,11 @@ interface TbmvDAO {
     @Query("SELECT * FROM TsysUser WHERE userKennung LIKE :userLogName")
     fun getUserByLogName(userLogName: String): TsysUser?
 
-    @Query("SELECT * FROM TsysUser WHERE benutzerStatus LIKE 'Aktiv' ORDER BY kurzZeichen")
+    @Query("SELECT * FROM TsysUser WHERE benutzerStatus LIKE 'Aktiv' ORDER BY userKennung")
     fun getUsersActive(): LiveData<List<TsysUser>>
+
+    @Query("SELECT * FROM TsysUser WHERE (bmvW = 1 or bmvAdmin = 1) ORDER BY userKennung")
+    suspend fun getUsersOfLagersAll(): List<TsysUser>
 
     /**
      *  TsysUserGruppe
@@ -63,6 +66,9 @@ interface TbmvDAO {
     @Query("SELECT * FROM TbmvLager ORDER BY Typ, Matchcode")
     suspend fun getLagerListSorted(): List<TbmvLager>
 
+    @Query("SELECT * FROM TbmvLager WHERE status = 'Aktiv' ORDER BY Typ, Matchcode")
+    suspend fun getLagerListAktivSorted(): List<TbmvLager>
+
 
     /**
      *  Material und Gruppen
@@ -82,6 +88,8 @@ interface TbmvDAO {
     @Query("SELECT * FROM TbmvMatGruppe WHERE id LIKE :matGruppeGuid")
     suspend fun getMatGruppeByGruppeID(matGruppeGuid: String): TbmvMatGruppe?
 
+    @Query("SELECT * FROM TbmvMatGruppe WHERE aktiv = 1 ORDER BY MatGruppe")
+    suspend fun getMatGruppeAll(): List<TbmvMatGruppe>
 
     /**
      *  Service - Arten

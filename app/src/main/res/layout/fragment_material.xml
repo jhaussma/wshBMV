@@ -3,9 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:visibility="invisible"
-    tools:visibility="visible">
+    android:layout_height="match_parent">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -97,7 +95,7 @@
                 app:layout_constraintTop_toTopOf="@+id/tvView2" />
 
             <View
-                android:id="@+id/divider1"
+                android:id="@+id/matDivider1"
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
@@ -120,7 +118,7 @@
                 app:iconGravity="textEnd"
                 app:iconPadding="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/divider1"
+                app:layout_constraintTop_toBottomOf="@+id/matDivider1"
                 tools:visibility="visible" />
 
             <TextView
@@ -144,7 +142,7 @@
                 app:layout_constraintTop_toTopOf="@+id/tvView3" />
 
             <View
-                android:id="@+id/divider2"
+                android:id="@+id/matDivider2"
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
@@ -162,7 +160,7 @@
                 android:layout_marginTop="16dp"
                 android:text="Hersteller"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/divider2" />
+                app:layout_constraintTop_toBottomOf="@+id/matDivider2" />
 
             <TextView
                 android:id="@+id/tvMatHersteller"
@@ -257,7 +255,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/tvView8" />
 
             <View
-                android:id="@+id/divider3"
+                android:id="@+id/matDivider3"
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
@@ -275,7 +273,7 @@
                 android:layout_marginTop="8dp"
                 android:text="Verantwortlich"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/divider3" />
+                app:layout_constraintTop_toBottomOf="@+id/matDivider3" />
 
             <TextView
                 android:id="@+id/tvMatVerantwortlich"

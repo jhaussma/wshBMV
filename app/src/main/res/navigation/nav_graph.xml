@@ -37,6 +37,9 @@
         <action
             android:id="@+id/action_overviewFragment_to_scanActivity"
             app:destination="@id/scanActivity" />
+        <action
+            android:id="@+id/action_overviewFragment_to_editMaterialFragment"
+            app:destination="@id/editMaterialFragment" />
     </fragment>
     <fragment
         android:id="@+id/materialFragment"
@@ -51,10 +54,22 @@
     <fragment
         android:id="@+id/transferlistFragment"
         android:name="de.wsh.wshbmv.ui.fragments.TransferlistFragment"
-        android:label="TransferlistFragment" />
+        android:label="TransferlistFragment" >
+        <action
+            android:id="@+id/action_transferlistFragment_to_belegFragment"
+            app:destination="@id/belegFragment" />
+    </fragment>
     <activity
         android:id="@+id/scanActivity"
         android:name="de.wsh.wshbmv.cortex_decoder.ScanActivity"
         android:label="activity_scan"
         tools:layout="@layout/activity_scan" />
+    <fragment
+        android:id="@+id/editMaterialFragment"
+        android:name="de.wsh.wshbmv.ui.fragments.EditMaterialFragment"
+        android:label="EditMaterialFragment" />
+    <fragment
+        android:id="@+id/belegFragment"
+        android:name="de.wsh.wshbmv.ui.fragments.BelegFragment"
+        android:label="BelegFragment" />
 </navigation>

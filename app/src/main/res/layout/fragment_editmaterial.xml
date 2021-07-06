@@ -3,9 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:visibility="invisible"
-    tools:visibility="visible">
+    android:layout_height="match_parent">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -72,7 +70,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/etMatMatchcode" />
 
             <View
-                android:id="@+id/divider1"
+                android:id="@+id/editDivider1"
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
@@ -131,7 +129,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/actvMatGruppe" />
 
             <View
-                android:id="@+id/divider3"
+                android:id="@+id/editDivider2"
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
@@ -141,6 +139,18 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/etMatBeschreibung" />
+
+            <View
+                android:id="@+id/editDivider3"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/colorAccent"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/actvMatHauptlager" />
 
             <TextView
                 android:id="@+id/tvView9"
@@ -198,7 +208,7 @@
                 android:maxLength="80"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView4"
-                app:layout_constraintTop_toBottomOf="@+id/divider1" />
+                app:layout_constraintTop_toBottomOf="@+id/editDivider1" />
 
             <EditText
                 android:id="@+id/etMatModell"
@@ -253,17 +263,44 @@
                 android:layout_marginTop="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView9"
-                app:layout_constraintTop_toBottomOf="@+id/divider3" />
+                app:layout_constraintTop_toBottomOf="@+id/editDivider2" />
 
             <AutoCompleteTextView
                 android:id="@+id/actvMatHauptlager"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="AutoCompleteTextView"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tvView11"
                 app:layout_constraintTop_toBottomOf="@+id/actvMatVerantwortlich" />
+
+            <TextView
+                android:id="@+id/tvMatSaveOK"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Speichern"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/tvMatSaveCancel" />
+
+            <TextView
+                android:id="@+id/tvMatSaveCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="16dp"
+                android:text="Abbrechen"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/tvMatSaveOK"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/editDivider3" />
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
