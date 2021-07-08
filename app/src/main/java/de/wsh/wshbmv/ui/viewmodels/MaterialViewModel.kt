@@ -11,9 +11,11 @@ import de.wsh.wshbmv.db.entities.TbmvMat
 import de.wsh.wshbmv.db.entities.TbmvMatGruppe
 import de.wsh.wshbmv.db.entities.TsysUser
 import de.wsh.wshbmv.db.entities.relations.BmData
+import de.wsh.wshbmv.db.entities.relations.TbmvMat_Lager
 import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,6 +32,9 @@ class MaterialViewModel @Inject constructor(
 
     private val _barcodeNotFound = MutableLiveData<Boolean>(false)
     val barcodeNotFound: LiveData<Boolean> = _barcodeNotFound
+
+    private val _newBarcode = MutableLiveData<String>("")
+    val newBarcode: LiveData<String> = _newBarcode
 
     /**
      *  Auswahllisten speziell für EditMaterialFragment
@@ -54,6 +59,7 @@ class MaterialViewModel @Inject constructor(
     }
 
     /**
+     * nur für MaterialFragment:
      *  eine neuer Barcode wurde eingelesen -> BmData neu bestimmen (oder Fehlermeldung auslösen)
      */
     fun setNewMaterialIdByScancode(scancode: String) {
@@ -73,7 +79,24 @@ class MaterialViewModel @Inject constructor(
     }
 
     /**
-     *
+     * nur für EditMaterialFragment:
+     *  ein neuer Barcode wurde eingelesen -> Doubletten-Prüfung und ggf. Fehlermeldung auslösen
+     */
+    fun checkNewMaterialIdByScancode(scancode: String) {
+        viewModelScope.launch {
+            val tbmvMat = mainRepo.getMaterialFromScancode(scancode)
+            if (tbmvMat == null) {
+                // der Scancode ist verwendbar, wir übergeben ihn an das EditMaterialFragment
+                _newBarcode.value = scancode
+            } else {
+                _newBarcode.value = ""
+            }
+        }
+    }
+
+    /**
+     * nur für MaterialFragment:
+     *  ein neues Foto wird dem Material-Datensatz zugeordnet
      */
     fun importNewPhoto(bitmap: Bitmap) {
         viewModelScope.launch {
@@ -86,6 +109,7 @@ class MaterialViewModel @Inject constructor(
         }
     }
 
+
     /**
      *  Initialisierung der Auswahllisten (nur) für EditMaterialFragment
      */
@@ -97,9 +121,26 @@ class MaterialViewModel @Inject constructor(
         }
     }
 
+    /**
+     *  Neuanlage eines Materials mit Hauptlagerzuweisung
+     */
     fun insertNewBM(bmData: BmData) {
-        // TODO Neuanlage tbmvMat und tbmvMat_Lager für's Hauptlager...
-
+        viewModelScope.launch {
+            val materialId: String = UUID.randomUUID().toString()
+            bmData.tbmvMat!!.id = materialId
+            mainRepo.insertMat(bmData.tbmvMat!!)
+            if (bmData.matHautpLager != null) {
+                var tbmvMatLager = TbmvMat_Lager(
+                    id = UUID.randomUUID().toString(),
+                    matId = materialId,
+                    lagerId = bmData.matHautpLager!!.id,
+                    isDefault = 1,
+                    bestand = 1f
+                )
+                mainRepo.insertMat_Lager(tbmvMatLager)
+            }
+        }
     }
+
 
 }

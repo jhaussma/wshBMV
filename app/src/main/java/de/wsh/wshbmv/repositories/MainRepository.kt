@@ -115,6 +115,15 @@ class MainRepository @Inject constructor(
         return tbmvMat
     }
 
+    // Material-Datensatz eines Betriebsmittels zu einem Scancode (ohne Berechtigungsprüfung)
+    suspend fun getMaterialFromScancode(scancode: String): TbmvMat? {
+        var tbmvMat: TbmvMat?
+        withContext(Dispatchers.IO) {
+            tbmvMat = tbmvDao.getMaterialByScancode(scancode)
+        }
+        return tbmvMat
+    }
+
 
     // Betriebsmittel Datensatz
     suspend fun getBMDatenZuMatID(materialID: String): BmData? {

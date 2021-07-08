@@ -3,9 +3,7 @@ package de.wsh.wshbmv.ui.fragments
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.Filter
 import android.widget.Filterable
@@ -15,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.FragmentEditmaterialBinding
@@ -35,8 +35,9 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
 
     private val viewModel: MaterialViewModel by activityViewModels()
 
-    private var materialId: String? = null
+    private var materialId: String = ""
 
+    private var inInit = true
     private var selLager: TbmvLager? = null
     private var selUser: TsysUser? = null
     private var selMatGruppe: TbmvMatGruppe? = null
@@ -46,17 +47,23 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         Timber.tag(TAG).d("EditMaterialFragment, onCreate")
-        // initialisier die Listen für die Auswahlfelder
+        // initialisiere die Listen für die Auswahlfelder
         viewModel.initSelectsForEditMaterialFragment()
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bind = FragmentEditmaterialBinding.bind(view)
-        materialId = arguments?.getString("materialId")
+        arguments?.let { materialId = it.getString("materialId").toString() }
         if (materialId == "") {
             // Neuanlage, hier wird neu ausgefüllt...
             (activity as AppCompatActivity).supportActionBar?.title = "BM anlegen"
+            bind.tvMatTyp.text = "BM"
+            bind.tvMatStatus.text = ""
+            bind.etMatScancode.setText("")
+            bind.etMatScancode.isEnabled = false
+
         } else {
             // Ändern eines Eintrags...
             (activity as AppCompatActivity).supportActionBar?.title = "BM ändern"
@@ -79,6 +86,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
             bind.actvMatGruppe.setOnItemClickListener() { parent, _, position, _ ->
                 selMatGruppe = parent.adapter.getItem(position) as TbmvMatGruppe?
                 bind.actvMatGruppe.setText(selMatGruppe?.matGruppe)
+                bind.actvMatGruppe.error = null
             }
         })
         // ... für Auswahl des Verantwortlichen...
@@ -93,6 +101,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
             bind.actvMatVerantwortlich.setOnItemClickListener() { parent, _, position, _ ->
                 selUser = parent.adapter.getItem(position) as TsysUser?
                 bind.actvMatVerantwortlich.setText(selUser?.userKennung)
+                bind.actvMatVerantwortlich.error = null
             }
         })
         // ... und für Hauptlagerauswahl
@@ -107,23 +116,41 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
             bind.actvMatHauptlager.setOnItemClickListener() { parent, _, position, _ ->
                 selLager = parent.adapter.getItem(position) as TbmvLager?
                 bind.actvMatHauptlager.setText(selLager?.matchcode)
+                bind.actvMatHauptlager.error = null
             }
         })
-
+        inInit = true
+        viewModel.newBarcode.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            if (viewModel.newBarcode.value == "") {
+                if (inInit) {
+                    inInit = false
+                } else {
+                    // dieser Barcode darf nicht verwendet werden, wir geben eine Fehlermeldung raus
+                    Snackbar.make(
+                        requireView(),
+                        "Der Scancode ist bereits belegt!",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+            } else {
+                bind.etMatScancode.setText(viewModel.newBarcode.value)
+            }
+        })
 
         // Speichern-/Abbrechen- Reaktionen abnehmen
         bind.tvMatSaveOK.setOnClickListener {
             // wir verifizieren die Eingaben und legen ggf. den Datensatz an
-            if (materialId == null) {
+            if (materialId == "") {
                 // eine Neuanlage wird durchgeführt
                 if (verifyNewUiValues()) {
+                    Timber.tag(TAG).d("verifyNewUiValues war erfolgreich")
                     var newBmData = BmData(
                         tbmvMat = TbmvMat(
                             "",
                             scancode = bind.etMatScancode.text.toString(),
                             typ = "BM",
                             matchcode = bind.etMatMatchcode.text.toString(),
-                            matGruppeGuid = selMatGruppe!!.matGruppe,
+                            matGruppeGuid = selMatGruppe!!.id,
                             beschreibung = bind.etMatBeschreibung.text.toString(),
                             hersteller = bind.etMatHersteller.text.toString(),
                             modell = bind.etMatModell.text.toString(),
@@ -159,6 +186,13 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.material_bar_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+        menu.findItem(R.id.miBarcode).isVisible = true
+        menu.findItem(R.id.miAddMaterial).isVisible = false
+        menu.findItem(R.id.miMatAddPhoto).isVisible = true
+    }
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *   Aktualisiert alle Objekte mit den Werten aus dem Datensatz bmData (MaterialViewModel-Observer)
@@ -181,10 +215,53 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
         Glide.with(this).load(bmData.tbmvMat?.bildBmp).into(bind.ivMatBild)
     }
 
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *  prüfe für eine Neuanlage, ob alle Mindestdaten ausgefüllt und plausibel sind
+     */
     private fun verifyNewUiValues(): Boolean {
+        var returnVal = true
+        // matchcode ist Pflicht!
+        if (bind.etMatMatchcode.text.toString() == "") {
+            bind.etMatMatchcode.error = "Matchcode ist Pflichtfeld"
+            returnVal = false
+        } else {
+            bind.etMatMatchcode.error = null
+        }
+        // Scancode ist Pflicht!
+        if (bind.etMatScancode.text.toString() == "") {
+            bind.etMatScancode.error = "Scancode ist Pflichtfeld (Barcode)"
+            returnVal = false
+        } else {
+            bind.etMatScancode.error = null
+        }
+        // Betriebsmittelgruppe ist Pflicht!
+        if (selMatGruppe == null) {
+            bind.actvMatGruppe.error ="Betriebsmittelgruppe ist Pflichauswahl"
+            returnVal = false
+        } else {
+            bind.actvMatGruppe.error = null
+        }
+        if (selUser == null) {
+            bind.actvMatVerantwortlich.error = "Verantwortliche Person ist Pflichtauswahl"
+            returnVal = false
+        } else {
+            bind.actvMatVerantwortlich.error = null
+        }
+        // ohne Hauptlagerauswahl wird das Betriebsmittel im Status vermisst angelegt, ist aber nicht Pflicht!
+        if (selLager == null) {
+            bind.actvMatHauptlager.error = "Ohne Hauptlagerauswahl wird das BM als 'vermisst' angelegt!"
+        } else {
+            bind.actvMatHauptlager.error = null
+        }
 
-
-        return true
+        if (!returnVal) {
+            Snackbar.make(
+                requireView(),
+                "Bitte fehlende Daten eingeben...",
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
+        return returnVal
     }
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -342,6 +419,25 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
                     return filterResults
                 }
             }
+        }
+    }
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Import eines Barcodes aus der ScanActivity/MainActivity
+     */
+    fun importNewBarcode(barcode: String) {
+        Timber.tag(TAG).d("EditMaterialFragment hat Barcode $barcode empfangen...")
+        viewModel.checkNewMaterialIdByScancode(barcode)
+    }
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *  Import einer neuen Photo-Datei aus dem MainActivity heraus
+     */
+    fun importNewPhoto(bitmap: Bitmap) {
+        if (bitmap != null) {
+            selBild = bitmap
+            // wir zeigen das Bild gleich an...
+            Glide.with(this).load(selBild).into(bind.ivMatBild)
         }
     }
 

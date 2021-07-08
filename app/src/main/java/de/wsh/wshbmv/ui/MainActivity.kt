@@ -329,6 +329,10 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 val materialFragment: MaterialFragment = importFragment as MaterialFragment
                 materialFragment.importNewPhoto(bitmap)
             }
+            "de.wsh.wshbmv.ui.fragments.EditMaterialFragment" -> {
+                val editMaterialFragment: EditMaterialFragment = importFragment as EditMaterialFragment
+                editMaterialFragment.importNewPhoto(bitmap)
+            }
         }
     }
 
@@ -352,6 +356,10 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             "de.wsh.wshbmv.ui.fragments.MaterialFragment" -> {
                 val materialFragment: MaterialFragment = importFragment as MaterialFragment
                 materialFragment.importNewBarcode(barcode)
+            }
+            "de.wsh.wshbmv.ui.fragments.EditMaterialFragment" -> {
+                val editMaterialFragment: EditMaterialFragment = importFragment as EditMaterialFragment
+                editMaterialFragment.importNewBarcode(barcode)
             }
             "de.wsh.wshbmv.ui.fragments.OverviewFragment" -> {
                 val overviewFragment: OverviewFragment = importFragment as OverviewFragment
