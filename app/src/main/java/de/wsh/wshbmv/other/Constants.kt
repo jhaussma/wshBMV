@@ -41,4 +41,13 @@ object Constants {
      */
     const val PIC_SCALE_HEIGHT = 500
     const val PIC_SCALE_FILTERING = true
+
+    /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     *   Service-Aktivitäten
+     */
+    const val ACTION_START_OR_RESUME_SERVICE = "ACTION_START_OR_RESUME_SERVICE"
+    const val ACTION_PAUSE_SERVICE = "ACTION_PAUSE_SERVICE"
+    const val ACTION_STOP_SERVICE = "ACTION_STOP_SERVICE"
+
+
 }

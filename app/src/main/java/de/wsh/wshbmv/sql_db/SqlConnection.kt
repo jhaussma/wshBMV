@@ -39,4 +39,8 @@ class SqlConnection {
         }
         return  conn
     }
+
+    fun disConnect(conn: Connection?) {
+        conn?.close()
+    }
 }

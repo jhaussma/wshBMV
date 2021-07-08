@@ -58,7 +58,10 @@ class SqlDbFirstInit @Inject constructor(
                 sqlStatus = enSqlStatus.IN_ERROR // Ende ohne Erfolg!
                 Timber.tag(TAG).e("Fehler ist aufgetreten: ${ex.message ?: ""}")
             }
+            connectionClass.disConnect(myConn)
+            sqlStatus = enSqlStatus.DISCONNECTED
         }
+
     }
 
 
