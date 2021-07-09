@@ -20,8 +20,10 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
 import com.codecorp.cortexdecoderlibrary.BuildConfig
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.MyApplication
 import de.wsh.wshbmv.R
@@ -35,9 +37,12 @@ import de.wsh.wshbmv.other.GlobalVars.firstSyncCompleted
 import de.wsh.wshbmv.other.GlobalVars.hasNewBarcode
 import de.wsh.wshbmv.other.GlobalVars.isFirstAppStart
 import de.wsh.wshbmv.other.GlobalVars.newBarcode
+import de.wsh.wshbmv.other.GlobalVars.sqlErrorMessage
+import de.wsh.wshbmv.other.GlobalVars.sqlStatus
+import de.wsh.wshbmv.other.enSqlStatus
 import de.wsh.wshbmv.repositories.MainRepository
-import de.wsh.wshbmv.sql_db.SqlConnection
 import de.wsh.wshbmv.sql_db.SqlDbFirstInit
+import de.wsh.wshbmv.sql_db.SqlDbSync
 import de.wsh.wshbmv.ui.fragments.*
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
@@ -72,7 +77,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
     @Inject
     lateinit var tbmvDAO: TbmvDAO
-    lateinit var db: SqlDbFirstInit
+    var dbFirstSync: SqlDbFirstInit? = null
+    var dbSync: SqlDbSync? = null
     private lateinit var mainRepo: MainRepository
 
     private lateinit var toggle: ActionBarDrawerToggle
@@ -102,8 +108,47 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         isFirstAppStart = _isFirstAppStart
         firstSyncCompleted = hasFirstSyncDone
         // wir starten die MS-SQL-Serververbindung
-        db = SqlDbFirstInit(MainRepository(tbmvDAO), isFirstAppStart)
-        db.connectionClass = SqlConnection()
+        if (isFirstAppStart) {
+            dbFirstSync = SqlDbFirstInit(mainRepo)
+        } else {
+            dbSync = SqlDbSync(mainRepo)
+        }
+
+        // Reaktion auf Statusänderungen der SQL-Synchronisierung...
+        sqlStatus.observe(this, androidx.lifecycle.Observer {
+            when (it) {
+                enSqlStatus.INIT -> Timber.tag(TAG).d("sqlStatus meldet INIT")
+                enSqlStatus.IN_ERROR -> Timber.tag(TAG).d("sqlStatus meldet IN_ERROR") // Ausgabe über sqlErrorMessage.Observer
+
+                enSqlStatus.NO_CONTACT -> {
+                    Toast.makeText(
+                        applicationContext, "Kein Kontakt zum WSH-Server!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                enSqlStatus.DISCONNECTED -> Timber.tag(TAG).d("sqlStatus meldet DISCONNECTED")
+
+                enSqlStatus.PROCESS_ENDED -> {
+                    Toast.makeText(
+                        applicationContext, "Synchronisierung erfolgreich beendet!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                enSqlStatus.IN_PROCESS -> {
+                    Toast.makeText(
+                        applicationContext, "Synchronisierung im Hintergrund gestartet!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                else -> Timber.tag(TAG).d("unbekannter sqlStatus gemeldet...")
+            }
+        })
+
+        // macht Fehlermeldung der SQL-Verbindung bekannt
+        sqlErrorMessage.observe(this, androidx.lifecycle.Observer {
+            if (it != "") Toast.makeText(applicationContext, it, Toast.LENGTH_LONG).show()
+        })
+
 
         // wir starten den Layout-Inflater
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -243,6 +288,17 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
     }
 
 
+    override fun onStop() {
+        super.onStop()
+        Timber.tag(TAG).d("MainActivity, onStop")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Timber.tag(TAG).d("MainActivity, onDestroy")
+    }
+
+
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *   Aufnahme eines Photos
      */
@@ -330,7 +386,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 materialFragment.importNewPhoto(bitmap)
             }
             "de.wsh.wshbmv.ui.fragments.EditMaterialFragment" -> {
-                val editMaterialFragment: EditMaterialFragment = importFragment as EditMaterialFragment
+                val editMaterialFragment: EditMaterialFragment =
+                    importFragment as EditMaterialFragment
                 editMaterialFragment.importNewPhoto(bitmap)
             }
         }
@@ -358,7 +415,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 materialFragment.importNewBarcode(barcode)
             }
             "de.wsh.wshbmv.ui.fragments.EditMaterialFragment" -> {
-                val editMaterialFragment: EditMaterialFragment = importFragment as EditMaterialFragment
+                val editMaterialFragment: EditMaterialFragment =
+                    importFragment as EditMaterialFragment
                 editMaterialFragment.importNewBarcode(barcode)
             }
             "de.wsh.wshbmv.ui.fragments.OverviewFragment" -> {

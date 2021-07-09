@@ -256,14 +256,26 @@ interface TbmvDAO {
     suspend fun insertService_Dok(tbmvService_Dok: TbmvService_Dok)
 
 
-    /**
-     *  Änderungsverwaltung
+    /** ############################################################################################
+     *  Änderungsverwaltung, Änderungsprotokoll...
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertChgProtokoll(tappChgProtokoll: TappChgProtokoll)
 
+    // lade das letzte Änderungsprotokoll
+    @Transaction
+    @Query("SELECT * FROM TappChgProtokoll ORDER BY id DESC LIMIT 1")
+    suspend fun getLastChgProtokoll(): TappChgProtokoll?
+
+    /** ############################################################################################
+     *  Änderungsverwaltung, Sync-Reports...
+     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSyncReport(tappSyncReport: TappSyncReport)
 
+    // lade die Zeitwerte des letzten erfolgreichen Reports...
+    @Transaction
+    @Query("SELECT * FROM TappSyncReport WHERE errorFlag = 0 ORDER BY id DESC LIMIT 1")
+    suspend fun getLastSyncReport(): TappSyncReport?
 
 }

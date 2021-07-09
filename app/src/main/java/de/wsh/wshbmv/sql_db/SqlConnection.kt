@@ -28,9 +28,9 @@ class SqlConnection {
         try {
             Class.forName("net.sourceforge.jtds.jdbc.Driver")
             connString = "jdbc:jtds:sqlserver://$ip/$db;instance=SQLEXPRESS;encrypt=false;user=$username;password=$password;"
-//            connString = "jdbc:jtds:sqlserver://192.168.101.22:1433/wshAPlan;instance=SQLEXPRESS;user=SA;password=Sy67Ha99;"
             conn = DriverManager.getConnection(connString)
         } catch (ex : SQLException) {
+
             Log.e(TAG, ex.message ?:"")
         } catch (ex1 : ClassNotFoundException) {
             Log.e(TAG, ex1.message ?:"")

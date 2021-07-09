@@ -439,7 +439,14 @@ class MainRepository @Inject constructor(
     suspend fun insertChgProtokoll(tappChgProtokoll: TappChgProtokoll) =
         tbmvDao.insertChgProtokoll(tappChgProtokoll)
 
+    suspend fun getLastChgProtokoll() = tbmvDao.getLastChgProtokoll()
+
+    /** ############################################################################################
+     *  Protokollierung der Synchronisierungen
+     */
     suspend fun insertSyncReport(tappSyncReport: TappSyncReport) =
         tbmvDao.insertSyncReport(tappSyncReport)
+
+    suspend fun getLastSyncReport() = tbmvDao.getLastSyncReport()
 
 }

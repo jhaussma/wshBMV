@@ -28,6 +28,7 @@ object Constants {
 //    const val SQL_USER_NAME = "SA"
 //    const val SQL_USER_PWD = "Sy67Ha99"
 
+    const val SQL_SYNC_TABLES = "'TbmvBelege','TbmvBelegPos','TbmvDokumente','TbmvLager','TbmvMat','TbmvMat_Lager','TbmvMat_Service','TbmvMatGruppen','TbmvMatService_Dok','TbmvMatService_Historie','TbmvService_Dok','TbmvServices','TsysUser','TsysUser_Gruppe','TsysUserGruppe'"
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *   Datenbank - Konstanten - Parameter

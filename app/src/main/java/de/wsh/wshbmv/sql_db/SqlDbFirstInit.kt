@@ -6,6 +6,7 @@ import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
 import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars.firstSyncCompleted
+import de.wsh.wshbmv.other.GlobalVars.sqlErrorMessage
 import de.wsh.wshbmv.other.GlobalVars.sqlServerConnected
 import de.wsh.wshbmv.other.GlobalVars.sqlStatus
 import de.wsh.wshbmv.other.GlobalVars.sqlUserLoaded
@@ -14,10 +15,10 @@ import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.lang.Exception
-import java.security.KeyStore
 import java.sql.Connection
 import javax.inject.Inject
 
@@ -26,42 +27,40 @@ import javax.inject.Inject
  * Erst-Installation / Synchronisierung mit SQL-DB auf WSH-Server
  */
 class SqlDbFirstInit @Inject constructor(
-    val mainRepository: MainRepository, private val doFirstSync: Boolean = false
+    val mainRepository: MainRepository
 ) {
 
-    lateinit var connectionClass: SqlConnection
+//    lateinit var connectionClass: SqlConnection
     private var myConn: Connection? = null
+    private val connectionClass = SqlConnection()
 
     init {
         Timber.tag(TAG).d("Init SqlDbFirstInit...")
         GlobalScope.launch(Dispatchers.IO) {
+            sqlErrorMessage.postValue("")
             try {
-                sqlStatus = enSqlStatus.IN_PROCESS
+                sqlStatus.postValue(enSqlStatus.INIT)
                 myConn = connectionClass.dbConn()
                 if (myConn == null) {
-                    Timber.tag(TAG).e("Fehler bei Kommunikation mit SQL-Server!")
-                    sqlStatus = enSqlStatus.IN_ERROR
+                    Timber.tag(TAG).e("Keine Verbindung zum SQL-Server!")
+                    sqlStatus.postValue(enSqlStatus.NO_CONTACT)
                 } else {
                     sqlServerConnected = true
-                    Timber.tag(TAG).d("Verbindung zum SQL-Server und TbmvMat steht!")
-                    if (doFirstSync) {
-                        if (firstSyncDatabase()) {
-                            Timber.tag(TAG).d("Erst-Synchronisierung ist durchgelaufen")
-                        } else {
-                            Timber.tag(TAG).d("Erst-Synchronisieriung war nicht erfolgreich!")
-                        }
+                    if (firstSyncDatabase()) {
+                        Timber.tag(TAG).d("Erst-Synchronisierung ist durchgelaufen")
+                        sqlStatus.postValue(enSqlStatus.PROCESS_ENDED)
                     } else {
-                        sqlStatus = enSqlStatus.PROCESS_ENDED
+                        Timber.tag(TAG).d("Erst-Synchronisieriung war nicht erfolgreich!")
+                        sqlStatus.postValue(enSqlStatus.PROCESS_ABORTED)
                     }
                 }
             } catch (ex: Exception) {
-                sqlStatus = enSqlStatus.IN_ERROR // Ende ohne Erfolg!
+                sqlStatus.postValue(enSqlStatus.IN_ERROR)  // Ende ohne Erfolg!
+                sqlErrorMessage.postValue("SQL-Verbindungsfehler: ${ex.message ?: ""}")
                 Timber.tag(TAG).e("Fehler ist aufgetreten: ${ex.message ?: ""}")
             }
             connectionClass.disConnect(myConn)
-            sqlStatus = enSqlStatus.DISCONNECTED
         }
-
     }
 
 
@@ -69,10 +68,10 @@ class SqlDbFirstInit @Inject constructor(
      *  Erst-Ladung aller Tabellen aus der SQL-DB auf WSH-Server startet hier
      */
     private suspend fun firstSyncDatabase(): Boolean {
-        sqlStatus = enSqlStatus.IN_PROCESS
+        sqlStatus.postValue(enSqlStatus.IN_PROCESS)
         val nowInMillis = System.currentTimeMillis()
 
-        syncFirstPrioTabs()
+        if (!syncFirstPrioTabs()) return false
         sqlUserLoaded = true
         syncAllTabs()
 
@@ -84,7 +83,7 @@ class SqlDbFirstInit @Inject constructor(
         syncReport.lastToServerTime = nowInMillis
         mainRepository.insertSyncReport(syncReport)
 
-        sqlStatus = enSqlStatus.PROCESS_ENDED
+        sqlStatus.postValue(enSqlStatus.PROCESS_ENDED)
         firstSyncCompleted = true
         return true
     }
@@ -199,7 +198,7 @@ class SqlDbFirstInit @Inject constructor(
     /**
      *  führt die Voll-Synchronisierung aller Tabellen mit Ausnahme der User-Tabs/Lager-Tab durch
      */
-    private suspend fun syncAllTabs(): Boolean {
+    private suspend fun syncAllTabs() {
         lateinit var material: TbmvMat
         lateinit var matGruppe: TbmvMatGruppe
         lateinit var service: TbmvService
@@ -233,7 +232,7 @@ class SqlDbFirstInit @Inject constructor(
                 material.matStatus = resultSet.getString("MatStatus")
                 material.bildBmp = toBitmap(resultSet.getBytes("BildBmp"))
                 // füge den Datensatz in die SQLite ein
-                mainRepository.updateMat(material,true)
+                mainRepository.updateMat(material, true)
             }
         }
 
@@ -409,8 +408,6 @@ class SqlDbFirstInit @Inject constructor(
                 mainRepository.insertService_Dok(serviceDok)
             }
         }
-
-        return true
     }
 
     private fun toBitmap(bytes: ByteArray?): Bitmap? {

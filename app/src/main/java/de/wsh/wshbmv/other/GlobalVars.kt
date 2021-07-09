@@ -1,5 +1,6 @@
 package de.wsh.wshbmv.other
 
+import androidx.lifecycle.MutableLiveData
 import de.wsh.wshbmv.db.entities.TbmvLager
 import de.wsh.wshbmv.db.entities.TsysUser
 
@@ -20,7 +21,8 @@ object GlobalVars {
      *   SQL-Statusinformationen
      */
     var sqlServerConnected = false      // True: wir haben medi1one-Server-Verbindung
-    var sqlStatus : enSqlStatus = enSqlStatus.INIT  // Status der SQL-Serververbindung
+    var sqlStatus = MutableLiveData<enSqlStatus>(enSqlStatus.INIT)   // Status der SQL-Serververbindung für die Activity
+    var sqlErrorMessage = MutableLiveData<String>("")          // Fehlermeldungen der SQL-Verbindung für die Activity
     var sqlUserLoaded = false           // True: bei der Komplett-Synchronisierung sind die User-Daten und Lager geladen...
     var sqlUserNewPassHash = false      // True: beim nächsten Abgleich muss das Passwort des SQL-Servers aktualisiert werden...
     var sqlSynchronized = true          // FALSE: eine Synchronisierung mit der SQL-Datenbank wäre mal wieder angebracht

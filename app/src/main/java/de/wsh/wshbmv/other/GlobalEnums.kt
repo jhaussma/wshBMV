@@ -1,7 +1,7 @@
 package de.wsh.wshbmv.other
 
 enum class enSqlStatus {
-    INIT, IN_PROCESS, DISCONNECTED, IN_ERROR, PROCESS_ENDED
+    INIT, IN_PROCESS, DISCONNECTED, IN_ERROR, PROCESS_ENDED, PROCESS_ABORTED, NO_CONTACT
 }
 
 enum class SortType {
