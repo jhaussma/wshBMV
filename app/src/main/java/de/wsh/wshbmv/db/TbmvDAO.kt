@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
+import java.util.*
 
 @Dao
 interface TbmvDAO {
@@ -266,6 +267,10 @@ interface TbmvDAO {
     @Transaction
     @Query("SELECT * FROM TappChgProtokoll ORDER BY id DESC LIMIT 1")
     suspend fun getLastChgProtokoll(): TappChgProtokoll?
+
+    @Transaction
+    @Query("SELECT datenbank, satzID, MAX(timeStamp) AS maxZeitstempel, SUM(aktion=0) AS addDS, SUM(aktion=1) AS editDS, SUM(aktion=2) AS delDS FROM TappChgProtokoll WHERE (timeStamp BETWEEN :startTime AND :endTime) GROUP BY datenbank,satzID ORDER BY datenbank,satzID")
+    suspend fun getChangeProtokoll(startTime: Date, endTime: Date): MutableList<ChangeProtokoll>
 
     /** ############################################################################################
      *  Änderungsverwaltung, Sync-Reports...

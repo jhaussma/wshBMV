@@ -6,13 +6,11 @@ import de.wsh.wshbmv.db.entities.relations.*
 import de.wsh.wshbmv.other.Constants.DB_AKTION_ADD_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_DELETE_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_UPDATE_DS
-import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.myUser
 import de.wsh.wshbmv.other.GlobalVars.sqlSynchronized
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 
@@ -59,7 +57,7 @@ class MainRepository @Inject constructor(
                 timeStamp = System.currentTimeMillis(),
                 datenbank = "TbmvMat",
                 satzID = tbmvMat.id,
-                Aktion = DB_AKTION_ADD_DS
+                aktion = DB_AKTION_ADD_DS
             )
             tbmvDao.insertChgProtokoll(chgProtokoll)
             sqlSynchronized = false
@@ -73,7 +71,7 @@ class MainRepository @Inject constructor(
                 timeStamp = System.currentTimeMillis(),
                 datenbank = "TbmvMat",
                 satzID = tbmvMat.id,
-                Aktion = DB_AKTION_UPDATE_DS
+                aktion = DB_AKTION_UPDATE_DS
             )
             tbmvDao.insertChgProtokoll(chgProtokoll)
             sqlSynchronized = false
@@ -182,7 +180,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvMat_Lager",
                     satzID = matLagerId,
-                    Aktion = DB_AKTION_ADD_DS
+                    aktion = DB_AKTION_ADD_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
                 sqlSynchronized = false
@@ -198,7 +196,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvMat_Lager",
                     satzID = tbmvMat_Lager.id,
-                    Aktion = DB_AKTION_UPDATE_DS
+                    aktion = DB_AKTION_UPDATE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
                 sqlSynchronized = false
@@ -214,7 +212,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvMat_Lager",
                     satzID = tbmvMat_Lager.id,
-                    Aktion = DB_AKTION_DELETE_DS
+                    aktion = DB_AKTION_DELETE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
                 sqlSynchronized = false
@@ -310,7 +308,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBeleg",
                     satzID = belegId,
-                    Aktion = DB_AKTION_ADD_DS
+                    aktion = DB_AKTION_ADD_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
                 sqlSynchronized = false
@@ -331,7 +329,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBelegPos",
                     satzID = belegPosId,
-                    Aktion = DB_AKTION_ADD_DS
+                    aktion = DB_AKTION_ADD_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
                 sqlSynchronized = false
@@ -349,7 +347,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBeleg",
                     satzID = belegId,
-                    Aktion = DB_AKTION_UPDATE_DS
+                    aktion = DB_AKTION_UPDATE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
                 sqlSynchronized = false
@@ -365,7 +363,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBelegPos",
                     satzID = tbmvBelegPos.id,
-                    Aktion = DB_AKTION_UPDATE_DS
+                    aktion = DB_AKTION_UPDATE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
                 sqlSynchronized = false
@@ -383,7 +381,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBeleg",
                     satzID = belegId,
-                    Aktion = DB_AKTION_DELETE_DS
+                    aktion = DB_AKTION_DELETE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
                 sqlSynchronized = false
@@ -400,7 +398,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBelegPos",
                     satzID = belegPosId,
-                    Aktion = DB_AKTION_DELETE_DS
+                    aktion = DB_AKTION_DELETE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
                 sqlSynchronized = false
@@ -440,6 +438,8 @@ class MainRepository @Inject constructor(
         tbmvDao.insertChgProtokoll(tappChgProtokoll)
 
     suspend fun getLastChgProtokoll() = tbmvDao.getLastChgProtokoll()
+
+    suspend fun getChangeProtokoll(startTime: Date, endTime: Date) = tbmvDao.getChangeProtokoll(startTime,endTime)
 
     /** ############################################################################################
      *  Protokollierung der Synchronisierungen
