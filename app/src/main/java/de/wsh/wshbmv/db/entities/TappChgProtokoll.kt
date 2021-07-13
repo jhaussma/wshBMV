@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class TappChgProtokoll(
     var timeStamp: Long = 0L,
     var datenbank: String = "",
-    var satzID: String = "",
+    var satzId: String = "",
     var aktion: Int = -1
 ) {
     @PrimaryKey(autoGenerate = true)

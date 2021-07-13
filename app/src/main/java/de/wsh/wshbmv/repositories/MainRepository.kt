@@ -56,7 +56,7 @@ class MainRepository @Inject constructor(
             val chgProtokoll = TappChgProtokoll(
                 timeStamp = System.currentTimeMillis(),
                 datenbank = "TbmvMat",
-                satzID = tbmvMat.id,
+                satzId = tbmvMat.id,
                 aktion = DB_AKTION_ADD_DS
             )
             tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -70,7 +70,7 @@ class MainRepository @Inject constructor(
             val chgProtokoll = TappChgProtokoll(
                 timeStamp = System.currentTimeMillis(),
                 datenbank = "TbmvMat",
-                satzID = tbmvMat.id,
+                satzId = tbmvMat.id,
                 aktion = DB_AKTION_UPDATE_DS
             )
             tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -179,7 +179,7 @@ class MainRepository @Inject constructor(
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvMat_Lager",
-                    satzID = matLagerId,
+                    satzId = matLagerId,
                     aktion = DB_AKTION_ADD_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -195,7 +195,7 @@ class MainRepository @Inject constructor(
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvMat_Lager",
-                    satzID = tbmvMat_Lager.id,
+                    satzId = tbmvMat_Lager.id,
                     aktion = DB_AKTION_UPDATE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -211,7 +211,7 @@ class MainRepository @Inject constructor(
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvMat_Lager",
-                    satzID = tbmvMat_Lager.id,
+                    satzId = tbmvMat_Lager.id,
                     aktion = DB_AKTION_DELETE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -307,7 +307,7 @@ class MainRepository @Inject constructor(
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBeleg",
-                    satzID = belegId,
+                    satzId = belegId,
                     aktion = DB_AKTION_ADD_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -328,7 +328,7 @@ class MainRepository @Inject constructor(
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBelegPos",
-                    satzID = belegPosId,
+                    satzId = belegPosId,
                     aktion = DB_AKTION_ADD_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -346,7 +346,7 @@ class MainRepository @Inject constructor(
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBeleg",
-                    satzID = belegId,
+                    satzId = belegId,
                     aktion = DB_AKTION_UPDATE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -362,7 +362,7 @@ class MainRepository @Inject constructor(
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBelegPos",
-                    satzID = tbmvBelegPos.id,
+                    satzId = tbmvBelegPos.id,
                     aktion = DB_AKTION_UPDATE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -380,7 +380,7 @@ class MainRepository @Inject constructor(
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBeleg",
-                    satzID = belegId,
+                    satzId = belegId,
                     aktion = DB_AKTION_DELETE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -397,7 +397,7 @@ class MainRepository @Inject constructor(
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvBelegPos",
-                    satzID = belegPosId,
+                    satzId = belegPosId,
                     aktion = DB_AKTION_DELETE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -429,6 +429,16 @@ class MainRepository @Inject constructor(
      */
     suspend fun insertService_Dok(tbmvService_Dok: TbmvService_Dok) =
         tbmvDao.insertService_Dok(tbmvService_Dok)
+
+
+    /** ############################################################################################
+     *  Inventurlisten
+     */
+    suspend fun insertInventur(tbmvInventur: TbmvInventur) = tbmvDao.upsertInventur(tbmvInventur)
+    suspend fun updateInventur(tbmvInventur: TbmvInventur) = tbmvDao.upsertInventur(tbmvInventur)
+
+    suspend fun insertInventurMat(tbmvInventurMat: TbmvInventurMat) = tbmvDao.upsertInveturMat(tbmvInventurMat)
+    suspend fun updateInventurMat(tbmvInventurMat: TbmvInventurMat) = tbmvDao.upsertInveturMat(tbmvInventurMat)
 
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

@@ -2,7 +2,6 @@ package de.wsh.wshbmv.sql_db
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.db.entities.TappSyncReport
 import de.wsh.wshbmv.db.entities.relations.ChangeProtokoll
 import de.wsh.wshbmv.other.Constants.SQL_SYNC_TABLES
@@ -17,7 +16,7 @@ import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.lang.Exception
 import java.sql.Connection
-import java.sql.Date
+//import java.sql.Date
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -78,21 +77,13 @@ class SqlDbSync @Inject constructor(
         GlobalVars.sqlStatus.postValue(enSqlStatus.IN_PROCESS)
         // wir nehmen die aktuelle Zeit für den Start der Synchronisierung
         endTimeInMillis = System.currentTimeMillis()
-
         if (syncIsNeeded()) {
-            Timber.tag(TAG).d("Wir benötigen eine Synchronisierung...")
-
             // wir lesen das Änderungsprotokoll vom Server ein, gruppiert und sortiert nach Datenbank, SatzID...
             val statement = myConn!!.createStatement()
             val dtChgFromServer = Date(lastChgFromServer + 1000)
             val dtSyncFromServer = Date(tappSyncReport!!.lastFromServerTime + 1000)
-            val dtChgToServer = Date(lastChgToServer)
+            val dtChgToServer = Date(lastChgToServer + 1000)
             val dtSyncToServer = Date(tappSyncReport!!.lastToServerTime + 1000)
-            Timber.tag(TAG).d("dtChgFromServer = ${dtChgFromServer.formatedDateToSQL()}")
-            Timber.tag(TAG).d("dtSyncFromServer = ${dtSyncFromServer.formatedDateToSQL()}")
-            Timber.tag(TAG).d("dtChgToServer = ${dtChgToServer.formatedDateToSQL()}")
-            Timber.tag(TAG).d("dtSyncToServer = ${dtSyncToServer.formatedDateToSQL()}")
-
             var sqlQuery: String =
                 "SELECT Datenbank, SatzID, MAX(Zeitstempel) AS MaxZeitstempel, SUM(CASE Aktion WHEN 0 THEN 1 ELSE 0 END) AS AddDS, SUM(CASE Aktion WHEN 1 THEN 1 ELSE 0 END) AS EditDS, SUM(CASE Aktion WHEN 2 THEN 1 ELSE 0 END) AS DelDS "
             sqlQuery += "FROM TsysChgProtokoll "
@@ -128,6 +119,10 @@ class SqlDbSync @Inject constructor(
             // wir lesen das Änderungsprotokoll vom Mobil ein, gruppiert und sortiert nach Datenbank, SatzID...
             mobilChangeProtokoll = mainRepo.getChangeProtokoll(dtSyncToServer, dtChgToServer)
             Timber.tag(TAG).d("gefunden: ${mobilChangeProtokoll.size} Datensätze im Mobil-Client")
+            // nur für Kontrollzwecke in der Testphase...
+            mobilChangeProtokoll.forEach() {
+                Timber.tag(TAG).d("DS: ${it.toString()}")
+            }
 
 
 
@@ -189,8 +184,7 @@ class SqlDbSync @Inject constructor(
 
     // formatiert ein Datum für einen SQL-SELECT
     private fun Date.formatedDateToSQL(): String {
-        var simpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        var simpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         return "CONVERT(DATETIME, '" + simpleDateFormat.format(this) + "',102)"
     }
-
 }

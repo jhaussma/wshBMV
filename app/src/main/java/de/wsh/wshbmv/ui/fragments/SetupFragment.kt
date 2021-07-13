@@ -12,7 +12,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.FragmentSetupBinding
 import de.wsh.wshbmv.db.TbmvDAO
+import de.wsh.wshbmv.db.entities.TappChgProtokoll
 import de.wsh.wshbmv.db.entities.TbmvLager
+import de.wsh.wshbmv.other.Constants.DB_AKTION_UPDATE_DS
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_SYNC_DONE
 import de.wsh.wshbmv.other.Constants.KEY_FIRST_TIME
 import de.wsh.wshbmv.other.Constants.KEY_LAGER_ID
@@ -31,6 +33,7 @@ import de.wsh.wshbmv.other.GlobalVars.sqlUserNewPassHash
 import de.wsh.wshbmv.other.HashUtils
 import kotlinx.coroutines.*
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -67,7 +70,6 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         super.onViewCreated(view, savedInstanceState)
         bind = FragmentSetupBinding.bind(view) // initialisiert die Binding zu den Layout-Objekten
         bind.tvLager.visibility = View.INVISIBLE
-
 
         // wir laden zuerst die bekannten User-Daten in die Anmeldemaske...
         if (!isFirstAppStart) loadUserInfo()
@@ -244,6 +246,13 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                     myUser!!.passHash = myHash
                     tbmvDAO.updateUser(myUser!!)
                     sqlUserNewPassHash = true
+                    var tappChgProtokoll = TappChgProtokoll(
+                        timeStamp = System.currentTimeMillis(),
+                        datenbank = "TsysUser",
+                        satzId = myUser!!.id,
+                        aktion = DB_AKTION_UPDATE_DS
+                    )
+                    tbmvDAO.insertChgProtokoll(tappChgProtokoll)
                     userName = myUserName
                     userHash = myHash
                     message = "Okay"

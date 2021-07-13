@@ -20,6 +20,7 @@ import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.lang.Exception
 import java.sql.Connection
+import java.util.*
 import javax.inject.Inject
 
 
@@ -30,7 +31,7 @@ class SqlDbFirstInit @Inject constructor(
     val mainRepository: MainRepository
 ) {
 
-//    lateinit var connectionClass: SqlConnection
+    //    lateinit var connectionClass: SqlConnection
     private var myConn: Connection? = null
     private val connectionClass = SqlConnection()
 
@@ -105,7 +106,7 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TsysUser...")
             while (resultSet.next()) {
                 user = TsysUser()
-                user.id = resultSet.getString("ID")
+                user.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 user.vorname = resultSet.getString("Vorname") ?: ""
                 user.nachname = resultSet.getString("NachName") ?: ""
                 user.anrede = resultSet.getString("Anrede") ?: ""
@@ -147,7 +148,7 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TsysUserGruppe...")
             while (resultSet.next()) {
                 userGruppe = TsysUserGruppe()
-                userGruppe.id = resultSet.getString("ID")
+                userGruppe.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 userGruppe.nameGruppe = resultSet.getString("NameGruppe")
                 // füge den Datensatz in die SQLite ein
                 mainRepository.insertUserGruppe(userGruppe)
@@ -162,9 +163,10 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TsysUser_Gruppe...")
             while (resultSet.next()) {
                 userInGruppe = TsysUserInGruppe()
-                userInGruppe.id = resultSet.getString("ID")
-                userInGruppe.gruppeId = resultSet.getString("GruppeID")
-                userInGruppe.userId = resultSet.getString("UserID")
+                userInGruppe.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                userInGruppe.gruppeId =
+                    resultSet.getString("GruppeID").lowercase(Locale.getDefault())
+                userInGruppe.userId = resultSet.getString("UserID").lowercase(Locale.getDefault())
                 // füge den Datensatz in die SQLite ein
                 mainRepository.insertUserInGruppe(userInGruppe)
             }
@@ -178,11 +180,11 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvLager...")
             while (resultSet.next()) {
                 lager = TbmvLager()
-                lager.id = resultSet.getString("ID")
+                lager.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 lager.scancode = resultSet.getString("Scancode")
                 lager.typ = resultSet.getString("Typ")
                 lager.matchcode = resultSet.getString("Matchcode")
-                lager.userGuid = resultSet.getString("UserGUID")
+                lager.userGuid = resultSet.getString("UserGUID").lowercase(Locale.getDefault())
                 lager.beschreibung = resultSet.getString("Beschreibung")
                 lager.status = resultSet.getString("Status")
                 lager.bmLager = resultSet.getInt("BMLager")
@@ -219,16 +221,17 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvMat...")
             while (resultSet.next()) {
                 material = TbmvMat()
-                material.id = resultSet.getString("ID")
+                material.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 material.scancode = resultSet.getString("Scancode")
                 material.typ = resultSet.getString("Typ")
                 material.matchcode = resultSet.getString("Matchcode")
-                material.matGruppeGuid = resultSet.getString("MatGruppeGUID")
+                material.matGruppeGuid =
+                    resultSet.getString("MatGruppeGUID").lowercase(Locale.getDefault())
                 material.beschreibung = resultSet.getString("Beschreibung")
                 material.hersteller = resultSet.getString("Hersteller")
                 material.modell = resultSet.getString("Modell")
                 material.seriennummer = resultSet.getString("Seriennummer")
-                material.userGuid = resultSet.getString("UserGUID")
+                material.userGuid = resultSet.getString("UserGUID").lowercase(Locale.getDefault())
                 material.matStatus = resultSet.getString("MatStatus")
                 material.bildBmp = toBitmap(resultSet.getBytes("BildBmp"))
                 // füge den Datensatz in die SQLite ein
@@ -242,7 +245,7 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvMatGruppen...")
             while (resultSet.next()) {
                 matGruppe = TbmvMatGruppe()
-                matGruppe.id = resultSet.getString("ID")
+                matGruppe.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 matGruppe.matGruppe = resultSet.getString("MatGruppe")
                 matGruppe.aktiv = resultSet.getInt("Aktiv")
                 // füge den Datensatz in die SQLite ein
@@ -256,7 +259,7 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvService...")
             while (resultSet.next()) {
                 service = TbmvService()
-                service.id = resultSet.getString("ID")
+                service.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 service.name = resultSet.getString("Name")
                 service.beschreibung = resultSet.getString("Beschreibung")
                 service.intervalNum = resultSet.getInt("IntervalNum")
@@ -275,12 +278,15 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvBelege...")
             while (resultSet.next()) {
                 beleg = TbmvBeleg()
-                beleg.id = resultSet.getString("ID")
+                beleg.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 beleg.belegTyp = resultSet.getString("BelegTyp")
                 beleg.belegDatum = resultSet.getTimestamp("BelegDatum")
-                beleg.belegUserGuid = resultSet.getString("BelegUserGUID")
-                beleg.zielLagerGuid = resultSet.getString("ZielLagerGUID")
-                beleg.zielUserGuid = resultSet.getString("ZielUserGUID")
+                beleg.belegUserGuid =
+                    resultSet.getString("BelegUserGUID").lowercase(Locale.getDefault())
+                beleg.zielLagerGuid =
+                    resultSet.getString("ZielLagerGUID").lowercase(Locale.getDefault())
+                beleg.zielUserGuid =
+                    resultSet.getString("ZielUserGUID").lowercase(Locale.getDefault())
                 beleg.belegStatus = resultSet.getString("BelegStatus")
                 beleg.toAck = resultSet.getInt("ToAck")
                 beleg.notiz = resultSet.getString("Notiz")
@@ -294,12 +300,13 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvBelegPos...")
             while (resultSet.next()) {
                 belegPos = TbmvBelegPos()
-                belegPos.id = resultSet.getString("ID")
-                belegPos.belegId = resultSet.getString("BelegID")
+                belegPos.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                belegPos.belegId = resultSet.getString("BelegID").lowercase(Locale.getDefault())
                 belegPos.pos = resultSet.getInt("Pos")
-                belegPos.matGuid = resultSet.getString("MatGUID")
+                belegPos.matGuid = resultSet.getString("MatGUID").lowercase(Locale.getDefault())
                 belegPos.menge = resultSet.getFloat("Menge")
-                belegPos.vonLagerGuid = resultSet.getString("VonLagerGUID")
+                belegPos.vonLagerGuid =
+                    resultSet.getString("VonLagerGUID")?.let { it.lowercase(Locale.getDefault()) }
                 belegPos.ackDatum = resultSet.getTimestamp("AckDatum")
                 // füge den Datensatz in die SQLite ein
                 mainRepository.insertBelegPos(belegPos, true)
@@ -312,10 +319,10 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvDokumente...")
             while (resultSet.next()) {
                 dokument = TbmvDokument()
-                dokument.id = resultSet.getString("ID")
+                dokument.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 dokument.version = resultSet.getString("Version")
-                dokument.matID = resultSet.getString("MatID")
-                dokument.serviceID = resultSet.getString("ServiceID")
+                dokument.matID = resultSet.getString("MatID")?.let { it.lowercase(Locale.getDefault()) }
+                dokument.serviceID = resultSet.getString("ServiceID")?.let { it.lowercase(Locale.getDefault()) }
                 dokument.dateiName = resultSet.getString("DateiName")
                 dokument.dateiVerzeichnis = resultSet.getString("DateiVerzeichnis")
                 dokument.status = resultSet.getString("Status")
@@ -338,9 +345,9 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvMat_Lager...")
             while (resultSet.next()) {
                 matInLager = TbmvMat_Lager()
-                matInLager.id = resultSet.getString("ID")
-                matInLager.matId = resultSet.getString("MatGUID")
-                matInLager.lagerId = resultSet.getString("LagerGUID")
+                matInLager.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                matInLager.matId = resultSet.getString("MatGUID").lowercase(Locale.getDefault())
+                matInLager.lagerId = resultSet.getString("LagerGUID").lowercase(Locale.getDefault())
                 matInLager.isDefault = resultSet.getInt("Default")
                 matInLager.bestand = resultSet.getFloat("Bestand")
                 // füge den Datensatz in die SQLite ein
@@ -354,9 +361,10 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvMat_Service...")
             while (resultSet.next()) {
                 matZuService = TbmvMat_Service()
-                matZuService.id = resultSet.getString("ID")
-                matZuService.matId = resultSet.getString("MatID")
-                matZuService.serviceId = resultSet.getString("ServiceID")
+                matZuService.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                matZuService.matId = resultSet.getString("MatID").lowercase(Locale.getDefault())
+                matZuService.serviceId =
+                    resultSet.getString("ServiceID").lowercase(Locale.getDefault())
                 matZuService.nextServiceDatum = resultSet.getTimestamp("NextServiceDatum")
                 matZuService.nextInfoDatum = resultSet.getTimestamp("NextInfoDatum")
                 // füge den Datensatz in die SQLite ein
@@ -370,9 +378,10 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvMatService_Dok...")
             while (resultSet.next()) {
                 matServiceDok = TbmvMatService_Dok()
-                matServiceDok.id = resultSet.getString("ID")
-                matServiceDok.matServiceId = resultSet.getString("MatServiceID")
-                matServiceDok.dokId = resultSet.getString("DokID")
+                matServiceDok.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                matServiceDok.matServiceId =
+                    resultSet.getString("MatServiceID").lowercase(Locale.getDefault())
+                matServiceDok.dokId = resultSet.getString("DokID").lowercase(Locale.getDefault())
                 // füge den Datensatz in die SQLite ein
                 mainRepository.insertMatService_Dok(matServiceDok)
             }
@@ -384,9 +393,11 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvMatService_Historie...")
             while (resultSet.next()) {
                 matServiceHistory = TbmvMatService_Historie()
-                matServiceHistory.id = resultSet.getString("ID")
-                matServiceHistory.matId = resultSet.getString("MatID")
-                matServiceHistory.serviceId = resultSet.getString("ServiceID")
+                matServiceHistory.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                matServiceHistory.matId =
+                    resultSet.getString("MatID").lowercase(Locale.getDefault())
+                matServiceHistory.serviceId =
+                    resultSet.getString("ServiceID").lowercase(Locale.getDefault())
                 matServiceHistory.serviceDatum = resultSet.getTimestamp("Servicedatum")
                 matServiceHistory.abschlussDatum = resultSet.getTimestamp("Abschlussdatum")
                 matServiceHistory.userGuid = resultSet.getString("UserGUID")
@@ -401,9 +412,10 @@ class SqlDbFirstInit @Inject constructor(
             Timber.tag(TAG).d("Wir schreiben TbmvService_Dok...")
             while (resultSet.next()) {
                 serviceDok = TbmvService_Dok()
-                serviceDok.id = resultSet.getString("ID")
-                serviceDok.serviceId = resultSet.getString("ServiceID")
-                serviceDok.dokId = resultSet.getString("DokID")
+                serviceDok.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                serviceDok.serviceId =
+                    resultSet.getString("ServiceID").lowercase(Locale.getDefault())
+                serviceDok.dokId = resultSet.getString("DokID").lowercase(Locale.getDefault())
                 // füge den Datensatz in die SQLite ein
                 mainRepository.insertService_Dok(serviceDok)
             }

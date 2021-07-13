@@ -24,7 +24,9 @@ import de.wsh.wshbmv.db.entities.relations.*
         TbmvMatService_Historie::class,
         TbmvService_Dok::class,
         TappChgProtokoll::class,
-        TappSyncReport::class
+        TappSyncReport::class,
+        TbmvInventur::class,
+        TbmvInventurMat::class
     ],
     version = 1
 )

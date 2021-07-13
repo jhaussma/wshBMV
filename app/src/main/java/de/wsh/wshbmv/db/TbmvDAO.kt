@@ -9,7 +9,7 @@ import java.util.*
 @Dao
 interface TbmvDAO {
 
-    /**
+    /** ############################################################################################
      * TsysUser - Usertabelle
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -30,26 +30,26 @@ interface TbmvDAO {
     @Query("SELECT * FROM TsysUser WHERE (bmvW = 1 or bmvAdmin = 1) ORDER BY userKennung")
     suspend fun getUsersOfLagersAll(): List<TsysUser>
 
-    /**
+    /** ############################################################################################
      *  TsysUserGruppe
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUserGruppe(tsysUserGruppe: TsysUserGruppe)
 
-    /**
+    /** ############################################################################################
      *  TsysUserInGruppe (Relation)
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUserInGruppe)
 
-    /**
+    /** ############################################################################################
      *  Dokumente
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDokument(tbmvDokument: TbmvDokument)
 
 
-    /**
+    /** ############################################################################################
      *  TbmvLager
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -71,7 +71,7 @@ interface TbmvDAO {
     suspend fun getLagerListAktivSorted(): List<TbmvLager>
 
 
-    /**
+    /** ############################################################################################
      *  Material und Gruppen
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -92,14 +92,14 @@ interface TbmvDAO {
     @Query("SELECT * FROM TbmvMatGruppe WHERE aktiv = 1 ORDER BY MatGruppe")
     suspend fun getMatGruppeAll(): List<TbmvMatGruppe>
 
-    /**
+    /** ############################################################################################
      *  Service - Arten
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertService(tbmvService: TbmvService)
 
 
-    /**
+    /** ############################################################################################
      *  Belege - Transfers
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -169,7 +169,7 @@ interface TbmvDAO {
     suspend fun getBelegposVonBeleg(belegId: String): List<TbmvBelegPos>
 
 
-    /**
+    /** ############################################################################################
      *  Relation Material - Lager
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -227,7 +227,7 @@ interface TbmvDAO {
     fun getMaterialSortByStatus(lagerId: String): LiveData<List<TbmvMat>>
 
 
-    /**
+    /** ############################################################################################
      *  Relation Material - Service
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -238,23 +238,34 @@ interface TbmvDAO {
     suspend fun getServiceOfMaterial(materialId: String): List<TbmvMat_Service>
 
 
-    /**
+    /** ############################################################################################
      *  Relation Material/Service - Dokument
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatService_Dok(tbmvMatService_Dok: TbmvMatService_Dok)
 
-    /**
+    /** ############################################################################################
      *  Relation Material/Service - Historie
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatService_Historie(tbmvMatService_Historie: TbmvMatService_Historie)
 
-    /**
+    /** ############################################################################################
      *  Relation Service - Dokument
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertService_Dok(tbmvService_Dok: TbmvService_Dok)
+
+
+    /** ############################################################################################
+     *  Inventurlisten
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertInventur(tbmvInventur: TbmvInventur)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertInveturMat(tbmvInventurMat: TbmvInventurMat)
+
 
 
     /** ############################################################################################
@@ -269,7 +280,7 @@ interface TbmvDAO {
     suspend fun getLastChgProtokoll(): TappChgProtokoll?
 
     @Transaction
-    @Query("SELECT datenbank, satzID, MAX(timeStamp) AS maxZeitstempel, SUM(aktion=0) AS addDS, SUM(aktion=1) AS editDS, SUM(aktion=2) AS delDS FROM TappChgProtokoll WHERE (timeStamp BETWEEN :startTime AND :endTime) GROUP BY datenbank,satzID ORDER BY datenbank,satzID")
+    @Query("SELECT datenbank, satzId, MAX(timeStamp) AS maxZeitstempel, SUM(aktion=0) AS addDS, SUM(aktion=1) AS editDS, SUM(aktion=2) AS delDS FROM TappChgProtokoll WHERE (timeStamp BETWEEN :startTime AND :endTime) GROUP BY datenbank, satzId ORDER BY datenbank, satzId")
     suspend fun getChangeProtokoll(startTime: Date, endTime: Date): MutableList<ChangeProtokoll>
 
     /** ############################################################################################
