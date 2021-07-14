@@ -37,10 +37,10 @@ interface TbmvDAO {
     suspend fun insertUserGruppe(tsysUserGruppe: TsysUserGruppe)
 
     /** ############################################################################################
-     *  TsysUserInGruppe (Relation)
+     *  TsysUser_Gruppe (Relation)
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUserInGruppe)
+    suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUser_Gruppe)
 
     /** ############################################################################################
      *  Dokumente
@@ -96,17 +96,17 @@ interface TbmvDAO {
      *  Service - Arten
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertService(tbmvService: TbmvService)
+    suspend fun insertService(tbmvServices: TbmvServices)
 
 
     /** ############################################################################################
      *  Belege - Transfers
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBeleg(tbmvBeleg: TbmvBeleg)
+    suspend fun insertBeleg(tbmvBelege: TbmvBelege)
 
     @Delete
-    suspend fun deleteBeleg(tbmvBeleg: TbmvBeleg)
+    suspend fun deleteBeleg(tbmvBelege: TbmvBelege)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos)
@@ -115,7 +115,7 @@ interface TbmvDAO {
     suspend fun deleteBelegPos(tbmvBelegPos: TbmvBelegPos)
 
     @Update
-    suspend fun updateBeleg(tbmvBeleg: TbmvBeleg)
+    suspend fun updateBeleg(tbmvBelege: TbmvBelege)
 
     @Update
     suspend fun updateBelegPos(tbmvBelegPos: TbmvBelegPos)
@@ -123,42 +123,47 @@ interface TbmvDAO {
 
     // Abfragen Transferlisten...
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE zielLagerGuid = :lagerId ORDER BY belegDatum DESC")
+    @Query("SELECT * FROM TbmvBelege WHERE zielLagerGuid = :lagerId ORDER BY belegDatum DESC")
     fun getBelegeToLagerAlle(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE zielLagerGuid = :lagerId AND belegStatus = 'Erfasst' ORDER BY belegDatum DESC")
+    @Query("SELECT * FROM TbmvBelege WHERE zielLagerGuid = :lagerId AND belegStatus = 'Erfasst' ORDER BY belegDatum DESC")
     fun getBelegeToLagerOffen(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE zielLagerGuid = :lagerId AND belegStatus = 'In Arbeit' ORDER BY belegDatum DESC")
+    @Query("SELECT * FROM TbmvBelege WHERE zielLagerGuid = :lagerId AND belegStatus = 'In Arbeit' ORDER BY belegDatum DESC")
     fun getBelegeToLagerInArbeit(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE zielLagerGuid = :lagerId AND belegStatus IN ('Fertig','Storniert')  ORDER BY belegDatum DESC")
+    @Query("SELECT * FROM TbmvBelege WHERE zielLagerGuid = :lagerId AND belegStatus IN ('Fertig','Storniert')  ORDER BY belegDatum DESC")
     fun getBelegeToLagerErledigt(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) ORDER BY belegDatum DESC")
+    @Query("SELECT * FROM TbmvBelege WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) ORDER BY belegDatum DESC")
     fun getBelegeVonLagerAlle(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus = 'Erfasst' ORDER BY belegDatum DESC")
+    @Query("SELECT * FROM TbmvBelege WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus = 'Erfasst' ORDER BY belegDatum DESC")
     fun getBelegeVonLagerOffen(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus = 'In Arbeit' ORDER BY belegDatum DESC")
+    @Query("SELECT * FROM TbmvBelege WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus = 'In Arbeit' ORDER BY belegDatum DESC")
     fun getBelegeVonLagerInArbeit(lagerId: String): LiveData<List<BelegAndZielort>>
 
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus IN ('Fertig','Storniert') ORDER BY belegDatum DESC")
+    @Query("SELECT * FROM TbmvBelege WHERE id IN (SELECT belegId FROM TbmvBelegPos WHERE vonLagerGuid = :lagerId GROUP BY belegId) AND belegStatus IN ('Fertig','Storniert') ORDER BY belegDatum DESC")
     fun getBelegeVonLagerErledigt(lagerId: String): LiveData<List<BelegAndZielort>>
 
 
     // Abfrage Einzelbelege (und -positionen)
     @Transaction
-    @Query("SELECT * FROM TbmvBeleg WHERE id = :belegId")
-    suspend fun getBelegZuBelegId(belegId: String): TbmvBeleg?
+    @Query("SELECT * FROM TbmvBelege WHERE id = :belegId")
+    suspend fun getBelegZuBelegId(belegId: String): TbmvBelege?
+
+    @Transaction
+    @Query("SELECT * FROM TbmvBelegPos WHERE id = :belegPosId")
+    suspend fun getBelegPosZuBelegPosId(belegPosId: String): TbmvBelegPos?
+
 
     @Transaction
     @Query("SELECT * FROM TbmvBelegPos WHERE belegId = :belegId ORDER BY pos")

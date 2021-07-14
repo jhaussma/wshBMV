@@ -9,8 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.ItemTransferlistBinding
-import de.wsh.wshbmv.db.entities.TbmvBeleg
-import de.wsh.wshbmv.db.entities.TbmvMat
 import de.wsh.wshbmv.db.entities.relations.BelegAndZielort
 import de.wsh.wshbmv.other.Constants.TAG
 import timber.log.Timber
@@ -41,7 +39,7 @@ class TransferlistAdapter(
 
     private val diffCallback = object : DiffUtil.ItemCallback<BelegAndZielort>() {
         override fun areItemsTheSame(oldItem: BelegAndZielort, newItem: BelegAndZielort): Boolean {
-            return oldItem.tmbvBeleg.id == newItem.tmbvBeleg.id
+            return oldItem.tmbvBelege.id == newItem.tmbvBelege.id
         }
 
         override fun areContentsTheSame(oldItem: BelegAndZielort, newItem: BelegAndZielort): Boolean {
@@ -71,22 +69,22 @@ class TransferlistAdapter(
         bind = ItemTransferlistBinding.bind(holder.itemView)
         holder.itemView.apply {
             // hier erfolgt die Datenübergabe in die Zeile
-            when (myTransferList.tmbvBeleg.belegTyp) {
+            when (myTransferList.tmbvBelege.belegTyp) {
                 "Transfer" -> Glide.with(this).load(R.drawable.ic_transfer).into(bind.ivTfListTyp)
                 "Korrektur" -> Glide.with(this).load(R.drawable.ic_typ_manuell).into(bind.ivTfListTyp)
                 "Inventur" -> Glide.with(this).load(R.drawable.ic_typ_invetur).into(bind.ivTfListTyp)
                 else -> Glide.with(this).load("").into(bind.ivTfListTyp)
             }
-            when (myTransferList.tmbvBeleg.belegStatus) {
+            when (myTransferList.tmbvBelege.belegStatus) {
                 "In Arbeit" -> Glide.with(this).load(R.drawable.ic_stat_arbeit).into(bind.ivTfListStatus)
                 "Erfasst" -> Glide.with(this).load(R.drawable.ic_stat_ready).into(bind.ivTfListStatus)
                 "Fertig" -> Glide.with(this).load(R.drawable.ic_stat_done).into(bind.ivTfListStatus)
                 "Storniert" -> Glide.with(this).load(R.drawable.ic_stat_abort).into(bind.ivTfListStatus)
                 else -> Glide.with(this).load("").into(bind.ivTfListStatus)
             }
-            bind.tvTfListName.text = myTransferList.tmbvBeleg.belegDatum?.formatedDateDE()
+            bind.tvTfListName.text = myTransferList.tmbvBelege.belegDatum?.formatedDateDE()
             bind.tvTfListZielort.text = myTransferList.tbmvLager.matchcode
-            bind.tvTfListNotiz.text = myTransferList.tmbvBeleg.notiz
+            bind.tvTfListNotiz.text = myTransferList.tmbvBelege.notiz
         }
     }
 

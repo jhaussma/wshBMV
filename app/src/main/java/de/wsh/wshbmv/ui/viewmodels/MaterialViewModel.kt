@@ -104,7 +104,7 @@ class MaterialViewModel @Inject constructor(
             bmData?.tbmvMat?.bildBmp = bitmap
             _bmDataLive.value = bmData
             // speichere die Änderung in die Tabelle TbmvMat
-            bmData?.tbmvMat?.let { mainRepo.updateMat(it) }
+            bmData?.tbmvMat?.let { mainRepo.updateMat(it, feldname = "BildBmp") }
 
         }
     }

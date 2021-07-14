@@ -15,7 +15,6 @@ import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.lang.Exception
@@ -96,7 +95,7 @@ class SqlDbFirstInit @Inject constructor(
     private suspend fun syncFirstPrioTabs(): Boolean {
         lateinit var user: TsysUser
         lateinit var userGruppe: TsysUserGruppe
-        lateinit var userInGruppe: TsysUserInGruppe
+        lateinit var userInGruppe: TsysUser_Gruppe
         lateinit var lager: TbmvLager
 
         // die User:
@@ -162,7 +161,7 @@ class SqlDbFirstInit @Inject constructor(
         if (resultSet != null) {
             Timber.tag(TAG).d("Wir schreiben TsysUser_Gruppe...")
             while (resultSet.next()) {
-                userInGruppe = TsysUserInGruppe()
+                userInGruppe = TsysUser_Gruppe()
                 userInGruppe.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 userInGruppe.gruppeId =
                     resultSet.getString("GruppeID").lowercase(Locale.getDefault())
@@ -203,8 +202,8 @@ class SqlDbFirstInit @Inject constructor(
     private suspend fun syncAllTabs() {
         lateinit var material: TbmvMat
         lateinit var matGruppe: TbmvMatGruppe
-        lateinit var service: TbmvService
-        lateinit var beleg: TbmvBeleg
+        lateinit var services: TbmvServices
+        lateinit var belege: TbmvBelege
         lateinit var belegPos: TbmvBelegPos
         lateinit var dokument: TbmvDokument
         lateinit var matInLager: TbmvMat_Lager
@@ -235,7 +234,7 @@ class SqlDbFirstInit @Inject constructor(
                 material.matStatus = resultSet.getString("MatStatus")
                 material.bildBmp = toBitmap(resultSet.getBytes("BildBmp"))
                 // füge den Datensatz in die SQLite ein
-                mainRepository.updateMat(material, true)
+                mainRepository.updateMat(material, noProtokoll = true)
             }
         }
 
@@ -256,19 +255,19 @@ class SqlDbFirstInit @Inject constructor(
         // Service
         resultSet = statement.executeQuery("SELECT * FROM TbmvServices")
         if (resultSet != null) {
-            Timber.tag(TAG).d("Wir schreiben TbmvService...")
+            Timber.tag(TAG).d("Wir schreiben TbmvServices...")
             while (resultSet.next()) {
-                service = TbmvService()
-                service.id = resultSet.getString("ID").lowercase(Locale.getDefault())
-                service.name = resultSet.getString("Name")
-                service.beschreibung = resultSet.getString("Beschreibung")
-                service.intervalNum = resultSet.getInt("IntervalNum")
-                service.intervalUnit = resultSet.getString("IntervalUnit")
-                service.doInfo = resultSet.getInt("DoInfo")
-                service.infoNum = resultSet.getInt("InfoNum")
-                service.infoUnit = resultSet.getString("InfoUnit")
+                services = TbmvServices()
+                services.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                services.name = resultSet.getString("Name")
+                services.beschreibung = resultSet.getString("Beschreibung")
+                services.intervalNum = resultSet.getInt("IntervalNum")
+                services.intervalUnit = resultSet.getString("IntervalUnit")
+                services.doInfo = resultSet.getInt("DoInfo")
+                services.infoNum = resultSet.getInt("InfoNum")
+                services.infoUnit = resultSet.getString("InfoUnit")
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertService(service)
+                mainRepository.insertService(services)
             }
         }
 
@@ -277,21 +276,21 @@ class SqlDbFirstInit @Inject constructor(
         if (resultSet != null) {
             Timber.tag(TAG).d("Wir schreiben TbmvBelege...")
             while (resultSet.next()) {
-                beleg = TbmvBeleg()
-                beleg.id = resultSet.getString("ID").lowercase(Locale.getDefault())
-                beleg.belegTyp = resultSet.getString("BelegTyp")
-                beleg.belegDatum = resultSet.getTimestamp("BelegDatum")
-                beleg.belegUserGuid =
+                belege = TbmvBelege()
+                belege.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                belege.belegTyp = resultSet.getString("BelegTyp")
+                belege.belegDatum = resultSet.getTimestamp("BelegDatum")
+                belege.belegUserGuid =
                     resultSet.getString("BelegUserGUID").lowercase(Locale.getDefault())
-                beleg.zielLagerGuid =
+                belege.zielLagerGuid =
                     resultSet.getString("ZielLagerGUID").lowercase(Locale.getDefault())
-                beleg.zielUserGuid =
+                belege.zielUserGuid =
                     resultSet.getString("ZielUserGUID").lowercase(Locale.getDefault())
-                beleg.belegStatus = resultSet.getString("BelegStatus")
-                beleg.toAck = resultSet.getInt("ToAck")
-                beleg.notiz = resultSet.getString("Notiz")
+                belege.belegStatus = resultSet.getString("BelegStatus")
+                belege.toAck = resultSet.getInt("ToAck")
+                belege.notiz = resultSet.getString("Notiz")
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertBeleg(beleg)
+                mainRepository.insertBeleg(belege)
             }
         }
         // .. und Positionen

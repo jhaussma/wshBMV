@@ -25,7 +25,7 @@ class MainRepository @Inject constructor(
     suspend fun insertUserGruppe(tsysUserGruppe: TsysUserGruppe) =
         tbmvDao.insertUserGruppe(tsysUserGruppe)
 
-    suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUserInGruppe) =
+    suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUser_Gruppe) =
         tbmvDao.insertUserInGruppe(tsysUserInGruppe)
 
     suspend fun updateUser(tsysUser: TsysUser) = tbmvDao.updateUser(tsysUser)
@@ -64,19 +64,26 @@ class MainRepository @Inject constructor(
         }
     }
 
-    suspend fun updateMat(tbmvMat: TbmvMat, noProtokoll: Boolean = false) {
+    suspend fun updateMat(
+        tbmvMat: TbmvMat,
+        feldname: String? = null,
+        noProtokoll: Boolean = false
+    ) {
         tbmvDao.upsertMat(tbmvMat)
         if (!noProtokoll) {
             val chgProtokoll = TappChgProtokoll(
                 timeStamp = System.currentTimeMillis(),
                 datenbank = "TbmvMat",
                 satzId = tbmvMat.id,
+                feldname = feldname,
                 aktion = DB_AKTION_UPDATE_DS
             )
             tbmvDao.insertChgProtokoll(chgProtokoll)
             sqlSynchronized = false
         }
     }
+
+    suspend fun getMaterialByMatID(materialGuid: String) = tbmvDao.getMaterialByMatID(materialGuid)
 
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe) =
         tbmvDao.insertMatGruppe(tbmvMatGruppe)
@@ -196,6 +203,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvMat_Lager",
                     satzId = tbmvMat_Lager.id,
+                    feldname = "Bestand",
                     aktion = DB_AKTION_UPDATE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)
@@ -240,14 +248,16 @@ class MainRepository @Inject constructor(
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Service
      */
-    suspend fun insertService(tbmvService: TbmvService) = tbmvDao.insertService(tbmvService)
+    suspend fun insertService(tbmvServices: TbmvServices) = tbmvDao.insertService(tbmvServices)
 
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Belege Transfers
      */
     // rudimentäre Neuanlagen (z.B. für Synchronisierungen)
-    suspend fun insertBeleg(tbmvBeleg: TbmvBeleg) = tbmvDao.insertBeleg(tbmvBeleg)
+    suspend fun insertBeleg(tbmvBelege: TbmvBelege) = tbmvDao.insertBeleg(tbmvBelege)
+    suspend fun getBelegZuBelegId(belegId: String) = tbmvDao.getBelegZuBelegId(belegId)
+    suspend fun getBelegPosZuBelegPosId(belegPosId: String) = tbmvDao.getBelegPosZuBelegPosId(belegPosId)
 
     // lade alle Belege abhängig von den Filtereinstellungen
     fun getBelegeToLagerAlle(lagerId: String) = tbmvDao.getBelegeToLagerAlle(lagerId)
@@ -268,7 +278,7 @@ class MainRepository @Inject constructor(
             var zielLager = beleg.let { it?.let { it1 -> tbmvDao.getLagerByID(it1.zielLagerGuid) } }
             var zielUser = beleg.let { it?.let { it1 -> tbmvDao.getUserById(it1.zielUserGuid) } }
             belegData = BelegData(
-                tbmvBeleg = beleg,
+                tbmvBelege = beleg,
                 belegUser = belegUser,
                 zielLager = zielLager,
                 zielUser = zielUser
@@ -292,7 +302,7 @@ class MainRepository @Inject constructor(
             val zielLagerGuid = tbmvLager.id
             val zielUserGuid = tbmvLager.userGuid
             val belegStatus = "In Arbeit"
-            var tbmvBeleg = TbmvBeleg(
+            var tbmvBeleg = TbmvBelege(
                 belegId,
                 belegTyp,
                 belegDatum,
@@ -306,7 +316,7 @@ class MainRepository @Inject constructor(
             if (!noProtokoll) {
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
-                    datenbank = "TbmvBeleg",
+                    datenbank = "TbmvBelege",
                     satzId = belegId,
                     aktion = DB_AKTION_ADD_DS
                 )
@@ -338,24 +348,40 @@ class MainRepository @Inject constructor(
     }
 
     // Änderung eines Belegs mit opt. Protokollierung
-    suspend fun updateBeleg(tbmvBeleg: TbmvBeleg, noProtokoll: Boolean = false) {
-        val belegId = tbmvBeleg.id
+    suspend fun updateBeleg(
+        tbmvBelege: TbmvBelege,
+        feldnamen: List<String> = listOf<String>(),
+        noProtokoll: Boolean = false
+    ) {
+        val belegId = tbmvBelege.id
         withContext(Dispatchers.IO) {
-            tbmvDao.updateBeleg(tbmvBeleg)
+            tbmvDao.updateBeleg(tbmvBelege)
             if (!noProtokoll) {
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
-                    datenbank = "TbmvBeleg",
+                    datenbank = "TbmvBelege",
                     satzId = belegId,
                     aktion = DB_AKTION_UPDATE_DS
                 )
-                tbmvDao.insertChgProtokoll(chgProtokoll)
+                if (feldnamen.isEmpty()) {
+                    tbmvDao.insertChgProtokoll(chgProtokoll)
+                } else {
+                    feldnamen.forEach {
+                        // für jedes geänderte Feld einen Eintrag
+                        chgProtokoll.feldname = it
+                        tbmvDao.insertChgProtokoll(chgProtokoll)
+                    }
+                }
                 sqlSynchronized = false
             }
         }
     }
 
-    suspend fun updateBelegPos(tbmvBelegPos: TbmvBelegPos, noProtokoll: Boolean = false) {
+    suspend fun updateBelegPos(
+        tbmvBelegPos: TbmvBelegPos,
+        feldnamen: List<String> = listOf<String>(),
+        noProtokoll: Boolean = false
+    ) {
         withContext(Dispatchers.IO) {
             tbmvDao.updateBelegPos(tbmvBelegPos)
             if (!noProtokoll) {
@@ -365,21 +391,29 @@ class MainRepository @Inject constructor(
                     satzId = tbmvBelegPos.id,
                     aktion = DB_AKTION_UPDATE_DS
                 )
-                tbmvDao.insertChgProtokoll(chgProtokoll)
+                if (feldnamen.isEmpty()) {
+                    tbmvDao.insertChgProtokoll(chgProtokoll)
+                } else {
+                    feldnamen.forEach {
+                        // für jedes geänderte Feld einen Eintrag
+                        chgProtokoll.feldname = it
+                        tbmvDao.insertChgProtokoll(chgProtokoll)
+                    }
+                }
                 sqlSynchronized = false
             }
         }
     }
 
     // Löschbefehle mit opt. Protokollierung
-    suspend fun deleteBeleg(tbmvBeleg: TbmvBeleg, noProtokoll: Boolean = false) {
-        val belegId = tbmvBeleg.id
+    suspend fun deleteBeleg(tbmvBelege: TbmvBelege, noProtokoll: Boolean = false) {
+        val belegId = tbmvBelege.id
         withContext(Dispatchers.IO) {
-            tbmvDao.deleteBeleg(tbmvBeleg)
+            tbmvDao.deleteBeleg(tbmvBelege)
             if (!noProtokoll) {
                 val chgProtokoll = TappChgProtokoll(
                     timeStamp = System.currentTimeMillis(),
-                    datenbank = "TbmvBeleg",
+                    datenbank = "TbmvBelege",
                     satzId = belegId,
                     aktion = DB_AKTION_DELETE_DS
                 )
@@ -437,8 +471,11 @@ class MainRepository @Inject constructor(
     suspend fun insertInventur(tbmvInventur: TbmvInventur) = tbmvDao.upsertInventur(tbmvInventur)
     suspend fun updateInventur(tbmvInventur: TbmvInventur) = tbmvDao.upsertInventur(tbmvInventur)
 
-    suspend fun insertInventurMat(tbmvInventurMat: TbmvInventurMat) = tbmvDao.upsertInveturMat(tbmvInventurMat)
-    suspend fun updateInventurMat(tbmvInventurMat: TbmvInventurMat) = tbmvDao.upsertInveturMat(tbmvInventurMat)
+    suspend fun insertInventurMat(tbmvInventurMat: TbmvInventurMat) =
+        tbmvDao.upsertInveturMat(tbmvInventurMat)
+
+    suspend fun updateInventurMat(tbmvInventurMat: TbmvInventurMat) =
+        tbmvDao.upsertInveturMat(tbmvInventurMat)
 
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -449,7 +486,8 @@ class MainRepository @Inject constructor(
 
     suspend fun getLastChgProtokoll() = tbmvDao.getLastChgProtokoll()
 
-    suspend fun getChangeProtokoll(startTime: Date, endTime: Date) = tbmvDao.getChangeProtokoll(startTime,endTime)
+    suspend fun getChangeProtokoll(startTime: Date, endTime: Date) =
+        tbmvDao.getChangeProtokoll(startTime, endTime)
 
     /** ############################################################################################
      *  Protokollierung der Synchronisierungen

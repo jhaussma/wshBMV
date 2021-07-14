@@ -153,9 +153,9 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
 
     override fun onTransferlistItemClick(belegAndZielort: BelegAndZielort) {
         Timber.tag(TAG)
-            .d("TransferlistFragment, onTransferlistItemClick mit Beleg-ID ${belegAndZielort.tmbvBeleg.id}")
-//        belegViewModel.setNewBelegId(belegAndZielort.tmbvBeleg.id)
-        fragCommunicator.passBelegID(belegAndZielort.tmbvBeleg.id)
+            .d("TransferlistFragment, onTransferlistItemClick mit Beleg-ID ${belegAndZielort.tmbvBelege.id}")
+//        belegViewModel.setNewBelegId(belegAndZielort.tmbvBelege.id)
+        fragCommunicator.passBelegID(belegAndZielort.tmbvBelege.id)
     }
 
     private fun setupRecyclerView() = bind.rvTransferlists.apply {

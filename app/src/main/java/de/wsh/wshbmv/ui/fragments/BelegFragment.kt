@@ -75,7 +75,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
 
         belegViewModel.belegDataLive.observe(viewLifecycleOwner, {
             if (it != null) {
-                belegId = it.tbmvBeleg?.id
+                belegId = it.tbmvBelege?.id
                 writeUiValues(it)
                 bind.fabSave.isVisible = false
                 bind.fabUndo.isVisible = false
@@ -97,7 +97,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
                 ignoreNotizChange = false
             } else {
                 bind.fabSave.isVisible =
-                    (bind.etBelegNotiz.text.toString() != belegViewModel.belegDataLive.value?.tbmvBeleg?.notiz)
+                    (bind.etBelegNotiz.text.toString() != belegViewModel.belegDataLive.value?.tbmvBelege?.notiz)
                 bind.fabUndo.isVisible = bind.fabSave.isVisible
             }
         }
@@ -109,7 +109,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
 
         bind.fabUndo.setOnClickListener {
             // wir setzen den Inhalt der Notiz auf den Anfangswert zurück
-            bind.etBelegNotiz.setText(belegViewModel.belegDataLive.value!!.tbmvBeleg!!.notiz)
+            bind.etBelegNotiz.setText(belegViewModel.belegDataLive.value!!.tbmvBelege!!.notiz)
         }
 
         belegViewModel.barcodeErrorResponse.observe(viewLifecycleOwner, Observer {
@@ -148,7 +148,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
         when (item.itemId) {
             R.id.miBelegDel -> {
                 // lösche einen (Transfer-)Beleg aus der Belegliste, und raus aus dem Fragment
-                belegViewModel.deleteBeleg(belegViewModel.belegDataLive.value?.tbmvBeleg!!)
+                belegViewModel.deleteBeleg(belegViewModel.belegDataLive.value?.tbmvBelege!!)
                 parentFragmentManager.popBackStack()
             }
             R.id.miBelegRelease -> {
@@ -216,9 +216,9 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
         val belegData = belegViewModel.belegDataLive.value!!
         // kläre den Status...
         val statusBefore = belegFragStatus
-        when (belegData.tbmvBeleg?.belegStatus) {
+        when (belegData.tbmvBelege?.belegStatus) {
             "In Arbeit" -> {
-                belegFragStatus = if (belegData.tbmvBeleg?.belegUserGuid == myUser!!.id) {
+                belegFragStatus = if (belegData.tbmvBelege?.belegUserGuid == myUser!!.id) {
                     BelegStatus.USEREDIT
                 } else {
                     BelegStatus.READONLY
@@ -227,7 +227,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
             "Erfasst" -> {
                 belegFragStatus = if (belegData.zielLager?.id == GlobalVars.myLager?.id) {
                     BelegStatus.ZIELACK
-                } else if (belegData.tbmvBeleg?.belegUserGuid == myUser!!.id) {
+                } else if (belegData.tbmvBelege?.belegUserGuid == myUser!!.id) {
                     BelegStatus.USERDELETE
                 } else {
                     BelegStatus.READONLY
@@ -262,7 +262,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
         bind.tvBelegNotiz.isVisible = !bind.etBelegNotiz.isVisible
 
         delMenuItem.isVisible =
-            (belegposAdapter.itemCount == 0) && (belegData.tbmvBeleg?.belegUserGuid == myUser!!.id)
+            (belegposAdapter.itemCount == 0) && (belegData.tbmvBelege?.belegUserGuid == myUser!!.id)
 
         scanMenuItem.isVisible =
             (belegFragStatus == BelegStatus.USEREDIT) || (belegFragStatus == BelegStatus.ZIELACK)
@@ -278,14 +278,14 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
      */
     private fun writeUiValues(belegData: BelegData) {
         ignoreNotizChange = true
-        bind.tvBelegTyp.text = belegData.tbmvBeleg?.belegTyp
-        bind.tvBelegDatum.text = belegData.tbmvBeleg?.belegDatum?.formatedDateDE()
+        bind.tvBelegTyp.text = belegData.tbmvBelege?.belegTyp
+        bind.tvBelegDatum.text = belegData.tbmvBelege?.belegDatum?.formatedDateDE()
         bind.tvBelegUser.text = belegData.belegUser?.userKennung
         bind.tvBelegZielort.text = belegData.zielLager?.matchcode
         bind.tvBelegZielUser.text = belegData.zielUser?.userKennung
-        bind.tvBelegNotiz.text = belegData.tbmvBeleg?.notiz
-        bind.etBelegNotiz.setText(belegData.tbmvBeleg?.notiz)
-        bind.tvBelegStatus.text = belegData.tbmvBeleg?.belegStatus
+        bind.tvBelegNotiz.text = belegData.tbmvBelege?.notiz
+        bind.etBelegNotiz.setText(belegData.tbmvBelege?.notiz)
+        bind.tvBelegStatus.text = belegData.tbmvBelege?.belegStatus
     }
 
 

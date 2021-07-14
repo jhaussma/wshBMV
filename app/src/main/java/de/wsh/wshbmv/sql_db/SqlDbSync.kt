@@ -3,10 +3,13 @@ package de.wsh.wshbmv.sql_db
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import de.wsh.wshbmv.db.entities.TappSyncReport
+import de.wsh.wshbmv.db.entities.TbmvMat
 import de.wsh.wshbmv.db.entities.relations.ChangeProtokoll
 import de.wsh.wshbmv.other.Constants.SQL_SYNC_TABLES
 import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars
+import de.wsh.wshbmv.other.GlobalVars.sqlErrorMessage
+import de.wsh.wshbmv.other.GlobalVars.sqlStatus
 import de.wsh.wshbmv.other.enSqlStatus
 import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +36,7 @@ class SqlDbSync @Inject constructor(
     private var lastChgToServer = 0L
     private var lastChgFromServer = 0L
     private var tappSyncReport: TappSyncReport? = null
-    private var sqlChangeProtokol = mutableListOf<ChangeProtokoll>()
+    private var sqlChangeProtokoll = mutableListOf<ChangeProtokoll>()
     private var mobilChangeProtokoll = mutableListOf<ChangeProtokoll>()
 
     init {
@@ -93,7 +96,7 @@ class SqlDbSync @Inject constructor(
             var resultSet = statement.executeQuery(sqlQuery)
             if (resultSet != null) {
                 while (resultSet.next()) {
-                    sqlChangeProtokol.add(
+                    sqlChangeProtokoll.add(
                         ChangeProtokoll(
                             datenbank = resultSet.getString("Datenbank"),
                             satzId = resultSet.getString("SatzID"),
@@ -119,12 +122,38 @@ class SqlDbSync @Inject constructor(
             // wir lesen das Änderungsprotokoll vom Mobil ein, gruppiert und sortiert nach Datenbank, SatzID...
             mobilChangeProtokoll = mainRepo.getChangeProtokoll(dtSyncToServer, dtChgToServer)
             Timber.tag(TAG).d("gefunden: ${mobilChangeProtokoll.size} Datensätze im Mobil-Client")
-            // nur für Kontrollzwecke in der Testphase...
-            mobilChangeProtokoll.forEach() {
-                Timber.tag(TAG).d("DS: ${it.toString()}")
+
+            // ... und starten nun die Auswertung, zuerst von der Mobil-Seite aus:
+            //       (Prio 1 sind DEL-Befehle, Prio 2 sind ADD-Befehle, zum Schluss dann die UPDATES...
+            mobilChangeProtokoll.forEach() { mobilChangeDS ->
+                Timber.tag(TAG).d("DS: ${mobilChangeDS.toString()}")
+                if (mobilChangeDS.delDS > 0) {
+                    // Ein Löschbefehl ersetzt immer alle anderen Einträge zur SatzID
+                    // ..im ServerChangeProtokoll
+                    val filteredProtokoll =
+                        sqlChangeProtokoll.filter { sqlChangeDS: ChangeProtokoll ->
+                            sqlChangeDS.datenbank == mobilChangeDS.datenbank && sqlChangeDS.satzId == mobilChangeDS.satzId
+                        }
+                    if (filteredProtokoll.isNotEmpty()) {
+                        sqlChangeProtokoll.remove(filteredProtokoll.first())
+                    }
+                    // Löschbefehl auf der Serverseite
+                    if (!delDsOnSqlServer(
+                            mobilChangeDS.datenbank!!,
+                            mobilChangeDS.satzId!!
+                        )
+                    ) return false
+                } else if (mobilChangeDS.addDS > 0) {
+                    // ein Add-Befehl fügt einfach einen neuen Datensat auf Serverseite ein...
+                    if (!addDsOnSqlServer(
+                            mobilChangeDS.datenbank!!,
+                            mobilChangeDS.satzId!!
+                        )
+                    ) return false
+                }
+
+
             }
-
-
 
 
         } else {
@@ -168,6 +197,150 @@ class SqlDbSync @Inject constructor(
         return lastChgToServer > tappSyncReport!!.lastToServerTime || lastChgFromServer > tappSyncReport!!.lastFromServerTime
     }
 
+    /** ############################################################################################
+     *   SQL-Funktionen für den SQL-Server,
+     *    - Delete Datensatz
+     */
+    private suspend fun delDsOnSqlServer(datenbank: String, satzId: String): Boolean {
+        val statement = myConn!!.createStatement()
+        val sqlQuery = "DELETE FROM $datenbank WHERE (ID = '$satzId')"
+        try {
+            statement.execute(sqlQuery)
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.value = ex.toString()
+            sqlStatus.value = enSqlStatus.IN_ERROR
+            return false
+        }
+
+        return true
+    }
+
+    /** ############################################################################################
+     *   SQL-Funktionen für den SQL-Server,
+     *    - Add Datensatz
+     */
+    private suspend fun addDsOnSqlServer(datenbank: String, satzId: String): Boolean {
+        val statement = myConn!!.createStatement()
+        var sqlQuery: String? = null
+
+        when (datenbank) {
+            "TbmvBelege" -> sqlQuery = getQueryForAddTbmvBeleg(satzId)
+            "TbmvBelegPos" -> sqlQuery = getQueryForAddTbmvBelegPos(satzId)
+            "TbmvMat" -> sqlQuery = getQueryForAddTbmvMat(satzId)
+        }
+
+        try {
+            sqlQuery?.let {
+                statement.execute(sqlQuery)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.value = ex.toString()
+            sqlStatus.value = enSqlStatus.IN_ERROR
+            return false
+        }
+        return true
+    }
+
+    /** #############################################################################################
+     *  Erzeugung der SQL-Querys zum Anlegen von Datensätzen auf Serverseite
+     *   .. für alle relevanten Tabellen
+     */
+    private suspend fun getQueryForAddTbmvBeleg(satzId: String): String? {
+        val tbmvBelege = mainRepo.getBelegZuBelegId(satzId) ?: return null
+        val strFeldnamen =
+            "(ID, BelegTyp, BelegDatum, BelegUserGUID, ZielLagerGUID, ZielUserGUID, BelegStatus, ToAck, Notiz)"
+        var strValues = "VALUES("
+        strValues += "'${tbmvBelege.id}',"
+        strValues += "'${tbmvBelege.belegTyp}',"
+        strValues += "${tbmvBelege.belegDatum!!.formatedDateToSQL()},"
+        strValues += "'${tbmvBelege.belegUserGuid}',"
+        strValues += "'${tbmvBelege.zielLagerGuid}',"
+        strValues += "'${tbmvBelege.zielUserGuid}',"
+        strValues += "'${tbmvBelege.belegStatus}',"
+        strValues += "${tbmvBelege.toAck.toString()},"
+        strValues += "'${tbmvBelege.notiz}')"
+        return "INSERT INTO TbmvBelege $strFeldnamen $strValues"
+    }
+
+    private suspend fun getQueryForAddTbmvBelegPos(satzId: String): String? {
+        val tbmvBelegPos = mainRepo.getBelegPosZuBelegPosId(satzId) ?: return null
+        val strFeldnamen = "(ID, BelegID, Pos, MatGUID, Menge, VonLagerGUID, AckDatum)"
+        var strValues = "VALUES("
+        strValues += "'${tbmvBelegPos.id}',"
+        strValues += "'${tbmvBelegPos.belegId}',"
+        strValues += "${tbmvBelegPos.pos.toString()},"
+        strValues += "'${tbmvBelegPos.matGuid}',"
+        strValues += "'${tbmvBelegPos.menge.toString()}',"
+        strValues += if (tbmvBelegPos.vonLagerGuid == null) {
+            "NULL,"
+        } else {
+            "'${tbmvBelegPos.vonLagerGuid}',"
+        }
+        strValues += if (tbmvBelegPos.ackDatum == null) {
+            "NULL"
+        } else {
+            "${tbmvBelegPos.ackDatum!!.formatedDateToSQL()}"
+        }
+        return "INSERT INTO TbmvBelegPos $strFeldnamen $strValues"
+    }
+
+    private suspend fun getQueryForAddTbmvMat(satzId: String): String? {
+        val tbmvMat = mainRepo.getMaterialByMatID(satzId) ?: return null
+        val strFeldnamen = "(ID, Scancode, Typ, Matchcode, MatGruppeGUID, Beschreibung, Hersteller, Modell, Seriennummer, UserGUID, MatStatus, BildGUID, BildBmp)"
+        var strValues = "VALUES("
+        strValues += "'${tbmvMat.id}',"
+        strValues += "'${tbmvMat.scancode}',"
+        strValues += "'${tbmvMat.typ}',"
+        strValues += "'${tbmvMat.matchcode}',"
+        strValues += "'${tbmvMat.matGruppeGuid}',"
+        strValues += "'${tbmvMat.beschreibung}',"
+        strValues += "'${tbmvMat.hersteller}',"
+        strValues += "'${tbmvMat.modell}',"
+        strValues += "'${tbmvMat.seriennummer}',"
+        strValues += "'${tbmvMat.userGuid}',"
+        strValues += "'${tbmvMat.matStatus}',"
+        strValues += "NULL,"
+        if (tbmvMat.bildBmp == null) {
+            strValues += "NULL"
+        } else {
+            strValues += "CAST('${tbmvMat.bildBmp.toString()}' AS varbinary(max))"
+        }
+        return "INSERT INTO TbmvMat $strFeldnamen $strValues"
+    }
+
+
+    /** ############################################################################################
+     *   SQL-Funktionen für den SQL-Server,
+     *    - Update Datensatz
+     */
+    private suspend fun editDsOnSqlServer(entity: Any): Boolean {
+        val statement = myConn!!.createStatement()
+        var sqlQuery: String = ""
+        when (entity) {
+            is TbmvMat -> {
+                val tbmvMat = entity as TbmvMat
+
+
+            }
+        }
+        try {
+            statement.execute(sqlQuery)
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.value = ex.toString()
+            sqlStatus.value = enSqlStatus.IN_ERROR
+            return false
+        }
+
+        return true
+    }
+
+
+    /** ############################################################################################
+     *  Konverter, Hilfsfunktionen zum Formatieren
+     */
     private fun toBitmap(bytes: ByteArray?): Bitmap? {
         return if (bytes != null) {
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size)

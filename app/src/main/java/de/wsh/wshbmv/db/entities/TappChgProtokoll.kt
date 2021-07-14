@@ -8,6 +8,7 @@ data class TappChgProtokoll(
     var timeStamp: Long = 0L,
     var datenbank: String = "",
     var satzId: String = "",
+    var feldname: String? = null,
     var aktion: Int = -1
 ) {
     @PrimaryKey(autoGenerate = true)

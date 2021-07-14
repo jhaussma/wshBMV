@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class TbmvService(
+data class TbmvServices(
     @PrimaryKey(autoGenerate = false) var id: String = "",
     var name: String = "",
     var beschreibung: String = "",

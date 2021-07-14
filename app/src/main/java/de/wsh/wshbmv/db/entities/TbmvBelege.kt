@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import java.util.*
 
 @Entity
-data class TbmvBeleg(
+data class TbmvBelege(
     @PrimaryKey(autoGenerate = false) var id: String = "",
     var belegTyp: String = "",
     var belegDatum: Date? = null,
