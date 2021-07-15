@@ -10,7 +10,7 @@ import de.wsh.wshbmv.db.entities.relations.*
     entities = [
         TsysUser::class,
         TsysUserGruppe::class,
-        TsysUser_Gruppe::class,
+        TsysUserToGruppe::class,
         TbmvBelege::class,
         TbmvBelegPos::class,
         TbmvDokument::class,

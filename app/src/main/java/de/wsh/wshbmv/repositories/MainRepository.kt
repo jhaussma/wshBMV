@@ -25,7 +25,7 @@ class MainRepository @Inject constructor(
     suspend fun insertUserGruppe(tsysUserGruppe: TsysUserGruppe) =
         tbmvDao.insertUserGruppe(tsysUserGruppe)
 
-    suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUser_Gruppe) =
+    suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUserToGruppe) =
         tbmvDao.insertUserInGruppe(tsysUserInGruppe)
 
     suspend fun updateUser(tsysUser: TsysUser) = tbmvDao.updateUser(tsysUser)
@@ -228,6 +228,8 @@ class MainRepository @Inject constructor(
         }
     }
 
+    suspend fun getMat_LagerByID(matLagerId: String) = tbmvDao.getMat_LagerByID(matLagerId)
+
     suspend fun getLagersBestandOfMaterialID(materialID: String) =
         tbmvDao.getLagersBestandOfMaterialID(materialID)
 
@@ -257,7 +259,8 @@ class MainRepository @Inject constructor(
     // rudimentäre Neuanlagen (z.B. für Synchronisierungen)
     suspend fun insertBeleg(tbmvBelege: TbmvBelege) = tbmvDao.insertBeleg(tbmvBelege)
     suspend fun getBelegZuBelegId(belegId: String) = tbmvDao.getBelegZuBelegId(belegId)
-    suspend fun getBelegPosZuBelegPosId(belegPosId: String) = tbmvDao.getBelegPosZuBelegPosId(belegPosId)
+    suspend fun getBelegPosZuBelegPosId(belegPosId: String) =
+        tbmvDao.getBelegPosZuBelegPosId(belegPosId)
 
     // lade alle Belege abhängig von den Filtereinstellungen
     fun getBelegeToLagerAlle(lagerId: String) = tbmvDao.getBelegeToLagerAlle(lagerId)
@@ -486,8 +489,16 @@ class MainRepository @Inject constructor(
 
     suspend fun getLastChgProtokoll() = tbmvDao.getLastChgProtokoll()
 
-    suspend fun getChangeProtokoll(startTime: Date, endTime: Date) =
-        tbmvDao.getChangeProtokoll(startTime, endTime)
+    suspend fun getChgProtokollGroupedList(startTime: Date, endTime: Date) =
+        tbmvDao.getChgProtokollGroupedList(startTime, endTime)
+
+    suspend fun getChgProtokollsFiltered(
+        startTime: Date,
+        endTime: Date,
+        datenbank: String,
+        satzId: String
+    ) = tbmvDao.getChgProtokollsFiltered(startTime, endTime, datenbank, satzId)
+
 
     /** ############################################################################################
      *  Protokollierung der Synchronisierungen

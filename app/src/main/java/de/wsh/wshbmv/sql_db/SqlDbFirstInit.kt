@@ -95,7 +95,7 @@ class SqlDbFirstInit @Inject constructor(
     private suspend fun syncFirstPrioTabs(): Boolean {
         lateinit var user: TsysUser
         lateinit var userGruppe: TsysUserGruppe
-        lateinit var userInGruppe: TsysUser_Gruppe
+        lateinit var userInGruppe: TsysUserToGruppe
         lateinit var lager: TbmvLager
 
         // die User:
@@ -161,7 +161,7 @@ class SqlDbFirstInit @Inject constructor(
         if (resultSet != null) {
             Timber.tag(TAG).d("Wir schreiben TsysUser_Gruppe...")
             while (resultSet.next()) {
-                userInGruppe = TsysUser_Gruppe()
+                userInGruppe = TsysUserToGruppe()
                 userInGruppe.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 userInGruppe.gruppeId =
                     resultSet.getString("GruppeID").lowercase(Locale.getDefault())

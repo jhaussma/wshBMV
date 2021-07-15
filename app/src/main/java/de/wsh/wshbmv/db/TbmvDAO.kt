@@ -37,10 +37,10 @@ interface TbmvDAO {
     suspend fun insertUserGruppe(tsysUserGruppe: TsysUserGruppe)
 
     /** ############################################################################################
-     *  TsysUser_Gruppe (Relation)
+     *  TsysUserToGruppe (Relation)
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUser_Gruppe)
+    suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUserToGruppe)
 
     /** ############################################################################################
      *  Dokumente
@@ -187,6 +187,10 @@ interface TbmvDAO {
     suspend fun deleteMat_Lager(tbmvMat_Lager: TbmvMat_Lager)
 
     @Transaction
+    @Query("SELECT * FROM TbmvMat_Lager WHERE id = :matLagerId")
+    suspend fun getMat_LagerByID(matLagerId: String): TbmvMat_Lager?
+
+    @Transaction
     @Query("SELECT * FROM TbmvMat_Lager WHERE lagerId LIKE :lagerId")
     suspend fun getMatlistOfLager(lagerId: String): MatInLager?
 
@@ -272,7 +276,6 @@ interface TbmvDAO {
     suspend fun upsertInveturMat(tbmvInventurMat: TbmvInventurMat)
 
 
-
     /** ############################################################################################
      *  Änderungsverwaltung, Änderungsprotokoll...
      */
@@ -286,7 +289,16 @@ interface TbmvDAO {
 
     @Transaction
     @Query("SELECT datenbank, satzId, MAX(timeStamp) AS maxZeitstempel, SUM(aktion=0) AS addDS, SUM(aktion=1) AS editDS, SUM(aktion=2) AS delDS FROM TappChgProtokoll WHERE (timeStamp BETWEEN :startTime AND :endTime) GROUP BY datenbank, satzId ORDER BY datenbank, satzId")
-    suspend fun getChangeProtokoll(startTime: Date, endTime: Date): MutableList<ChangeProtokoll>
+    suspend fun getChgProtokollGroupedList(startTime: Date, endTime: Date): MutableList<ChangeProtokoll>
+
+    @Transaction
+    @Query("SELECT * FROM TappChgProtokoll WHERE (timeStamp BETWEEN :startTime AND :endTime) AND (datenbank = :datenbank) AND (satzId = :satzId)")
+    suspend fun getChgProtokollsFiltered(
+        startTime: Date,
+        endTime: Date,
+        datenbank: String,
+        satzId: String
+    ): List<TappChgProtokoll>
 
     /** ############################################################################################
      *  Änderungsverwaltung, Sync-Reports...

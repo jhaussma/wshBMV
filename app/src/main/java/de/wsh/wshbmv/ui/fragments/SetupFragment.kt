@@ -250,6 +250,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                         timeStamp = System.currentTimeMillis(),
                         datenbank = "TsysUser",
                         satzId = myUser!!.id,
+                        feldname = "passHash",
                         aktion = DB_AKTION_UPDATE_DS
                     )
                     tbmvDAO.insertChgProtokoll(tappChgProtokoll)
