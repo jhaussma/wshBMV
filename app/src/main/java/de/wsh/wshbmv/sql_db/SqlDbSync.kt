@@ -24,8 +24,6 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.*
 import javax.inject.Inject
 
@@ -288,21 +286,18 @@ class SqlDbSync @Inject constructor(
      *    - Add Datensatz
      */
     private suspend fun addDsOnSqlServer(datenbank: String, satzId: String): Boolean {
-        val statement = myConn!!.createStatement()
-        var sqlQuery: String? = null
+        var preparedStatement: PreparedStatement? = null
 
         when (datenbank) {
-            "TbmvBelege" -> sqlQuery = getQueryForAddTbmvBeleg(satzId)
-            "TbmvBelegPos" -> sqlQuery = getQueryForAddTbmvBelegPos(satzId)
-            "TbmvMat" -> sqlQuery = getQueryForAddTbmvMat(satzId)
-            "TbmvMat_Lager" -> sqlQuery = getQueryForAddTbmvMatToLager(satzId)
+            "TbmvBelege" -> preparedStatement = getQueryForAddTbmvBeleg(satzId)
+            "TbmvBelegPos" -> preparedStatement = getQueryForAddTbmvBelegPos(satzId)
+            "TbmvMat" -> preparedStatement = getQueryForAddTbmvMat(satzId)
+            "TbmvMat_Lager" -> preparedStatement = getQueryForAddTbmvMatToLager(satzId)
             else -> sqlErrorMessage.postValue("ADD-DS zum Server für $datenbank ist noch nicht umgesetzt!")
         }
         try {
-            Timber.tag(TAG).d("addDsOnSqlServer: $sqlQuery")
-            sqlQuery?.let {
-                statement.execute(sqlQuery)
-            }
+            Timber.tag(TAG).d("addDsOnSqlServer: $preparedStatement")
+            preparedStatement?.execute()
         } catch (ex: Exception) {
             //Fehlermeldung und -behandlung...
             sqlErrorMessage.postValue(ex.toString())
@@ -310,12 +305,16 @@ class SqlDbSync @Inject constructor(
             return false
         }
         //.. die ChgProtokoll-Tabelle des Servers nachpflegen
-        val chgDate = Date()
-        sqlQuery = "INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) "
-        sqlQuery += "VALUES(${chgDate.formatedDateToSQL()},'$datenbank','$satzId',NULL,$DB_AKTION_ADD_DS)"
+        val sqlDate = Timestamp(System.currentTimeMillis())
+        preparedStatement = myConn!!.prepareStatement("INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) VALUES(?,?,?,?,?)")
+        preparedStatement.setTimestamp(1, sqlDate)
+        preparedStatement.setString(2, datenbank)
+        preparedStatement.setString(3, satzId)
+        preparedStatement.setString(4, null)
+        preparedStatement.setInt(5, DB_AKTION_ADD_DS)
         try {
-            Timber.tag(TAG).d("addDsOnSqlServer: $sqlQuery")
-            statement.execute(sqlQuery)
+            Timber.tag(TAG).d("addDsOnSqlServer: $preparedStatement")
+            preparedStatement.execute()
         } catch (ex: Exception) {
             //Fehlermeldung und -behandlung...
             sqlErrorMessage.postValue(ex.toString())
@@ -329,85 +328,76 @@ class SqlDbSync @Inject constructor(
      *  Erzeugung der SQL-Queries zum Anlegen von Datensätzen auf Serverseite
      *   .. für alle relevanten Tabellen
      */
-    private suspend fun getQueryForAddTbmvBeleg(satzId: String): String? {
+    private suspend fun getQueryForAddTbmvBeleg(satzId: String): PreparedStatement? {
         val tbmvBelege = mainRepo.getBelegZuBelegId(satzId) ?: return null
-        val strFeldnamen =
-            "(ID, BelegTyp, BelegDatum, BelegUserGUID, ZielLagerGUID, ZielUserGUID, BelegStatus, ToAck, Notiz)"
-        var strValues = "VALUES("
-        strValues += "'${tbmvBelege.id}'"
-        strValues += ",'${tbmvBelege.belegTyp}'"
-        strValues += ",${tbmvBelege.belegDatum!!.formatedDateToSQL()}"
-        strValues += ",'${tbmvBelege.belegUserGuid}'"
-        strValues += ",'${tbmvBelege.zielLagerGuid}'"
-        strValues += ",'${tbmvBelege.zielUserGuid}'"
-        strValues += ",'${tbmvBelege.belegStatus}'"
-        strValues += ",${tbmvBelege.toAck}"
-        strValues += ",'${tbmvBelege.notiz}'"
-        strValues += ")"
-        return "INSERT INTO TbmvBelege $strFeldnamen $strValues"
+        var id = 1
+        val preparedStatement = myConn!!.prepareStatement("INSERT INTO TbmvBelege (ID, BelegTyp, BelegDatum, BelegUserGUID, ZielLagerGUID, ZielUserGUID, BelegStatus, ToAck, Notiz) VALUES(?,?,?,?,?,?,?,?,?)")
+        preparedStatement.setString(id++, tbmvBelege.id)
+        preparedStatement.setString(id++, tbmvBelege.belegTyp)
+        preparedStatement.setTimestamp(id++, Timestamp(tbmvBelege.belegDatum!!.time))
+        preparedStatement.setString(id++, tbmvBelege.belegUserGuid)
+        preparedStatement.setString(id++, tbmvBelege.zielLagerGuid)
+        preparedStatement.setString(id++, tbmvBelege.zielUserGuid)
+        preparedStatement.setString(id++, tbmvBelege.belegStatus)
+        preparedStatement.setInt(id++, tbmvBelege.toAck)
+        preparedStatement.setString(id++, tbmvBelege.notiz)
+        return preparedStatement
     }
 
-    private suspend fun getQueryForAddTbmvBelegPos(satzId: String): String? {
+    private suspend fun getQueryForAddTbmvBelegPos(satzId: String): PreparedStatement? {
         val tbmvBelegPos = mainRepo.getBelegPosZuBelegPosId(satzId) ?: return null
-        val strFeldnamen = "(ID, BelegID, Pos, MatGUID, Menge, VonLagerGUID, AckDatum)"
-        var strValues = "VALUES("
-        strValues += "'${tbmvBelegPos.id}'"
-        strValues += ",'${tbmvBelegPos.belegId}'"
-        strValues += ",${tbmvBelegPos.pos}"
-        strValues += ",'${tbmvBelegPos.matGuid}'"
-        strValues += ",'${tbmvBelegPos.menge}'"
-        strValues += if (tbmvBelegPos.vonLagerGuid == null) {
-            ",NULL"
+        var id = 1
+        val preparedStatement = myConn!!.prepareStatement("INSERT INTO TbmvBelege (ID, BelegID, Pos, MatGUID, Menge, VonLagerGUID, AckDatum) VALUES(?,?,?,?,?,?,?)")
+        preparedStatement.setString(id++, tbmvBelegPos.id)
+        preparedStatement.setString(id++, tbmvBelegPos.belegId)
+        preparedStatement.setInt(id++, tbmvBelegPos.pos)
+        preparedStatement.setString(id++, tbmvBelegPos.matGuid)
+        preparedStatement.setFloat(id++, tbmvBelegPos.menge)
+        preparedStatement.setString(id++, tbmvBelegPos.vonLagerGuid)
+        if (tbmvBelegPos.ackDatum == null) {
+            preparedStatement.setTimestamp(id++, null)
         } else {
-            ",'${tbmvBelegPos.vonLagerGuid}'"
+            preparedStatement.setTimestamp(id++, Timestamp(tbmvBelegPos.ackDatum!!.time))
         }
-        strValues += if (tbmvBelegPos.ackDatum == null) {
-            ",NULL"
-        } else {
-            ",${tbmvBelegPos.ackDatum!!.formatedDateToSQL()}"
-        }
-        strValues += ")"
-        return "INSERT INTO TbmvBelegPos $strFeldnamen $strValues"
+        return preparedStatement
     }
 
-    private suspend fun getQueryForAddTbmvMat(satzId: String): String? {
+    private suspend fun getQueryForAddTbmvMat(satzId: String): PreparedStatement? {
         val tbmvMat = mainRepo.getMaterialByMatID(satzId) ?: return null
-        val strFeldnamen =
-            "(ID, Scancode, Typ, Matchcode, MatGruppeGUID, Beschreibung, Hersteller, Modell, Seriennummer, UserGUID, MatStatus, BildGUID, BildBmp)"
-        var strValues = "VALUES("
-        strValues += "'${tbmvMat.id}'"
-        strValues += ",'${tbmvMat.scancode}'"
-        strValues += ",'${tbmvMat.typ}'"
-        strValues += ",'${tbmvMat.matchcode}'"
-        strValues += ",'${tbmvMat.matGruppeGuid}'"
-        strValues += ",'${tbmvMat.beschreibung}'"
-        strValues += ",'${tbmvMat.hersteller}'"
-        strValues += ",'${tbmvMat.modell}'"
-        strValues += ",'${tbmvMat.seriennummer}'"
-        strValues += ",'${tbmvMat.userGuid}'"
-        strValues += ",'${tbmvMat.matStatus}'"
-        strValues += ",NULL"
-        // TODO: BitMap-Umsetzung auf varbinary klären...
+        var id = 1
+        val preparedStatement = myConn!!.prepareStatement("INSERT INTO TbmvMat (ID, Scancode, Typ, Matchcode, MatGruppeGUID, Beschreibung, Hersteller, Modell, Seriennummer, UserGUID, MatStatus, BildGUID, BildBmp) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        preparedStatement.setString(id++, tbmvMat.id)
+        preparedStatement.setString(id++, tbmvMat.scancode)
+        preparedStatement.setString(id++, tbmvMat.typ)
+        preparedStatement.setString(id++, tbmvMat.matchcode)
+        preparedStatement.setString(id++, tbmvMat.matGruppeGuid)
+        preparedStatement.setString(id++, tbmvMat.beschreibung)
+        preparedStatement.setString(id++, tbmvMat.hersteller)
+        preparedStatement.setString(id++, tbmvMat.modell)
+        preparedStatement.setString(id++, tbmvMat.seriennummer)
+        preparedStatement.setString(id++, tbmvMat.userGuid)
+        preparedStatement.setString(id++, tbmvMat.matStatus)
         if (tbmvMat.bildBmp == null) {
-            strValues += ",NULL"
+            preparedStatement.setBytes(id++, null)
         } else {
-            strValues += ",CAST('${tbmvMat.bildBmp.toString()}' AS varbinary(max))"
+            val byteOutputStream = ByteArrayOutputStream()
+            tbmvMat.bildBmp!!.compress(Bitmap.CompressFormat.PNG, 0, byteOutputStream)
+            val bytesImage = byteOutputStream.toByteArray()
+            preparedStatement.setBytes(id++, bytesImage)
         }
-        strValues += ")"
-        return "INSERT INTO TbmvMat $strFeldnamen $strValues"
+        return preparedStatement
     }
 
-    private suspend fun getQueryForAddTbmvMatToLager(satzId: String): String? {
+    private suspend fun getQueryForAddTbmvMatToLager(satzId: String): PreparedStatement? {
         val tbmvMatInLager = mainRepo.getMat_LagerByID(satzId) ?: return null
-        val strFeldnamen = "(ID, MatGUID, LagerGUID, Default, Bestand)"
-        var strValues = "VALUES("
-        strValues += "'${tbmvMatInLager.id}'"
-        strValues += ",'${tbmvMatInLager.matId}'"
-        strValues += ",'${tbmvMatInLager.lagerId}'"
-        strValues += ",${tbmvMatInLager.isDefault}"
-        strValues += ",${tbmvMatInLager.bestand}"
-        strValues += ")"
-        return "INSERT INTO TbmvMat_Lager $strFeldnamen $strValues"
+        var id = 1
+        val preparedStatement = myConn!!.prepareStatement("INSERT INTO TbmvMat_Lager (ID, MatGUID, LagerGUID, Default, Bestand) VALUES(?,?,?,?,?)")
+        preparedStatement.setString(id++, tbmvMatInLager.id)
+        preparedStatement.setString(id++,tbmvMatInLager.matId)
+        preparedStatement.setString(id++,tbmvMatInLager.lagerId)
+        preparedStatement.setInt(id++, tbmvMatInLager.isDefault)
+        preparedStatement.setFloat(id++, tbmvMatInLager.bestand)
+        return preparedStatement
     }
 
 
@@ -440,7 +430,7 @@ class SqlDbSync @Inject constructor(
             return false
         }
         //.. die ChgProtokoll-Tabelle des Servers nachpflegen
-        val sqlDate = java.sql.Timestamp(System.currentTimeMillis())
+        val sqlDate = Timestamp(System.currentTimeMillis())
         preparedStatement = myConn!!.prepareStatement("INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) VALUES(?,?,?,?,?)")
         preparedStatement.setTimestamp(1, sqlDate)
         preparedStatement.setString(2, datenbank)
