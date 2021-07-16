@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
     @Inject
     lateinit var tbmvDAO: TbmvDAO
-    var dbFirstSync: SqlDbFirstInit? = null
+    private var dbFirstSync: SqlDbFirstInit? = null
     var dbSync: SqlDbSync? = null
     private lateinit var mainRepo: MainRepository
 
@@ -134,19 +134,28 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+                enSqlStatus.PROCESS_ABORTED -> {
+                    Toast.makeText(
+                        applicationContext, "Synchronisierung mit FEHLER abgebrochen!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
                 enSqlStatus.IN_PROCESS -> {
                     Toast.makeText(
                         applicationContext, "Synchronisierung im Hintergrund gestartet!",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-                else -> Timber.tag(TAG).d("unbekannter sqlStatus gemeldet...")
+                else -> Timber.tag(TAG).d("unbekannter sqlStatus gemeldet $it...")
             }
         })
 
         // macht Fehlermeldung der SQL-Verbindung bekannt
         sqlErrorMessage.observe(this, androidx.lifecycle.Observer {
-            if (it != "") Toast.makeText(applicationContext, it, Toast.LENGTH_LONG).show()
+            if (it != "") {
+                Timber.tag(TAG).d("sqlError: $it")
+                Toast.makeText(applicationContext, it, Toast.LENGTH_LONG).show()
+            }
         })
 
 
@@ -296,6 +305,9 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
     override fun onDestroy() {
         super.onDestroy()
         Timber.tag(TAG).d("MainActivity, onDestroy")
+        when (sqlStatus.value) {
+            enSqlStatus.INIT, enSqlStatus.DISCONNECTED, enSqlStatus.IN_ERROR, enSqlStatus.PROCESS_ABORTED, enSqlStatus.PROCESS_ENDED, enSqlStatus.NO_CONTACT -> exitProcess(0)
+        }
     }
 
 

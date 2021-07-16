@@ -76,7 +76,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
 
         if (firstSyncCompleted) {
             Timber.tag(TAG).d("Wir starten mit lagerID: $lagerId")
-            var message = verifyUserInfo()
+            val message = verifyUserInfo()
             Timber.tag(TAG).d("nach verifyUserInfo, lagerID: $lagerId")
             if (message == "Okay") {
                 Timber.tag(TAG).d("verifyUserInfo meldet 'Okay'")
@@ -87,18 +87,6 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                     R.id.action_setupFragment_to_overviewFragment,
                     savedInstanceState
                 )
-
-//                // lösche das Fragement vom BackStack
-//                val navOptions = NavOptions.Builder()
-//                    .setPopUpTo(R.id.setupFragment, true)
-//                    .build()
-//
-//                // und wechsle direkt in die Betriebsmittel-Übersichtsansicht
-//                findNavController().navigate(
-//                    R.id.action_setupFragment_to_overviewFragment,
-//                    savedInstanceState,
-//                    navOptions
-//                )
 
             } else {
                 Snackbar.make(
