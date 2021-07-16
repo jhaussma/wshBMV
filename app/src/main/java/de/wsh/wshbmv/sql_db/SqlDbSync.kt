@@ -255,11 +255,10 @@ class SqlDbSync @Inject constructor(
      *    - Delete Datensatz
      */
     private fun delDsOnSqlServer(datenbank: String, satzId: String): Boolean {
-        val statement = myConn!!.createStatement()
-        var sqlQuery = "DELETE FROM $datenbank WHERE (ID = '$satzId')"
+        var preparedStatement = myConn!!.prepareStatement("DELETE FROM $datenbank WHERE (ID = '$satzId')")
         try {
-            Timber.tag(TAG).d("delDsOnSqlServer: $sqlQuery")
-            statement.execute(sqlQuery)
+            Timber.tag(TAG).d("delDsOnSqlServer: $preparedStatement")
+            preparedStatement.execute()
         } catch (ex: Exception) {
             //Fehlermeldung und -behandlung...
             sqlErrorMessage.postValue(ex.toString())
@@ -267,11 +266,15 @@ class SqlDbSync @Inject constructor(
             return false
         }
         //.. die ChgProtokoll-Tabelle des Servers nachpflegen
-        val chgDate = Date()
-        sqlQuery = "INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) "
-        sqlQuery += "VALUES(${chgDate.formatedDateToSQL()},'$datenbank','$satzId',NULL,$DB_AKTION_DELETE_DS)"
+        val sqlDate = Timestamp(System.currentTimeMillis())
+        preparedStatement = myConn!!.prepareStatement("INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) VALUES(?,?,?,?,?)")
+        preparedStatement.setTimestamp(1, sqlDate)
+        preparedStatement.setString(2, datenbank)
+        preparedStatement.setString(3, satzId)
+        preparedStatement.setString(4, null)
+        preparedStatement.setInt(5, DB_AKTION_DELETE_DS)
         try {
-            statement.execute(sqlQuery)
+            preparedStatement.execute()
         } catch (ex: Exception) {
             //Fehlermeldung und -behandlung...
             sqlErrorMessage.postValue(ex.toString())
