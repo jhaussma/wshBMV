@@ -439,6 +439,38 @@ class SqlDbSync @Inject constructor(
         return true
     }
 
+    private suspend fun getTbmvMatFromSql(satzId: String): Boolean {
+        try {
+            val tbmvMat = TbmvMat()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery("SELECT * FROM TbmvMat WHERE (ID LIKE '${satzId.uppercase(Locale.getDefault())}')")
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvMat.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvMat.scancode = resultSet.getString("Scancode")
+                tbmvMat.typ = resultSet.getString("Typ")
+                tbmvMat.matchcode = resultSet.getString("Matchcode")
+                tbmvMat.matGruppeGuid =
+                    resultSet.getString("MatGruppeGUID").lowercase(Locale.getDefault())
+                tbmvMat.beschreibung = resultSet.getString("Beschreibung")
+                tbmvMat.hersteller = resultSet.getString("Hersteller")
+                tbmvMat.modell = resultSet.getString("Modell")
+                tbmvMat.seriennummer = resultSet.getString("Seriennummer")
+                tbmvMat.userGuid = resultSet.getString("UserGUID").lowercase(Locale.getDefault())
+                tbmvMat.matStatus = resultSet.getString("MatStatus")
+                tbmvMat.bildBmp = toBitmap(resultSet.getBytes("BildBmp"))
+                // füge den Datensatz in die SQLite ein
+                mainRepo.updateMat(tbmvMat, noProtokoll = true)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
 
     /** ############################################################################################
      *   SQL-Funktionen für den SQL-Server,
