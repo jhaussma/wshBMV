@@ -22,13 +22,36 @@ class MainRepository @Inject constructor(
      * die User-Zugriffe
      */
     suspend fun insertUser(tsysUser: TsysUser) = tbmvDao.insertUser(tsysUser)
+    suspend fun updateUser(tsysUser: TsysUser) = tbmvDao.updateUser(tsysUser)
+
+    suspend fun deleteUserById(satzId: String) {
+        withContext(Dispatchers.IO) {
+            val tsysUser = tbmvDao.getUserById(satzId)
+            if (tsysUser != null) tbmvDao.deleteUser(tsysUser)
+        }
+    }
+
     suspend fun insertUserGruppe(tsysUserGruppe: TsysUserGruppe) =
         tbmvDao.insertUserGruppe(tsysUserGruppe)
+
+    suspend fun deleteUserGruppeById(satzId: String) {
+        withContext(Dispatchers.IO) {
+            val tsysUserGruppe = tbmvDao.getUserGruppeByID(satzId)
+            if (tsysUserGruppe != null) tbmvDao.deleteUserGruppe(tsysUserGruppe)
+        }
+    }
 
     suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUserToGruppe) =
         tbmvDao.insertUserInGruppe(tsysUserInGruppe)
 
-    suspend fun updateUser(tsysUser: TsysUser) = tbmvDao.updateUser(tsysUser)
+    suspend fun deleteUserInGruppeById(satzId: String) {
+        withContext(Dispatchers.IO) {
+            val tsysUserInGruppe = tbmvDao.getUserInGruppeById(satzId)
+            if (tsysUserInGruppe != null) tbmvDao.deleteUserInGruppe(tsysUserInGruppe)
+        }
+    }
+
+
 
     suspend fun getUserByID(userID: String) = tbmvDao.getUserById(userID)
     fun getUserByLogName(userLogName: String) = tbmvDao.getUserByLogName(userLogName)
@@ -41,10 +64,25 @@ class MainRepository @Inject constructor(
      */
     suspend fun insertDokument(tbmvDokument: TbmvDokument) = tbmvDao.insertDokument(tbmvDokument)
 
+    suspend fun deleteDokumentById(satzId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvDokument = tbmvDao.getDokumentByID(satzId)
+            if (tbmvDokument != null) tbmvDao.deleteDokument(tbmvDokument)
+        }
+    }
+
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Lager-Basis
      */
     suspend fun insertLager(tbmvLager: TbmvLager) = tbmvDao.insertLager(tbmvLager)
+
+    suspend fun deleteLagerById(lagerId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvLager = tbmvDao.getLagerByID(lagerId)
+            if (tbmvLager != null) tbmvDao.deleteLager(tbmvLager)
+        }
+    }
+
     suspend fun getLagerListAktivSorted() = tbmvDao.getLagerListAktivSorted()
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -83,10 +121,24 @@ class MainRepository @Inject constructor(
         }
     }
 
+    suspend fun deleteMatById(matId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvMat = tbmvDao.getMaterialByMatID(matId)
+            if (tbmvMat != null) tbmvDao.deleteMat(tbmvMat)
+        }
+    }
+
     suspend fun getMaterialByMatID(materialGuid: String) = tbmvDao.getMaterialByMatID(materialGuid)
 
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe) =
         tbmvDao.insertMatGruppe(tbmvMatGruppe)
+
+    suspend fun deleteMatGruppeById(matGruppeId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvMatGruppe = tbmvDao.getMatGruppeByGruppeID(matGruppeId)
+            if (tbmvMatGruppe != null) tbmvDao.deleteMatGruppe(tbmvMatGruppe)
+        }
+    }
 
     suspend fun getMatGruppeAlle() = tbmvDao.getMatGruppeAll()
 
@@ -228,6 +280,13 @@ class MainRepository @Inject constructor(
         }
     }
 
+    suspend fun deleteMat_LagerById(matLagerId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvMat_Lager = tbmvDao.getMat_LagerByID(matLagerId)
+            if (tbmvMat_Lager != null) tbmvDao.deleteMat_Lager(tbmvMat_Lager)
+        }
+    }
+
     suspend fun getMat_LagerByID(matLagerId: String) = tbmvDao.getMat_LagerByID(matLagerId)
 
     suspend fun getLagersBestandOfMaterialID(materialID: String) =
@@ -251,6 +310,13 @@ class MainRepository @Inject constructor(
      *  Service
      */
     suspend fun insertService(tbmvServices: TbmvServices) = tbmvDao.insertService(tbmvServices)
+
+    suspend fun deleteServiceById(serviceId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvService = tbmvDao.getServiceById(serviceId)
+            if (tbmvService != null) tbmvDao.deleteService(tbmvService)
+        }
+    }
 
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -426,6 +492,13 @@ class MainRepository @Inject constructor(
         }
     }
 
+    suspend fun deleteBelegById(satzId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvBeleg = tbmvDao.getBelegZuBelegId(satzId)
+            if (tbmvBeleg != null) tbmvDao.deleteBeleg(tbmvBeleg)
+        }
+    }
+
     suspend fun deleteBelegPos(tbmvBelegPos: TbmvBelegPos, noProtokoll: Boolean = false) {
         val belegPosId = tbmvBelegPos.id
         withContext(Dispatchers.IO) {
@@ -443,11 +516,26 @@ class MainRepository @Inject constructor(
         }
     }
 
+    suspend fun deleteBelegPosById(satzId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvBelegPos = tbmvDao.getBelegPosZuBelegPosId(satzId)
+            if (tbmvBelegPos != null) tbmvDao.deleteBelegPos(tbmvBelegPos)
+        }
+    }
+
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Material - Service
      */
     suspend fun insertMat_Service(tbmvMat_Service: TbmvMat_Service) =
         tbmvDao.insertMat_Service(tbmvMat_Service)
+
+    suspend fun deleteMat_ServiceById(matServiceId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvMat_Service = tbmvDao.getMat_ServiceByID(matServiceId)
+            if (tbmvMat_Service != null) tbmvDao.deleteMat_Service(tbmvMat_Service)
+        }
+    }
+
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Material/Service - Dokument
@@ -455,11 +543,27 @@ class MainRepository @Inject constructor(
     suspend fun insertMatService_Dok(tbmvMatService_Dok: TbmvMatService_Dok) =
         tbmvDao.insertMatService_Dok(tbmvMatService_Dok)
 
+    suspend fun deleteMatService_DokById(matServiceDokId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvMatService_Dok = tbmvDao.getMatService_DokById(matServiceDokId)
+            if (tbmvMatService_Dok != null) tbmvDao.deleteMatService_Dok(tbmvMatService_Dok)
+        }
+    }
+
+
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Material/Service - Historie
      */
     suspend fun insertMatService_Historie(tbmvMatService_Historie: TbmvMatService_Historie) =
         tbmvDao.insertMatService_Historie(tbmvMatService_Historie)
+
+
+    suspend fun deleteMatService_HistorieById(matServiceHistorieId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvMatService_Historie = tbmvDao.getMatService_HistorieById(matServiceHistorieId)
+            if (tbmvMatService_Historie != null) tbmvDao.deleteMatService_Historie(tbmvMatService_Historie)
+        }
+    }
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Relation Service - Dokument
@@ -467,6 +571,12 @@ class MainRepository @Inject constructor(
     suspend fun insertService_Dok(tbmvService_Dok: TbmvService_Dok) =
         tbmvDao.insertService_Dok(tbmvService_Dok)
 
+    suspend fun deleteService_DokById(serviceDokId: String) {
+        withContext(Dispatchers.IO) {
+            val tbmvService_Dok = tbmvDao.getService_DokById(serviceDokId)
+            if (tbmvService_Dok != null) tbmvDao.deleteService_Dok(tbmvService_Dok)
+        }
+    }
 
     /** ############################################################################################
      *  Inventurlisten

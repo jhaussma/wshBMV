@@ -2,7 +2,7 @@ package de.wsh.wshbmv.sql_db
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import de.wsh.wshbmv.db.entities.TappSyncReport
+import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.ChangeProtokoll
 import de.wsh.wshbmv.other.Constants.DB_AKTION_ADD_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_DELETE_DS
@@ -132,7 +132,7 @@ class SqlDbSync @Inject constructor(
                 .d("syncDatabase, gefunden: ${mobilChangeProtokoll.size} Datensätze im Mobil-Client")
 
             // ... und starten nun die Auswertung, zuerst von der Mobil-Seite aus:
-            //       (Prio 1 sind DEL-Befehle, Prio 2 sind ADD-Befehle, zum Schluss dann die UPDATES...
+            //      -> Prio 1 sind DEL-Befehle, Prio 2 sind ADD-Befehle, zum Schluss dann die UPDATES...
             mobilChangeProtokoll.forEach { mobilChangeDS ->
                 Timber.tag(TAG).d("syncDatabase, DS: $mobilChangeDS")
                 if (mobilChangeDS.delDS > 0) {
@@ -200,6 +200,27 @@ class SqlDbSync @Inject constructor(
                 }
             }
 
+            // im zweiten Durchgang wird Server zu Mobil synchronisiert
+            //   ->  Prio 1 sind DEL-Befehle, Prio 2 sind ADD-Befehle, zum Schluss dann die UPDATES...
+            sqlChangeProtokoll.forEach { sqlChangeDS ->
+                // Löschvorgang ?
+                Timber.tag(TAG).d("syncDatabase, SQL-DS: $sqlChangeDS")
+                if (sqlChangeDS.delDS > 0) {
+                    // wir löschen den Datensatz aus der Mobil-DB raus
+                    if (!delDsOnMobil(
+                            sqlChangeDS.datenbank!!,
+                            sqlChangeDS.satzId!!,
+                        )
+                    ) return false
+                }
+                // Neuanlage ?
+                if (sqlChangeDS.addDS > 0) {
+
+                }
+
+
+            }
+
 
             /** ########################################################################
              *  war bis hierher alles okay, speichern wir den Report zur Synchronisierung
@@ -251,11 +272,181 @@ class SqlDbSync @Inject constructor(
     }
 
     /** ############################################################################################
+     *   SQL-Funktionen für die Mobil-SQLite-DB
+     */
+    private suspend fun delDsOnMobil(datenbank: String, satzId: String): Boolean {
+        when (datenbank) {
+            "TbmvBelege" -> mainRepo.deleteBelegById(satzId)
+            "TbmvBelegPos" -> mainRepo.deleteBelegPosById(satzId)
+            "TbmvDokumente" -> mainRepo.deleteDokumentById(satzId)
+            "TbmvLager" -> mainRepo.deleteLagerById(satzId)
+            "TbmvMat" -> mainRepo.deleteMatById(satzId)
+            "TbmvMat_Lager" -> mainRepo.deleteMat_LagerById(satzId)
+            "TbmvMat_Service" -> mainRepo.deleteMat_ServiceById(satzId)
+            "TbmvMatGruppen" -> mainRepo.deleteMatGruppeById(satzId)
+            "TbmvMatService_Dok" -> mainRepo.deleteMatService_DokById(satzId)
+            "TbmvMatService_Historie" -> mainRepo.deleteMatService_HistorieById(satzId)
+            "TbmvService_Dok" -> mainRepo.deleteService_DokById(satzId)
+            "TbmvServices" -> mainRepo.deleteServiceById(satzId)
+            "TsysUser" -> mainRepo.deleteUserById(satzId)
+            "TsysUser_Gruppe" -> mainRepo.deleteUserInGruppeById(satzId)
+            "TsysUserGruppe" -> mainRepo.deleteUserGruppeById(satzId)
+        }
+        return true
+    }
+
+    private suspend fun addDsOnMobil(datenbank: String, satzId: String): Boolean {
+        when (datenbank) {
+            "TbmvBelege" -> return getTbmvBelegFromSql(satzId)
+            "TbmvBelegPos" -> return getTbmvBelegPosFromSql(satzId)
+            "TbmvDokumente" -> return getTbmvDokumenteFromSql(satzId)
+            "TbmvLager" -> return getTbmvLagerFromSql(satzId)
+            "TbmvMat" -> return false
+            "TbmvMat_Lager" -> return false
+            "TbmvMat_Service" -> return false
+            "TbmvMatGruppen" -> return false
+            "TbmvMatService_Dok" -> return false
+            "TbmvMatService_Historie" -> return false
+            "TbmvService_Dok" -> return false
+            "TbmvServices" -> return false
+            "TsysUser" -> return false
+            "TsysUser_Gruppe" -> return false
+            "TsysUserGruppe" -> return false
+
+        }
+        return true
+    }
+
+    /** #####################################################################
+     *  SQL-Abfragen der Tabellen für Add-Datensatz von SQL zu SQLite (Mobil)
+     */
+    private suspend fun getTbmvBelegFromSql(satzId: String): Boolean {
+        try {
+            val tbmvBelege = TbmvBelege()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery("SELECT * FROM TbmvBelege WHERE (ID LIKE '${satzId.uppercase(Locale.getDefault())}')")
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvBelege.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvBelege.belegTyp = resultSet.getString("BelegTyp")
+                tbmvBelege.belegDatum = resultSet.getTimestamp("BelegDatum")
+                tbmvBelege.belegUserGuid =
+                    resultSet.getString("BelegUserGUID").lowercase(Locale.getDefault())
+                tbmvBelege.zielLagerGuid =
+                    resultSet.getString("ZielLagerGUID").lowercase(Locale.getDefault())
+                tbmvBelege.zielUserGuid =
+                    resultSet.getString("ZielUserGUID").lowercase(Locale.getDefault())
+                tbmvBelege.belegStatus = resultSet.getString("BelegStatus")
+                tbmvBelege.toAck = resultSet.getInt("ToAck")
+                tbmvBelege.notiz = resultSet.getString("Notiz")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertBeleg(tbmvBelege)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTbmvBelegPosFromSql(satzId: String): Boolean {
+        try {
+            val tbmvBelegPos = TbmvBelegPos()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery("SELECT * FROM TbmvBelegPos WHERE (ID LIKE '${satzId.uppercase(Locale.getDefault())}')")
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvBelegPos.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvBelegPos.belegId = resultSet.getString("BelegID").lowercase(Locale.getDefault())
+                tbmvBelegPos.pos = resultSet.getInt("Pos")
+                tbmvBelegPos.matGuid = resultSet.getString("MatGUID").lowercase(Locale.getDefault())
+                tbmvBelegPos.menge = resultSet.getFloat("Menge")
+                tbmvBelegPos.vonLagerGuid =
+                    resultSet.getString("VonLagerGUID")?.let { it.lowercase(Locale.getDefault()) }
+                tbmvBelegPos.ackDatum = resultSet.getTimestamp("AckDatum")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertBelegPos(tbmvBelegPos, true)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTbmvDokumenteFromSql(satzId: String): Boolean {
+        try {
+            val tbmvDokument = TbmvDokument()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery("SELECT * FROM TbmvDokumente WHERE (ID LIKE '${satzId.uppercase(Locale.getDefault())}')")
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvDokument.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvDokument.version = resultSet.getString("Version")
+                tbmvDokument.matID = resultSet.getString("MatID")?.let { it.lowercase(Locale.getDefault()) }
+                tbmvDokument.serviceID = resultSet.getString("ServiceID")?.let { it.lowercase(Locale.getDefault()) }
+                tbmvDokument.dateiName = resultSet.getString("DateiName")
+                tbmvDokument.dateiVerzeichnis = resultSet.getString("DateiVerzeichnis")
+                tbmvDokument.status = resultSet.getString("Status")
+                tbmvDokument.erstellDtm = resultSet.getTimestamp("ErstellDtm")
+                tbmvDokument.erstellName = resultSet.getString("ErstellName")
+                tbmvDokument.grobklasse = resultSet.getString("Grobklasse")
+                tbmvDokument.stichwort = resultSet.getString("Stichwort")
+                tbmvDokument.extern = resultSet.getInt("Extern")
+                tbmvDokument.inBearbeitung = resultSet.getInt("inBearbeitung")
+                tbmvDokument.bearbeiter = resultSet.getString("Bearbeiter")
+                tbmvDokument.reservierungTxt = resultSet.getString("Reservierungtxt")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertDokument(tbmvDokument)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTbmvLagerFromSql(satzId: String): Boolean {
+        try {
+            val tbmvLager = TbmvLager()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery("SELECT * FROM TbmvLager WHERE (ID LIKE '${satzId.uppercase(Locale.getDefault())}')")
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvLager.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvLager.scancode = resultSet.getString("Scancode")
+                tbmvLager.typ = resultSet.getString("Typ")
+                tbmvLager.matchcode = resultSet.getString("Matchcode")
+                tbmvLager.userGuid = resultSet.getString("UserGUID").lowercase(Locale.getDefault())
+                tbmvLager.beschreibung = resultSet.getString("Beschreibung")
+                tbmvLager.status = resultSet.getString("Status")
+                tbmvLager.bmLager = resultSet.getInt("BMLager")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertLager(tbmvLager)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+
+    /** ############################################################################################
      *   SQL-Funktionen für den SQL-Server,
      *    - Delete Datensatz
      */
     private fun delDsOnSqlServer(datenbank: String, satzId: String): Boolean {
-        var preparedStatement = myConn!!.prepareStatement("DELETE FROM $datenbank WHERE (ID = '$satzId')")
+        var preparedStatement =
+            myConn!!.prepareStatement("DELETE FROM $datenbank WHERE (ID = '$satzId')")
         try {
             Timber.tag(TAG).d("delDsOnSqlServer: $preparedStatement")
             preparedStatement.execute()
@@ -267,7 +458,8 @@ class SqlDbSync @Inject constructor(
         }
         //.. die ChgProtokoll-Tabelle des Servers nachpflegen
         val sqlDate = Timestamp(System.currentTimeMillis())
-        preparedStatement = myConn!!.prepareStatement("INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) VALUES(?,?,?,?,?)")
+        preparedStatement =
+            myConn!!.prepareStatement("INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) VALUES(?,?,?,?,?)")
         preparedStatement.setTimestamp(1, sqlDate)
         preparedStatement.setString(2, datenbank)
         preparedStatement.setString(3, satzId)
@@ -309,7 +501,8 @@ class SqlDbSync @Inject constructor(
         }
         //.. die ChgProtokoll-Tabelle des Servers nachpflegen
         val sqlDate = Timestamp(System.currentTimeMillis())
-        preparedStatement = myConn!!.prepareStatement("INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) VALUES(?,?,?,?,?)")
+        preparedStatement =
+            myConn!!.prepareStatement("INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) VALUES(?,?,?,?,?)")
         preparedStatement.setTimestamp(1, sqlDate)
         preparedStatement.setString(2, datenbank)
         preparedStatement.setString(3, satzId)
@@ -334,7 +527,8 @@ class SqlDbSync @Inject constructor(
     private suspend fun getQueryForAddTbmvBeleg(satzId: String): PreparedStatement? {
         val tbmvBelege = mainRepo.getBelegZuBelegId(satzId) ?: return null
         var id = 1
-        val preparedStatement = myConn!!.prepareStatement("INSERT INTO TbmvBelege (ID, BelegTyp, BelegDatum, BelegUserGUID, ZielLagerGUID, ZielUserGUID, BelegStatus, ToAck, Notiz) VALUES(?,?,?,?,?,?,?,?,?)")
+        val preparedStatement =
+            myConn!!.prepareStatement("INSERT INTO TbmvBelege (ID, BelegTyp, BelegDatum, BelegUserGUID, ZielLagerGUID, ZielUserGUID, BelegStatus, ToAck, Notiz) VALUES(?,?,?,?,?,?,?,?,?)")
         preparedStatement.setString(id++, tbmvBelege.id)
         preparedStatement.setString(id++, tbmvBelege.belegTyp)
         preparedStatement.setTimestamp(id++, Timestamp(tbmvBelege.belegDatum!!.time))
@@ -350,7 +544,8 @@ class SqlDbSync @Inject constructor(
     private suspend fun getQueryForAddTbmvBelegPos(satzId: String): PreparedStatement? {
         val tbmvBelegPos = mainRepo.getBelegPosZuBelegPosId(satzId) ?: return null
         var id = 1
-        val preparedStatement = myConn!!.prepareStatement("INSERT INTO TbmvBelege (ID, BelegID, Pos, MatGUID, Menge, VonLagerGUID, AckDatum) VALUES(?,?,?,?,?,?,?)")
+        val preparedStatement =
+            myConn!!.prepareStatement("INSERT INTO TbmvBelege (ID, BelegID, Pos, MatGUID, Menge, VonLagerGUID, AckDatum) VALUES(?,?,?,?,?,?,?)")
         preparedStatement.setString(id++, tbmvBelegPos.id)
         preparedStatement.setString(id++, tbmvBelegPos.belegId)
         preparedStatement.setInt(id++, tbmvBelegPos.pos)
@@ -368,7 +563,8 @@ class SqlDbSync @Inject constructor(
     private suspend fun getQueryForAddTbmvMat(satzId: String): PreparedStatement? {
         val tbmvMat = mainRepo.getMaterialByMatID(satzId) ?: return null
         var id = 1
-        val preparedStatement = myConn!!.prepareStatement("INSERT INTO TbmvMat (ID, Scancode, Typ, Matchcode, MatGruppeGUID, Beschreibung, Hersteller, Modell, Seriennummer, UserGUID, MatStatus, BildGUID, BildBmp) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        val preparedStatement =
+            myConn!!.prepareStatement("INSERT INTO TbmvMat (ID, Scancode, Typ, Matchcode, MatGruppeGUID, Beschreibung, Hersteller, Modell, Seriennummer, UserGUID, MatStatus, BildGUID, BildBmp) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
         preparedStatement.setString(id++, tbmvMat.id)
         preparedStatement.setString(id++, tbmvMat.scancode)
         preparedStatement.setString(id++, tbmvMat.typ)
@@ -394,10 +590,11 @@ class SqlDbSync @Inject constructor(
     private suspend fun getQueryForAddTbmvMatToLager(satzId: String): PreparedStatement? {
         val tbmvMatInLager = mainRepo.getMat_LagerByID(satzId) ?: return null
         var id = 1
-        val preparedStatement = myConn!!.prepareStatement("INSERT INTO TbmvMat_Lager (ID, MatGUID, LagerGUID, Default, Bestand) VALUES(?,?,?,?,?)")
+        val preparedStatement =
+            myConn!!.prepareStatement("INSERT INTO TbmvMat_Lager (ID, MatGUID, LagerGUID, Default, Bestand) VALUES(?,?,?,?,?)")
         preparedStatement.setString(id++, tbmvMatInLager.id)
-        preparedStatement.setString(id++,tbmvMatInLager.matId)
-        preparedStatement.setString(id++,tbmvMatInLager.lagerId)
+        preparedStatement.setString(id++, tbmvMatInLager.matId)
+        preparedStatement.setString(id++, tbmvMatInLager.lagerId)
         preparedStatement.setInt(id++, tbmvMatInLager.isDefault)
         preparedStatement.setFloat(id++, tbmvMatInLager.bestand)
         return preparedStatement
@@ -434,7 +631,8 @@ class SqlDbSync @Inject constructor(
         }
         //.. die ChgProtokoll-Tabelle des Servers nachpflegen
         val sqlDate = Timestamp(System.currentTimeMillis())
-        preparedStatement = myConn!!.prepareStatement("INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) VALUES(?,?,?,?,?)")
+        preparedStatement =
+            myConn!!.prepareStatement("INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) VALUES(?,?,?,?,?)")
         preparedStatement.setTimestamp(1, sqlDate)
         preparedStatement.setString(2, datenbank)
         preparedStatement.setString(3, satzId)
@@ -644,7 +842,8 @@ class SqlDbSync @Inject constructor(
                 "passHash" -> strQuery += "PassHash = ?"
             }
         }
-        val preparedStatement = myConn!!.prepareStatement("UPDATE TsysUser SET $strQuery WHERE (ID = '$satzId')")
+        val preparedStatement =
+            myConn!!.prepareStatement("UPDATE TsysUser SET $strQuery WHERE (ID = '$satzId')")
         // ...dann die Werte zuweisen...
         var id = 1
         fieldNames.forEach {

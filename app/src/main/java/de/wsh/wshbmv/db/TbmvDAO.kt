@@ -2,6 +2,7 @@ package de.wsh.wshbmv.db
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.google.android.material.tabs.TabLayout
 import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
 import java.util.*
@@ -14,6 +15,9 @@ interface TbmvDAO {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(tsysUser: TsysUser)
+
+    @Delete
+    suspend fun deleteUser(tsysUser: TsysUser)
 
     @Update
     suspend fun updateUser(tsysUser: TsysUser)
@@ -36,11 +40,24 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUserGruppe(tsysUserGruppe: TsysUserGruppe)
 
+    @Delete
+    suspend fun deleteUserGruppe(tsysUserGruppe: TsysUserGruppe)
+
+    @Query("SELECT * FROM TsysUserGruppe WHERE id LIKE :userGruppeId")
+    suspend fun getUserGruppeByID(userGruppeId: String): TsysUserGruppe?
+
+
     /** ############################################################################################
      *  TsysUserToGruppe (Relation)
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUserToGruppe)
+
+    @Delete
+    suspend fun deleteUserInGruppe(tsysUserInGruppe: TsysUserToGruppe)
+
+    @Query("SELECT * FROM TsysUserToGruppe WHERE id LIKE :userInGruppeId")
+    suspend fun getUserInGruppeById(userInGruppeId: String): TsysUserToGruppe?
 
     /** ############################################################################################
      *  Dokumente
@@ -48,12 +65,22 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDokument(tbmvDokument: TbmvDokument)
 
+    @Delete
+    suspend fun deleteDokument(tbmvDokument: TbmvDokument)
+
+    @Query("SELECT * FROM TbmvDokument WHERE id LIKE :dokId")
+    suspend fun getDokumentByID(dokId: String): TbmvDokument?
+
+
 
     /** ############################################################################################
      *  TbmvLager
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLager(tbmvLager: TbmvLager)
+
+    @Delete
+    suspend fun deleteLager(tbmvLager: TbmvLager)
 
     @Query("SELECT * FROM TbmvLager WHERE id LIKE :lagerGuid")
     suspend fun getLagerByID(lagerGuid: String): TbmvLager?
@@ -80,6 +107,12 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe)
 
+    @Delete
+    suspend fun deleteMat(tbmvMat: TbmvMat)
+
+    @Delete
+    suspend fun deleteMatGruppe(tbmvMatGruppe: TbmvMatGruppe)
+
     @Query("SELECT * FROM TbmvMat WHERE id LIKE :materialGuid")
     suspend fun getMaterialByMatID(materialGuid: String): TbmvMat?
 
@@ -98,6 +131,11 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertService(tbmvServices: TbmvServices)
 
+    @Delete
+    suspend fun deleteService(tbmvService: TbmvServices)
+
+    @Query("SELECT * FROM TbmvServices WHERE id LIKE :serviceId")
+    suspend fun getServiceById(serviceId: String): TbmvServices?
 
     /** ############################################################################################
      *  Belege - Transfers
@@ -156,11 +194,9 @@ interface TbmvDAO {
 
 
     // Abfrage Einzelbelege (und -positionen)
-    @Transaction
     @Query("SELECT * FROM TbmvBelege WHERE id = :belegId")
     suspend fun getBelegZuBelegId(belegId: String): TbmvBelege?
 
-    @Transaction
     @Query("SELECT * FROM TbmvBelegPos WHERE id = :belegPosId")
     suspend fun getBelegPosZuBelegPosId(belegPosId: String): TbmvBelegPos?
 
@@ -242,6 +278,12 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMat_Service(tbmvMat_Service: TbmvMat_Service)
 
+    @Delete
+    suspend fun deleteMat_Service(tbmvMat_Service: TbmvMat_Service)
+
+    @Query("SELECT * FROM TbmvMat_Service WHERE id LIKE :matServiceId")
+    suspend fun getMat_ServiceByID(matServiceId : String): TbmvMat_Service?
+
     @Transaction
     @Query("SELECT * FROM TbmvMat_Service WHERE MatID = :materialId ORDER BY NextServiceDatum")
     suspend fun getServiceOfMaterial(materialId: String): List<TbmvMat_Service>
@@ -253,17 +295,36 @@ interface TbmvDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatService_Dok(tbmvMatService_Dok: TbmvMatService_Dok)
 
+    @Delete
+    suspend fun deleteMatService_Dok(tbmvMatService_Dok: TbmvMatService_Dok)
+
+    @Query("SELECT * FROM TbmvMatService_Dok WHERE id LIKE :matServiceDokId")
+    suspend fun getMatService_DokById(matServiceDokId: String): TbmvMatService_Dok?
+
+
     /** ############################################################################################
      *  Relation Material/Service - Historie
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatService_Historie(tbmvMatService_Historie: TbmvMatService_Historie)
 
+    @Delete
+    suspend fun deleteMatService_Historie(tbmvMatService_Historie: TbmvMatService_Historie)
+
+    @Query("SELECT * FROM TbmvMatService_Historie WHERE id LIKE :matServiceHistorieId")
+    suspend fun getMatService_HistorieById(matServiceHistorieId: String): TbmvMatService_Historie?
+
     /** ############################################################################################
      *  Relation Service - Dokument
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertService_Dok(tbmvService_Dok: TbmvService_Dok)
+
+    @Delete
+    suspend fun deleteService_Dok(tbmvService_Dok: TbmvService_Dok)
+
+    @Query("SELECT * FROM TbmvService_Dok WHERE id LIKE :matServiceDokId")
+    suspend fun getService_DokById(matServiceDokId: String): TbmvService_Dok?
 
 
     /** ############################################################################################
