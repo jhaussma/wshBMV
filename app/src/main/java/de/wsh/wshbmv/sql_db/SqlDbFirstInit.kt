@@ -167,7 +167,7 @@ class SqlDbFirstInit @Inject constructor(
                     resultSet.getString("GruppeID").lowercase(Locale.getDefault())
                 userInGruppe.userId = resultSet.getString("UserID").lowercase(Locale.getDefault())
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertUserInGruppe(userInGruppe)
+                mainRepository.insertUserToGruppe(userInGruppe)
             }
         } else {
             Timber.tag(TAG).d("Es wurden keine Relationen User in Gruppen gefunden!!")
@@ -399,7 +399,7 @@ class SqlDbFirstInit @Inject constructor(
                     resultSet.getString("ServiceID").lowercase(Locale.getDefault())
                 matServiceHistory.serviceDatum = resultSet.getTimestamp("Servicedatum")
                 matServiceHistory.abschlussDatum = resultSet.getTimestamp("Abschlussdatum")
-                matServiceHistory.userGuid = resultSet.getString("UserGUID")
+                matServiceHistory.userGuid = resultSet.getString("UserGUID").lowercase(Locale.getDefault())
                 // füge den Datensatz in die SQLite ein
                 mainRepository.insertMatService_Historie(matServiceHistory)
             }

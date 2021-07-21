@@ -307,6 +307,11 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         Timber.tag(TAG).d("MainActivity, onDestroy")
         when (sqlStatus.value) {
             enSqlStatus.INIT, enSqlStatus.DISCONNECTED, enSqlStatus.IN_ERROR, enSqlStatus.PROCESS_ABORTED, enSqlStatus.PROCESS_ENDED, enSqlStatus.NO_CONTACT -> exitProcess(0)
+            else -> Toast.makeText(
+                applicationContext,
+                "Synchronisierung läuft noch im Hintergrund...",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 

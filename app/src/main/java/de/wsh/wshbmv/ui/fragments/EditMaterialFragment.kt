@@ -433,7 +433,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Import einer neuen Photo-Datei aus dem MainActivity heraus
      */
-    fun importNewPhoto(bitmap: Bitmap) {
+    fun importNewPhoto(bitmap: Bitmap?) {
         if (bitmap != null) {
             selBild = bitmap
             // wir zeigen das Bild gleich an...

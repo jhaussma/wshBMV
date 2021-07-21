@@ -261,14 +261,16 @@ class BelegViewModel @Inject constructor(
                         if (!bestandIsPlaced) {
                             Timber.tag(TAG)
                                 .d("acknowledgeMaterialByScancode, neuer Eintrag für Ziellager mit Bestand = 1 gesetzt...")
-                            val tbmvMatLager = TbmvMat_Lager(
+                            val newMatLager = TbmvMat_Lager(
                                 id = "",
                                 matId = tbmvMat.id,
                                 lagerId = zielLagerId,
                                 isDefault = 0,
                                 bestand = 1f
                             )
-                            mainRepo.insertMat_Lager(tbmvMatLager)
+                            mainRepo.insertMat_Lager(newMatLager)
+                        } else {
+                            Timber.tag(TAG).d("Bestand is Placed")
                         }
                     }
 

@@ -38,7 +38,7 @@ interface TbmvDAO {
      *  TsysUserGruppe
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUserGruppe(tsysUserGruppe: TsysUserGruppe)
+    suspend fun upsertUserGruppe(tsysUserGruppe: TsysUserGruppe)
 
     @Delete
     suspend fun deleteUserGruppe(tsysUserGruppe: TsysUserGruppe)
@@ -51,13 +51,13 @@ interface TbmvDAO {
      *  TsysUserToGruppe (Relation)
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUserInGruppe(tsysUserInGruppe: TsysUserToGruppe)
+    suspend fun upsertUserToGruppe(tsysUserInGruppe: TsysUserToGruppe)
 
     @Delete
     suspend fun deleteUserInGruppe(tsysUserInGruppe: TsysUserToGruppe)
 
     @Query("SELECT * FROM TsysUserToGruppe WHERE id LIKE :userInGruppeId")
-    suspend fun getUserInGruppeById(userInGruppeId: String): TsysUserToGruppe?
+    suspend fun getUserToGruppeById(userInGruppeId: String): TsysUserToGruppe?
 
     /** ############################################################################################
      *  Dokumente
@@ -111,7 +111,7 @@ interface TbmvDAO {
     suspend fun upsertMat(tbmvMat: TbmvMat)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMatGruppe(tbmvMatGruppe: TbmvMatGruppe)
+    suspend fun upsertMatGruppe(tbmvMatGruppe: TbmvMatGruppe)
 
     @Delete
     suspend fun deleteMat(tbmvMat: TbmvMat)
@@ -135,7 +135,7 @@ interface TbmvDAO {
      *  Service - Arten
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertService(tbmvServices: TbmvServices)
+    suspend fun upsertService(tbmvServices: TbmvServices)
 
     @Delete
     suspend fun deleteService(tbmvService: TbmvServices)
@@ -302,7 +302,7 @@ interface TbmvDAO {
      *  Relation Material/Service - Dokument
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMatService_Dok(tbmvMatService_Dok: TbmvMatService_Dok)
+    suspend fun upsertMatService_Dok(tbmvMatService_Dok: TbmvMatService_Dok)
 
     @Delete
     suspend fun deleteMatService_Dok(tbmvMatService_Dok: TbmvMatService_Dok)
@@ -315,7 +315,7 @@ interface TbmvDAO {
      *  Relation Material/Service - Historie
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMatService_Historie(tbmvMatService_Historie: TbmvMatService_Historie)
+    suspend fun upsertMatService_Historie(tbmvMatService_Historie: TbmvMatService_Historie)
 
     @Delete
     suspend fun deleteMatService_Historie(tbmvMatService_Historie: TbmvMatService_Historie)
@@ -327,7 +327,7 @@ interface TbmvDAO {
      *  Relation Service - Dokument
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertService_Dok(tbmvService_Dok: TbmvService_Dok)
+    suspend fun upsertService_Dok(tbmvService_Dok: TbmvService_Dok)
 
     @Delete
     suspend fun deleteService_Dok(tbmvService_Dok: TbmvService_Dok)
