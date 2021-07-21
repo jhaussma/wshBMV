@@ -71,6 +71,11 @@ class MainRepository @Inject constructor(
         }
     }
 
+    suspend fun updateDokument(tbmvDokument: TbmvDokument) = tbmvDao.updateDokument(tbmvDokument)
+
+    suspend fun getDokumentById(dokId: String) = tbmvDao.getDokumentByID(dokId)
+
+
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *  Lager-Basis
      */
@@ -82,6 +87,10 @@ class MainRepository @Inject constructor(
             if (tbmvLager != null) tbmvDao.deleteLager(tbmvLager)
         }
     }
+
+    suspend fun updateLager(tbmvLager: TbmvLager) = tbmvDao.updateLager(tbmvLager)
+
+    suspend fun getLagerById(lagerId: String) = tbmvDao.getLagerByID(lagerId)
 
     suspend fun getLagerListAktivSorted() = tbmvDao.getLagerListAktivSorted()
 
@@ -535,6 +544,10 @@ class MainRepository @Inject constructor(
             if (tbmvMat_Service != null) tbmvDao.deleteMat_Service(tbmvMat_Service)
         }
     }
+
+    suspend fun updateMat_Service(tbmvMat_Service: TbmvMat_Service) = tbmvDao.updateMat_Service(tbmvMat_Service)
+
+    suspend fun getMat_ServiceById(matServiceId: String) = tbmvDao.getMat_ServiceByID(matServiceId)
 
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

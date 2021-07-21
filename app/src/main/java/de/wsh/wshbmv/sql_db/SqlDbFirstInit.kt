@@ -305,7 +305,7 @@ class SqlDbFirstInit @Inject constructor(
                 belegPos.matGuid = resultSet.getString("MatGUID").lowercase(Locale.getDefault())
                 belegPos.menge = resultSet.getFloat("Menge")
                 belegPos.vonLagerGuid =
-                    resultSet.getString("VonLagerGUID")?.let { it.lowercase(Locale.getDefault()) }
+                    resultSet.getString("VonLagerGUID")?.lowercase(Locale.getDefault())
                 belegPos.ackDatum = resultSet.getTimestamp("AckDatum")
                 // füge den Datensatz in die SQLite ein
                 mainRepository.insertBelegPos(belegPos, true)
@@ -320,8 +320,8 @@ class SqlDbFirstInit @Inject constructor(
                 dokument = TbmvDokument()
                 dokument.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 dokument.version = resultSet.getString("Version")
-                dokument.matID = resultSet.getString("MatID")?.let { it.lowercase(Locale.getDefault()) }
-                dokument.serviceID = resultSet.getString("ServiceID")?.let { it.lowercase(Locale.getDefault()) }
+                dokument.matID = resultSet.getString("MatID")?.lowercase(Locale.getDefault())
+                dokument.serviceID = resultSet.getString("ServiceID")?.lowercase(Locale.getDefault())
                 dokument.dateiName = resultSet.getString("DateiName")
                 dokument.dateiVerzeichnis = resultSet.getString("DateiVerzeichnis")
                 dokument.status = resultSet.getString("Status")

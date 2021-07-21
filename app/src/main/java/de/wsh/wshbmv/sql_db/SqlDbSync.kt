@@ -3,7 +3,7 @@ package de.wsh.wshbmv.sql_db
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import de.wsh.wshbmv.db.entities.*
-import de.wsh.wshbmv.db.entities.relations.ChangeProtokoll
+import de.wsh.wshbmv.db.entities.relations.*
 import de.wsh.wshbmv.other.Constants.DB_AKTION_ADD_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_DELETE_DS
 import de.wsh.wshbmv.other.Constants.DB_AKTION_UPDATE_DS
@@ -209,12 +209,35 @@ class SqlDbSync @Inject constructor(
                     // wir löschen den Datensatz aus der Mobil-DB raus
                     if (!delDsOnMobil(
                             sqlChangeDS.datenbank!!,
-                            sqlChangeDS.satzId!!,
+                            sqlChangeDS.satzId!!
                         )
                     ) return false
-                }
-                // Neuanlage ?
-                if (sqlChangeDS.addDS > 0) {
+                } else if (sqlChangeDS.addDS > 0) {
+                    // wir hängen einen neuen Datensatz an die Mobil-DB dran
+                    if (!addDsOnMobil(
+                            sqlChangeDS.datenbank!!,
+                            sqlChangeDS.satzId!!
+                        )
+                    ) return false
+                } else {
+                    // es handelt sich um Update-Datensätze vom SQL-Server zur Mobil-DB
+                    // .. ermittle alle Feldnamen, für die eine Änderung ansteht
+                    val feldnamen = getFieldnamesFromDsEdit(
+                        startTimeInMillis = tappSyncReport!!.lastFromServerTime,
+                        endTimeInMillis = lastChgFromServer,
+                        sqlChangeDS.datenbank!!,
+                        sqlChangeDS.satzId!!
+                    )
+                    if (feldnamen.isNotEmpty()) {
+                        if (!editDsOnMobil(
+                                sqlChangeDS.datenbank,
+                                sqlChangeDS.satzId,
+                                feldnamen
+                            )
+                        ) return false
+
+
+                    }
 
                 }
 
@@ -272,7 +295,33 @@ class SqlDbSync @Inject constructor(
     }
 
     /** ############################################################################################
-     *   SQL-Funktionen für die Mobil-SQLite-DB
+     *   Ermittlung aller Feldnamen einer Datensatzänderung im SQL-Server-Change-Protokoll
+     */
+    private fun getFieldnamesFromDsEdit(
+        startTimeInMillis: Long,
+        endTimeInMillis: Long,
+        datenbank: String,
+        satzId: String
+    ): List<String> {
+        var feldnamen = mutableListOf<String>()
+        val statement = myConn!!.createStatement()
+        val dtStartTime = Date(startTimeInMillis + 1000)
+        val dtEndTime = Date(endTimeInMillis + 1000)
+        var sqlQuery = "SELECT Feldname FROM TsysChgProtokoll "
+        sqlQuery += "WHERE (Zeitstempel BETWEEN ${dtStartTime.formatedDateToSQL()} AND ${dtEndTime.formatedDateToSQL()})"
+        sqlQuery += "GROUP BY Feldname, Aktion, Datenbank, SatzID "
+        sqlQuery += "HAVING (Datenbank = '$datenbank') AND (SatzID = '$satzId') AND (Aktion = ${DB_AKTION_UPDATE_DS})"
+        val resultSet = statement.executeQuery(sqlQuery)
+        if (resultSet != null) {
+            while (resultSet.next()) {
+                feldnamen.add(resultSet.getString("Feldname"))
+            }
+        }
+        return feldnamen
+    }
+
+    /** ############################################################################################
+     *   SQL-Funktionen für die Mobil-SQLite-DB (Delete und Add)
      */
     private suspend fun delDsOnMobil(datenbank: String, satzId: String): Boolean {
         when (datenbank) {
@@ -301,18 +350,17 @@ class SqlDbSync @Inject constructor(
             "TbmvBelegPos" -> return getTbmvBelegPosFromSql(satzId)
             "TbmvDokumente" -> return getTbmvDokumenteFromSql(satzId)
             "TbmvLager" -> return getTbmvLagerFromSql(satzId)
-            "TbmvMat" -> return false
-            "TbmvMat_Lager" -> return false
-            "TbmvMat_Service" -> return false
-            "TbmvMatGruppen" -> return false
-            "TbmvMatService_Dok" -> return false
-            "TbmvMatService_Historie" -> return false
-            "TbmvService_Dok" -> return false
-            "TbmvServices" -> return false
-            "TsysUser" -> return false
-            "TsysUser_Gruppe" -> return false
-            "TsysUserGruppe" -> return false
-
+            "TbmvMat" -> return getTbmvMatFromSql(satzId)
+            "TbmvMat_Lager" -> return getTbmvMatToLagerFromSql(satzId)
+            "TbmvMat_Service" -> return getTbmvMatToServiceFromSql(satzId)
+            "TbmvMatGruppen" -> return getTbmvMatGruppeFromSql(satzId)
+            "TbmvMatService_Dok" -> return getTbmvMatServiceToDokFromSql(satzId)
+            "TbmvMatService_Historie" -> return getTbmvMatServiceToHistorieFromSql(satzId)
+            "TbmvService_Dok" -> return getTbmvServiceToDokFromSql(satzId)
+            "TbmvServices" -> return getTbmvServiceFromSql(satzId)
+            "TsysUser" -> return getTsysUserFromSql(satzId)
+            "TsysUser_Gruppe" -> return getTsysUserToGruppeFromSql(satzId)
+            "TsysUserGruppe" -> return getTsysUserGruppeFromSql(satzId)
         }
         return true
     }
@@ -324,7 +372,11 @@ class SqlDbSync @Inject constructor(
         try {
             val tbmvBelege = TbmvBelege()
             val statement = myConn!!.createStatement()
-            var resultSet = statement.executeQuery("SELECT * FROM TbmvBelege WHERE (ID LIKE '${satzId.uppercase(Locale.getDefault())}')")
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvBelege WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
             if (resultSet != null) {
                 resultSet.next()
                 tbmvBelege.id = resultSet.getString("ID").lowercase(Locale.getDefault())
@@ -355,7 +407,11 @@ class SqlDbSync @Inject constructor(
         try {
             val tbmvBelegPos = TbmvBelegPos()
             val statement = myConn!!.createStatement()
-            var resultSet = statement.executeQuery("SELECT * FROM TbmvBelegPos WHERE (ID LIKE '${satzId.uppercase(Locale.getDefault())}')")
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvBelegPos WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
             if (resultSet != null) {
                 resultSet.next()
                 tbmvBelegPos.id = resultSet.getString("ID").lowercase(Locale.getDefault())
@@ -382,13 +438,19 @@ class SqlDbSync @Inject constructor(
         try {
             val tbmvDokument = TbmvDokument()
             val statement = myConn!!.createStatement()
-            var resultSet = statement.executeQuery("SELECT * FROM TbmvDokumente WHERE (ID LIKE '${satzId.uppercase(Locale.getDefault())}')")
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvDokumente WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
             if (resultSet != null) {
                 resultSet.next()
                 tbmvDokument.id = resultSet.getString("ID").lowercase(Locale.getDefault())
                 tbmvDokument.version = resultSet.getString("Version")
-                tbmvDokument.matID = resultSet.getString("MatID")?.let { it.lowercase(Locale.getDefault()) }
-                tbmvDokument.serviceID = resultSet.getString("ServiceID")?.let { it.lowercase(Locale.getDefault()) }
+                tbmvDokument.matID =
+                    resultSet.getString("MatID")?.let { it.lowercase(Locale.getDefault()) }
+                tbmvDokument.serviceID =
+                    resultSet.getString("ServiceID")?.let { it.lowercase(Locale.getDefault()) }
                 tbmvDokument.dateiName = resultSet.getString("DateiName")
                 tbmvDokument.dateiVerzeichnis = resultSet.getString("DateiVerzeichnis")
                 tbmvDokument.status = resultSet.getString("Status")
@@ -416,7 +478,11 @@ class SqlDbSync @Inject constructor(
         try {
             val tbmvLager = TbmvLager()
             val statement = myConn!!.createStatement()
-            var resultSet = statement.executeQuery("SELECT * FROM TbmvLager WHERE (ID LIKE '${satzId.uppercase(Locale.getDefault())}')")
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvLager WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
             if (resultSet != null) {
                 resultSet.next()
                 tbmvLager.id = resultSet.getString("ID").lowercase(Locale.getDefault())
@@ -443,7 +509,11 @@ class SqlDbSync @Inject constructor(
         try {
             val tbmvMat = TbmvMat()
             val statement = myConn!!.createStatement()
-            var resultSet = statement.executeQuery("SELECT * FROM TbmvMat WHERE (ID LIKE '${satzId.uppercase(Locale.getDefault())}')")
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvMat WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
             if (resultSet != null) {
                 resultSet.next()
                 tbmvMat.id = resultSet.getString("ID").lowercase(Locale.getDefault())
@@ -470,6 +540,556 @@ class SqlDbSync @Inject constructor(
         }
         return true
     }
+
+    private suspend fun getTbmvMatToLagerFromSql(satzId: String): Boolean {
+        try {
+            val tbmvMat_Lager = TbmvMat_Lager()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvMat_Lager WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvMat_Lager.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvMat_Lager.matId = resultSet.getString("MatGUID").lowercase(Locale.getDefault())
+                tbmvMat_Lager.lagerId =
+                    resultSet.getString("LagerGUID").lowercase(Locale.getDefault())
+                tbmvMat_Lager.isDefault = resultSet.getInt("Default")
+                tbmvMat_Lager.bestand = resultSet.getFloat("Bestand")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertMat_Lager(tbmvMat_Lager, true)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTbmvMatToServiceFromSql(satzId: String): Boolean {
+        try {
+            val tbmvMat_Service = TbmvMat_Service()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvMat_Service WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvMat_Service.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvMat_Service.matId = resultSet.getString("MatID").lowercase(Locale.getDefault())
+                tbmvMat_Service.serviceId =
+                    resultSet.getString("ServiceID").lowercase(Locale.getDefault())
+                tbmvMat_Service.nextServiceDatum = resultSet.getTimestamp("NextServiceDatum")
+                tbmvMat_Service.nextInfoDatum = resultSet.getTimestamp("NextInfoDatum")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertMat_Service(tbmvMat_Service)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTbmvMatGruppeFromSql(satzId: String): Boolean {
+        try {
+            val tbmvMatGruppe = TbmvMatGruppe()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvMatGruppen WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvMatGruppe.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvMatGruppe.matGruppe = resultSet.getString("MatGruppe")
+                tbmvMatGruppe.aktiv = resultSet.getInt("Aktiv")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertMatGruppe(tbmvMatGruppe)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTbmvMatServiceToDokFromSql(satzId: String): Boolean {
+        try {
+            val tbmvMatService_Dok = TbmvMatService_Dok()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvMatService_Dok WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvMatService_Dok.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvMatService_Dok.matServiceId =
+                    resultSet.getString("MatServiceID").lowercase(Locale.getDefault())
+                tbmvMatService_Dok.dokId =
+                    resultSet.getString("DokID").lowercase(Locale.getDefault())
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertMatService_Dok(tbmvMatService_Dok)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTbmvMatServiceToHistorieFromSql(satzId: String): Boolean {
+        try {
+            val tbmvMatService_Historie = TbmvMatService_Historie()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvMatService_Historie WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvMatService_Historie.id =
+                    resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvMatService_Historie.matId =
+                    resultSet.getString("MatID").lowercase(Locale.getDefault())
+                tbmvMatService_Historie.serviceId =
+                    resultSet.getString("ServiceID").lowercase(Locale.getDefault())
+                tbmvMatService_Historie.serviceDatum = resultSet.getTimestamp("Servicedatum")
+                tbmvMatService_Historie.abschlussDatum = resultSet.getTimestamp("Abschlussdatum")
+                tbmvMatService_Historie.userGuid = resultSet.getString("UserGUID")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertMatService_Historie(tbmvMatService_Historie)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTbmvServiceToDokFromSql(satzId: String): Boolean {
+        try {
+            val tbmvService_Dok = TbmvService_Dok()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvService_Dok WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvService_Dok.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvService_Dok.serviceId =
+                    resultSet.getString("ServiceID").lowercase(Locale.getDefault())
+                tbmvService_Dok.dokId = resultSet.getString("DokID").lowercase(Locale.getDefault())
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertService_Dok(tbmvService_Dok)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTbmvServiceFromSql(satzId: String): Boolean {
+        try {
+            val tbmvServices = TbmvServices()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TbmvService_Dok WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
+            if (resultSet != null) {
+                resultSet.next()
+                tbmvServices.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tbmvServices.name = resultSet.getString("Name")
+                tbmvServices.beschreibung = resultSet.getString("Beschreibung")
+                tbmvServices.intervalNum = resultSet.getInt("IntervalNum")
+                tbmvServices.intervalUnit = resultSet.getString("IntervalUnit")
+                tbmvServices.doInfo = resultSet.getInt("DoInfo")
+                tbmvServices.infoNum = resultSet.getInt("InfoNum")
+                tbmvServices.infoUnit = resultSet.getString("InfoUnit")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertService(tbmvServices)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTsysUserFromSql(satzId: String): Boolean {
+        try {
+            val tsysUser = TsysUser()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TsysUser WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
+            if (resultSet != null) {
+                resultSet.next()
+                tsysUser.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tsysUser.vorname = resultSet.getString("Vorname") ?: ""
+                tsysUser.nachname = resultSet.getString("NachName") ?: ""
+                tsysUser.anrede = resultSet.getString("Anrede") ?: ""
+                tsysUser.benutzerStatus = resultSet.getString("BenutzerStatus")
+                tsysUser.email = resultSet.getString("Email") ?: ""
+                tsysUser.telefon = resultSet.getString("Telefon") ?: ""
+                tsysUser.kurzZeichen = resultSet.getString("KurzZeichen") ?: ""
+                tsysUser.userKennung = resultSet.getString("UserKennung") ?: ""
+                tsysUser.passHash = resultSet.getString("PassHash")
+                tsysUser.titel = resultSet.getString("Titel") ?: ""
+                tsysUser.dw = resultSet.getString("DW") ?: ""
+                tsysUser.admin = resultSet.getInt("Admin")
+                tsysUser.terminW = resultSet.getInt("TerminW")
+                tsysUser.stammR = resultSet.getInt("StammR")
+                tsysUser.stammW = resultSet.getInt("StammW")
+                tsysUser.kundenR = resultSet.getInt("KundenR")
+                tsysUser.kundenW = resultSet.getInt("KundenW")
+                tsysUser.vorlagenR = resultSet.getInt("VorlagenR")
+                tsysUser.vorlagenW = resultSet.getInt("VorlagenW")
+                tsysUser.monteur = resultSet.getInt("Monteur")
+                tsysUser.vertragR = resultSet.getInt("VertragR")
+                tsysUser.vertragW = resultSet.getInt("VertragW")
+                tsysUser.rechnungR = resultSet.getInt("RechnungR")
+                tsysUser.rechnungW = resultSet.getInt("RechnungW")
+                tsysUser.bmvR = resultSet.getInt("BmvR")
+                tsysUser.bmvW = resultSet.getInt("BmvW")
+                tsysUser.bmvAdmin = resultSet.getInt("BmvAdmin")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertUser(tsysUser)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTsysUserToGruppeFromSql(satzId: String): Boolean {
+        try {
+            val tsysUserToGruppe = TsysUserToGruppe()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TsysUser_Gruppe WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
+            if (resultSet != null) {
+                resultSet.next()
+                tsysUserToGruppe.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tsysUserToGruppe.gruppeId =
+                    resultSet.getString("GruppeID").lowercase(Locale.getDefault())
+                tsysUserToGruppe.userId =
+                    resultSet.getString("UserID").lowercase(Locale.getDefault())
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertUserInGruppe(tsysUserToGruppe)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    private suspend fun getTsysUserGruppeFromSql(satzId: String): Boolean {
+        try {
+            val tsysUserGruppe = TsysUserGruppe()
+            val statement = myConn!!.createStatement()
+            var resultSet = statement.executeQuery(
+                "SELECT * FROM TsysUser_Gruppe WHERE (ID LIKE '${
+                    satzId.uppercase(Locale.getDefault())
+                }')"
+            )
+            if (resultSet != null) {
+                resultSet.next()
+                tsysUserGruppe.id = resultSet.getString("ID").lowercase(Locale.getDefault())
+                tsysUserGruppe.nameGruppe = resultSet.getString("NameGruppe")
+                // füge den Datensatz in die SQLite ein
+                mainRepo.insertUserGruppe(tsysUserGruppe)
+            }
+        } catch (ex: Exception) {
+            //Fehlermeldung und -behandlung...
+            sqlErrorMessage.postValue(ex.toString())
+            sqlStatus.postValue(enSqlStatus.IN_ERROR)
+            return false
+        }
+        return true
+    }
+
+    /** ############################################################################################
+     *   SQL-Funktionen UPDATE für die Mobil-SQLite-DB
+     */
+    private suspend fun editDsOnMobil(datenbank: String, satzId: String, feldnamen: List<String>): Boolean {
+
+        when (datenbank) {
+            "TbmvBelege" -> if (!updateTbmvBelegFromServer(satzId,feldnamen)) return false
+            "TbmvBelegPos" -> if (!updateTbmvBelegPosFromServer(satzId,feldnamen)) return false
+            "TbmvDokumente" -> if (!updateTbmvDokumentFromServer(satzId,feldnamen)) return false
+            "TbmvLager" -> if (!updateTbmvLagerFromServer(satzId,feldnamen)) return false
+            "TbmvMat" -> if (!updateTbmvMatFromServer(satzId,feldnamen)) return false
+            "TbmvMat_Lager" -> if (!updateTbmvMatToLagerFromServer(satzId,feldnamen)) return false
+            "TbmvMat_Service" -> if (!updateTbmvMatToServiceFromServer(satzId,feldnamen)) return false
+            "TbmvMatGruppen" ->
+            "TbmvMatService_Dok" ->
+            "TbmvMatService_Historie" ->
+            "TbmvService_Dok" ->
+            "TbmvServices" ->
+            "TsysUser" ->
+            "TsysUser_Gruppe" ->
+            "TsysUserGruppe" ->
+        }
+        return true
+    }
+
+    /** ########################################################
+     *   alle SQL-Hilfsfunktionen für ein UPDATE vom Server zur Mobil-SQLite-DB
+     */
+    private suspend fun updateTbmvBelegFromServer(satzId: String, feldnamen: List<String>): Boolean {
+        val statement = myConn!!.createStatement()
+        var resultSet = statement.executeQuery(
+            "SELECT * FROM TbmvBelege WHERE (ID LIKE '${
+                satzId.uppercase(Locale.getDefault())
+            }')"
+        )
+        val tbmvBelege = mainRepo.getBelegZuBelegId(satzId)
+        if (tbmvBelege == null) {
+            sqlErrorMessage.postValue("TbmvBelege, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
+            return false
+        }
+        if (resultSet != null) {
+            resultSet.next()
+            feldnamen.forEach {
+                when (it) {
+                    "BelegTyp" -> tbmvBelege.belegTyp = resultSet.getString(it)
+                    "BelegDatum" -> tbmvBelege.belegDatum = resultSet.getTimestamp(it)
+                    "BelegUserGUID" -> tbmvBelege.belegUserGuid = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "ZielLagerGUID" -> tbmvBelege.zielLagerGuid = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "ZielUserGUID" -> tbmvBelege.zielUserGuid = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "BelegStatus" -> tbmvBelege.belegStatus = resultSet.getString(it)
+                    "ToAck" -> tbmvBelege.toAck = resultSet.getInt(it)
+                    "Notiz" -> tbmvBelege.notiz = resultSet.getString(it)
+                }
+            }
+            mainRepo.updateBeleg(tbmvBelege,feldnamen,true)
+        }
+        return true
+    }
+
+    private suspend fun updateTbmvBelegPosFromServer(satzId: String, feldnamen: List<String>): Boolean {
+        val statement = myConn!!.createStatement()
+        var resultSet = statement.executeQuery(
+            "SELECT * FROM TbmvBelegPos WHERE (ID LIKE '${
+                satzId.uppercase(Locale.getDefault())
+            }')"
+        )
+        val tbmvBelegPos = mainRepo.getBelegPosZuBelegPosId(satzId)
+        if (tbmvBelegPos == null) {
+            sqlErrorMessage.postValue("TbmvBelegPos, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
+            return false
+        }
+        if (resultSet != null) {
+            resultSet.next()
+            feldnamen.forEach {
+                when (it) {
+                    "BelegID" -> tbmvBelegPos.belegId = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "Pos" -> tbmvBelegPos.pos = resultSet.getInt(it)
+                    "MatGUID" -> tbmvBelegPos.matGuid = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "Menge" -> tbmvBelegPos.menge = resultSet.getFloat(it)
+                    "VonLagerGUID" -> tbmvBelegPos.vonLagerGuid = resultSet.getString(it)?.lowercase(Locale.getDefault())
+                    "AckDatum" -> tbmvBelegPos.ackDatum = resultSet.getTimestamp(it)
+                }
+            }
+            mainRepo.updateBelegPos(tbmvBelegPos,feldnamen,true)
+        }
+        return true
+    }
+
+    private suspend fun updateTbmvDokumentFromServer(satzId: String, feldnamen: List<String>): Boolean {
+        val statement = myConn!!.createStatement()
+        var resultSet = statement.executeQuery(
+            "SELECT * FROM TbmvDokumente WHERE (ID LIKE '${
+                satzId.uppercase(Locale.getDefault())
+            }')"
+        )
+        val tbmvDokument = mainRepo.getDokumentById(satzId)
+        if (tbmvDokument == null) {
+            sqlErrorMessage.postValue("TbmvDokumente, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
+            return false
+        }
+        if (resultSet != null) {
+            resultSet.next()
+            feldnamen.forEach {
+                when (it) {
+                    "Version" -> tbmvDokument.version = resultSet.getString(it)
+                    "MatID" -> tbmvDokument.matID = resultSet.getString(it)?.lowercase(Locale.getDefault())
+                    "ServiceID" -> tbmvDokument.serviceID = resultSet.getString(it)?.lowercase(Locale.getDefault())
+                    "DateiName" -> tbmvDokument.dateiName = resultSet.getString(it)
+                    "DateiVerzeichnis" -> tbmvDokument.dateiVerzeichnis = resultSet.getString(it)
+                    "Status" -> tbmvDokument.status = resultSet.getString(it)
+                    "ErstellDtm" -> tbmvDokument.erstellDtm = resultSet.getTimestamp(it)
+                    "ErstellName" -> tbmvDokument.erstellName = resultSet.getString(it)
+                    "Grobklasse" -> tbmvDokument.grobklasse = resultSet.getString(it)
+                    "Stichwort" -> tbmvDokument.stichwort = resultSet.getString(it)
+                    "Extern" -> tbmvDokument.extern = resultSet.getInt(it)
+                    "inBearbeitung" -> tbmvDokument.inBearbeitung = resultSet.getInt(it)
+                    "Bearbeiter" -> tbmvDokument.bearbeiter = resultSet.getString(it)
+                    "Reservierungtxt" -> tbmvDokument.reservierungTxt = resultSet.getString(it)
+                }
+            }
+            mainRepo.updateDokument(tbmvDokument)
+        }
+        return true
+    }
+
+    private suspend fun updateTbmvLagerFromServer(satzId: String, feldnamen: List<String>): Boolean {
+        val statement = myConn!!.createStatement()
+        var resultSet = statement.executeQuery(
+            "SELECT * FROM TbmvLager WHERE (ID LIKE '${
+                satzId.uppercase(Locale.getDefault())
+            }')"
+        )
+        val tbmvLager = mainRepo.getLagerById(satzId)
+        if (tbmvLager == null) {
+            sqlErrorMessage.postValue("TbmvLager, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
+            return false
+        }
+        if (resultSet != null) {
+            resultSet.next()
+            feldnamen.forEach {
+                when (it) {
+                    "Scancode" -> tbmvLager.scancode = resultSet.getString(it)
+                    "Typ" -> tbmvLager.typ = resultSet.getString(it)
+                    "Matchcode" -> tbmvLager.matchcode = resultSet.getString(it)
+                    "UserGUID" -> tbmvLager.userGuid = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "Beschreibung" -> tbmvLager.beschreibung = resultSet.getString(it)
+                    "Status" -> tbmvLager.status = resultSet.getString(it)
+                    "BMLager" -> tbmvLager.bmLager = resultSet.getInt(it)
+                }
+            }
+            mainRepo.updateLager(tbmvLager)
+        }
+        return true
+    }
+
+    private suspend fun updateTbmvMatFromServer(satzId: String, feldnamen: List<String>): Boolean {
+        val statement = myConn!!.createStatement()
+        var resultSet = statement.executeQuery(
+            "SELECT * FROM TbmvMat WHERE (ID LIKE '${
+                satzId.uppercase(Locale.getDefault())
+            }')"
+        )
+        val tbmvMat = mainRepo.getMaterialByMatID(satzId)
+        if (tbmvMat == null) {
+            sqlErrorMessage.postValue("TbmvMat, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
+            return false
+        }
+        if (resultSet != null) {
+            resultSet.next()
+            feldnamen.forEach {
+                when (it) {
+                    "Scancode" -> tbmvMat.scancode = resultSet.getString(it)
+                    "Typ" -> tbmvMat.typ = resultSet.getString(it)
+                    "Matchcode" -> tbmvMat.matchcode = resultSet.getString(it)
+                    "MatGruppeGUID" -> tbmvMat.matGruppeGuid = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "Beschreibung" -> tbmvMat.beschreibung = resultSet.getString(it)
+                    "Hersteller" -> tbmvMat.hersteller = resultSet.getString(it)
+                    "Modell" -> tbmvMat.modell = resultSet.getString(it)
+                    "Seriennummer" -> tbmvMat.seriennummer = resultSet.getString(it)
+                    "UserGUID" -> tbmvMat.userGuid = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "MatStatus" -> tbmvMat.matStatus = resultSet.getString(it)
+                    "BildBmp" -> tbmvMat.bildBmp = toBitmap(resultSet.getBytes(it))
+                }
+            }
+            mainRepo.updateMat(tbmvMat,null, true)
+        }
+        return true
+    }
+
+    private suspend fun updateTbmvMatToLagerFromServer(satzId: String, feldnamen: List<String>): Boolean {
+        val statement = myConn!!.createStatement()
+        var resultSet = statement.executeQuery(
+            "SELECT * FROM TbmvMat_Lager WHERE (ID LIKE '${
+                satzId.uppercase(Locale.getDefault())
+            }')"
+        )
+        val tbmvMat_Lager = mainRepo.getMat_LagerByID(satzId)
+        if (tbmvMat_Lager == null) {
+            sqlErrorMessage.postValue("TbmvMat_Lager, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
+            return false
+        }
+        if (resultSet != null) {
+            resultSet.next()
+            feldnamen.forEach {
+                when (it) {
+                    "MatGUID" -> tbmvMat_Lager.matId = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "LagerGUID" -> tbmvMat_Lager.lagerId = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "Default" -> tbmvMat_Lager.isDefault = resultSet.getInt(it)
+                    "Bestand" -> tbmvMat_Lager.bestand = resultSet.getFloat(it)
+                }
+            }
+            mainRepo.updateMat_Lager(tbmvMat_Lager, true)
+        }
+        return true
+    }
+
+    private suspend fun updateTbmvMatToServiceFromServer(satzId: String, feldnamen: List<String>): Boolean {
+        val statement = myConn!!.createStatement()
+        var resultSet = statement.executeQuery(
+            "SELECT * FROM TbmvMat_Service WHERE (ID LIKE '${
+                satzId.uppercase(Locale.getDefault())
+            }')"
+        )
+        val tbmvMat_Service = mainRepo.getMat_ServiceById(satzId)
+        if (tbmvMat_Service == null) {
+            sqlErrorMessage.postValue("TbmvMat_Service, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
+            return false
+        }
+        if (resultSet != null) {
+            resultSet.next()
+            feldnamen.forEach {
+                when (it) {
+                    "MatID" -> tbmvMat_Service.matId = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "ServiceID" -> tbmvMat_Service.serviceId = resultSet.getString(it).lowercase(Locale.getDefault())
+                    "NextServiceDatum" -> tbmvMat_Service.nextServiceDatum = resultSet.getTimestamp(it)
+                    "NextInfoDatum" -> tbmvMat_Service.nextInfoDatum = resultSet.getTimestamp(it)
+                }
+            }
+            mainRepo.updateMat_Service(tbmvMat_Service)
+        }
+        return true
+    }
+
 
 
     /** ############################################################################################

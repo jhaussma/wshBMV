@@ -68,6 +68,9 @@ interface TbmvDAO {
     @Delete
     suspend fun deleteDokument(tbmvDokument: TbmvDokument)
 
+    @Update
+    suspend fun updateDokument(tbmvDokument: TbmvDokument)
+
     @Query("SELECT * FROM TbmvDokument WHERE id LIKE :dokId")
     suspend fun getDokumentByID(dokId: String): TbmvDokument?
 
@@ -81,6 +84,9 @@ interface TbmvDAO {
 
     @Delete
     suspend fun deleteLager(tbmvLager: TbmvLager)
+
+    @Update
+    suspend fun updateLager(tbmvLager: TbmvLager)
 
     @Query("SELECT * FROM TbmvLager WHERE id LIKE :lagerGuid")
     suspend fun getLagerByID(lagerGuid: String): TbmvLager?
@@ -280,6 +286,9 @@ interface TbmvDAO {
 
     @Delete
     suspend fun deleteMat_Service(tbmvMat_Service: TbmvMat_Service)
+
+    @Update
+    suspend fun updateMat_Service(tbmvMat_Service: TbmvMat_Service)
 
     @Query("SELECT * FROM TbmvMat_Service WHERE id LIKE :matServiceId")
     suspend fun getMat_ServiceByID(matServiceId : String): TbmvMat_Service?
