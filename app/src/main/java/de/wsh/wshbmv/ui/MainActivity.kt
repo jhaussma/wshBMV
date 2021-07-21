@@ -20,10 +20,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LifecycleOwner
 import com.codecorp.cortexdecoderlibrary.BuildConfig
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.MyApplication
 import de.wsh.wshbmv.R
@@ -115,7 +113,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         }
 
         // Reaktion auf Statusänderungen der SQL-Synchronisierung...
-        sqlStatus.observe(this, androidx.lifecycle.Observer {
+        sqlStatus.observe(this, {
             when (it) {
                 enSqlStatus.INIT -> Timber.tag(TAG).d("sqlStatus meldet INIT")
                 enSqlStatus.IN_ERROR -> Timber.tag(TAG).d("sqlStatus meldet IN_ERROR") // Ausgabe über sqlErrorMessage.Observer
@@ -151,7 +149,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         })
 
         // macht Fehlermeldung der SQL-Verbindung bekannt
-        sqlErrorMessage.observe(this, androidx.lifecycle.Observer {
+        sqlErrorMessage.observe(this, {
             if (it != "") {
                 Timber.tag(TAG).d("sqlError: $it")
                 Toast.makeText(applicationContext, it, Toast.LENGTH_LONG).show()

@@ -326,12 +326,12 @@ class SqlDbSync @Inject constructor(
             "TbmvDokumente" -> mainRepo.deleteDokumentById(satzId)
             "TbmvLager" -> mainRepo.deleteLagerById(satzId)
             "TbmvMat" -> mainRepo.deleteMatById(satzId)
-            "TbmvMat_Lager" -> mainRepo.deleteMat_LagerById(satzId)
-            "TbmvMat_Service" -> mainRepo.deleteMat_ServiceById(satzId)
+            "TbmvMat_Lager" -> mainRepo.deleteMatToLagerById(satzId)
+            "TbmvMat_Service" -> mainRepo.deleteMatToServiceById(satzId)
             "TbmvMatGruppen" -> mainRepo.deleteMatGruppeById(satzId)
-            "TbmvMatService_Dok" -> mainRepo.deleteMatService_DokById(satzId)
-            "TbmvMatService_Historie" -> mainRepo.deleteMatService_HistorieById(satzId)
-            "TbmvService_Dok" -> mainRepo.deleteService_DokById(satzId)
+            "TbmvMatService_Dok" -> mainRepo.deleteMatServiceToDokById(satzId)
+            "TbmvMatService_Historie" -> mainRepo.deleteMatServiceToHistorieById(satzId)
+            "TbmvService_Dok" -> mainRepo.deleteServiceToDokById(satzId)
             "TbmvServices" -> mainRepo.deleteServiceById(satzId)
             "TsysUser" -> mainRepo.deleteUserById(satzId)
             "TsysUser_Gruppe" -> mainRepo.deleteUserToGruppeById(satzId)
@@ -555,7 +555,7 @@ class SqlDbSync @Inject constructor(
                 tbmvMat_Lager.isDefault = resultSet.getInt("Default")
                 tbmvMat_Lager.bestand = resultSet.getFloat("Bestand")
                 // füge den Datensatz in die SQLite ein
-                mainRepo.insertMat_Lager(tbmvMat_Lager, true)
+                mainRepo.insertMatToLager(tbmvMat_Lager, true)
             }
         } catch (ex: Exception) {
             //Fehlermeldung und -behandlung...
@@ -584,7 +584,7 @@ class SqlDbSync @Inject constructor(
                 tbmvMat_Service.nextServiceDatum = resultSet.getTimestamp("NextServiceDatum")
                 tbmvMat_Service.nextInfoDatum = resultSet.getTimestamp("NextInfoDatum")
                 // füge den Datensatz in die SQLite ein
-                mainRepo.insertMat_Service(tbmvMat_Service)
+                mainRepo.insertMatToService(tbmvMat_Service)
             }
         } catch (ex: Exception) {
             //Fehlermeldung und -behandlung...
@@ -638,7 +638,7 @@ class SqlDbSync @Inject constructor(
                 tbmvMatService_Dok.dokId =
                     resultSet.getString("DokID").lowercase(Locale.getDefault())
                 // füge den Datensatz in die SQLite ein
-                mainRepo.insertMatService_Dok(tbmvMatService_Dok)
+                mainRepo.insertMatServiceToDok(tbmvMatService_Dok)
             }
         } catch (ex: Exception) {
             //Fehlermeldung und -behandlung...
@@ -670,7 +670,7 @@ class SqlDbSync @Inject constructor(
                 tbmvMatService_Historie.abschlussDatum = resultSet.getTimestamp("Abschlussdatum")
                 tbmvMatService_Historie.userGuid = resultSet.getString("UserGUID")
                 // füge den Datensatz in die SQLite ein
-                mainRepo.insertMatService_Historie(tbmvMatService_Historie)
+                mainRepo.insertMatServiceToHistorie(tbmvMatService_Historie)
             }
         } catch (ex: Exception) {
             //Fehlermeldung und -behandlung...
@@ -697,7 +697,7 @@ class SqlDbSync @Inject constructor(
                     resultSet.getString("ServiceID").lowercase(Locale.getDefault())
                 tbmvService_Dok.dokId = resultSet.getString("DokID").lowercase(Locale.getDefault())
                 // füge den Datensatz in die SQLite ein
-                mainRepo.insertService_Dok(tbmvService_Dok)
+                mainRepo.insertServiceToDok(tbmvService_Dok)
             }
         } catch (ex: Exception) {
             //Fehlermeldung und -behandlung...
@@ -1089,7 +1089,7 @@ class SqlDbSync @Inject constructor(
                 satzId.uppercase(Locale.getDefault())
             }')"
         )
-        val tbmvMat_Lager = mainRepo.getMat_LagerByID(satzId)
+        val tbmvMat_Lager = mainRepo.getMatToLagerByID(satzId)
         if (tbmvMat_Lager == null) {
             sqlErrorMessage.postValue("TbmvMat_Lager, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
             return false
@@ -1106,7 +1106,7 @@ class SqlDbSync @Inject constructor(
                     "Bestand" -> tbmvMat_Lager.bestand = resultSet.getFloat(it)
                 }
             }
-            mainRepo.updateMat_Lager(tbmvMat_Lager, true)
+            mainRepo.updateMatToLager(tbmvMat_Lager, true)
         }
         return true
     }
@@ -1121,7 +1121,7 @@ class SqlDbSync @Inject constructor(
                 satzId.uppercase(Locale.getDefault())
             }')"
         )
-        val tbmvMat_Service = mainRepo.getMat_ServiceById(satzId)
+        val tbmvMat_Service = mainRepo.getMatToServiceById(satzId)
         if (tbmvMat_Service == null) {
             sqlErrorMessage.postValue("TbmvMat_Service, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
             return false
@@ -1139,7 +1139,7 @@ class SqlDbSync @Inject constructor(
                     "NextInfoDatum" -> tbmvMat_Service.nextInfoDatum = resultSet.getTimestamp(it)
                 }
             }
-            mainRepo.updateMat_Service(tbmvMat_Service)
+            mainRepo.updateMatToService(tbmvMat_Service)
         }
         return true
     }
@@ -1182,7 +1182,7 @@ class SqlDbSync @Inject constructor(
                 satzId.uppercase(Locale.getDefault())
             }')"
         )
-        val tbmvMatService_Dok = mainRepo.getMatService_DokById(satzId)
+        val tbmvMatService_Dok = mainRepo.getMatServiceToDokById(satzId)
         if (tbmvMatService_Dok == null) {
             sqlErrorMessage.postValue("TbmvMatService_Dok, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
             return false
@@ -1197,7 +1197,7 @@ class SqlDbSync @Inject constructor(
                         resultSet.getString(it).lowercase(Locale.getDefault())
                 }
             }
-            mainRepo.updateMatService_Dok(tbmvMatService_Dok)
+            mainRepo.updateMatServiceToDok(tbmvMatService_Dok)
         }
         return true
     }
@@ -1212,7 +1212,7 @@ class SqlDbSync @Inject constructor(
                 satzId.uppercase(Locale.getDefault())
             }')"
         )
-        val tbmvMatService_Historie = mainRepo.getMatService_HistorieById(satzId)
+        val tbmvMatService_Historie = mainRepo.getMatServiceToHistorieById(satzId)
         if (tbmvMatService_Historie == null) {
             sqlErrorMessage.postValue("TbmvMatService_Historie, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
             return false
@@ -1233,7 +1233,7 @@ class SqlDbSync @Inject constructor(
                         resultSet.getString(it).lowercase(Locale.getDefault())
                 }
             }
-            mainRepo.updateMatService_Historie(tbmvMatService_Historie)
+            mainRepo.updateMatServiceToHistorie(tbmvMatService_Historie)
         }
         return true
     }
@@ -1248,7 +1248,7 @@ class SqlDbSync @Inject constructor(
                 satzId.uppercase(Locale.getDefault())
             }')"
         )
-        val tbmvService_Dok = mainRepo.getService_DokById(satzId)
+        val tbmvService_Dok = mainRepo.getServiceToDokById(satzId)
         if (tbmvService_Dok == null) {
             sqlErrorMessage.postValue("TbmvService_Dok, Datensatz [$satzId] fehlt in Mobil-DB für UPDATE vom Server")
             return false
@@ -1263,7 +1263,7 @@ class SqlDbSync @Inject constructor(
                         resultSet.getString(it).lowercase(Locale.getDefault())
                 }
             }
-            mainRepo.updateService_Dok(tbmvService_Dok)
+            mainRepo.updateServiceToDok(tbmvService_Dok)
         }
         return true
     }
@@ -1557,7 +1557,7 @@ class SqlDbSync @Inject constructor(
     }
 
     private suspend fun getQueryForAddTbmvMatToLager(satzId: String): PreparedStatement? {
-        val tbmvMatInLager = mainRepo.getMat_LagerByID(satzId) ?: return null
+        val tbmvMatInLager = mainRepo.getMatToLagerByID(satzId) ?: return null
         var id = 1
         val preparedStatement =
             myConn!!.prepareStatement("INSERT INTO TbmvMat_Lager (ID, MatGUID, LagerGUID, Default, Bestand) VALUES(?,?,?,?,?)")
@@ -1772,7 +1772,7 @@ class SqlDbSync @Inject constructor(
         satzId: String,
         fieldNames: List<String>
     ): PreparedStatement? {
-        val tbmvMat_Lager = mainRepo.getMat_LagerByID(satzId) ?: return null
+        val tbmvMat_Lager = mainRepo.getMatToLagerByID(satzId) ?: return null
         if (fieldNames.isEmpty()) return null
         var strQuery = ""
         // zuerst den Query mit allen Feldern definieren...

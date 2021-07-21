@@ -21,8 +21,8 @@ object GlobalVars {
      *   SQL-Statusinformationen
      */
     var sqlServerConnected = false      // True: wir haben medi1one-Server-Verbindung
-    var sqlStatus = MutableLiveData<enSqlStatus>(enSqlStatus.INIT)   // Status der SQL-Serververbindung für die Activity
-    var sqlErrorMessage = MutableLiveData<String>("")          // Fehlermeldungen der SQL-Verbindung für die Activity
+    var sqlStatus = MutableLiveData(enSqlStatus.INIT)   // Status der SQL-Serververbindung für die Activity
+    var sqlErrorMessage = MutableLiveData("")          // Fehlermeldungen der SQL-Verbindung für die Activity
     var sqlUserLoaded = false           // True: bei der Komplett-Synchronisierung sind die User-Daten und Lager geladen...
     var sqlUserNewPassHash = false      // True: beim nächsten Abgleich muss das Passwort des Users im SQL-Server aktualisiert werden...
     var sqlSynchronized = true          // FALSE: eine Synchronisierung mit der SQL-Datenbank wäre mal wieder angebracht

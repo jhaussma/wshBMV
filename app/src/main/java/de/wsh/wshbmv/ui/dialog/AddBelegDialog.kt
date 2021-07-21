@@ -20,7 +20,7 @@ import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.util.*
 
-class AddBelegDialog(context: Context, var addDialogListener: AddDialogListener, var mainRepo: MainRepository) :
+class AddBelegDialog(context: Context, private var addDialogListener: AddDialogListener, private var mainRepo: MainRepository) :
     AppCompatDialog(context) {
 
     private lateinit var bind: DialogAddBelegBinding
@@ -43,7 +43,7 @@ class AddBelegDialog(context: Context, var addDialogListener: AddDialogListener,
         bind.actvAddBelegZiellager.setAdapter(adapter)
         bind.actvAddBelegZiellager.threshold = 2
 
-        bind.actvAddBelegZiellager.setOnItemClickListener() { parent, _, position, _ ->
+        bind.actvAddBelegZiellager.setOnItemClickListener { parent, _, position, _ ->
             selectedLager = parent.adapter.getItem(position) as TbmvLager?
             bind.actvAddBelegZiellager.setText(selectedLager?.matchcode)
         }
@@ -90,7 +90,7 @@ class AddBelegDialog(context: Context, var addDialogListener: AddDialogListener,
             return mLagers.size
         }
 
-        override fun getItem(position: Int): TbmvLager? {
+        override fun getItem(position: Int): TbmvLager {
             return mLagers[position]
         }
 
@@ -105,16 +105,16 @@ class AddBelegDialog(context: Context, var addDialogListener: AddDialogListener,
             return object : Filter() {
                 override fun publishResults(
                     charSequence: CharSequence?,
-                    filterResults: Filter.FilterResults
+                    filterResults: FilterResults
                 ) {
                     mLagers = filterResults.values as List<TbmvLager>
                     notifyDataSetChanged()
                 }
 
-                override fun performFiltering(charSequence: CharSequence?): Filter.FilterResults {
+                override fun performFiltering(charSequence: CharSequence?): FilterResults {
                     val queryString = charSequence?.toString()?.lowercase(Locale.getDefault())
 
-                    val filterResults = Filter.FilterResults()
+                    val filterResults = FilterResults()
                     filterResults.values = if (queryString == null || queryString.isEmpty())
                         allLagers
                     else

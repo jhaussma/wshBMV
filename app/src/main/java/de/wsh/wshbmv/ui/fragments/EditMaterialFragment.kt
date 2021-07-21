@@ -14,7 +14,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.FragmentEditmaterialBinding
@@ -75,7 +74,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
         }
 
         // Auswahllisten laden für Materialgruppenauswahl...
-        viewModel.editMatGruppen.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        viewModel.editMatGruppen.observe(viewLifecycleOwner, {
             val adapter = MatGruppenAdapter(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
@@ -83,14 +82,14 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
             )
             bind.actvMatGruppe.setAdapter(adapter)
             bind.actvMatGruppe.threshold = 2
-            bind.actvMatGruppe.setOnItemClickListener() { parent, _, position, _ ->
+            bind.actvMatGruppe.setOnItemClickListener { parent, _, position, _ ->
                 selMatGruppe = parent.adapter.getItem(position) as TbmvMatGruppe?
                 bind.actvMatGruppe.setText(selMatGruppe?.matGruppe)
                 bind.actvMatGruppe.error = null
             }
         })
         // ... für Auswahl des Verantwortlichen...
-        viewModel.userListe.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        viewModel.userListe.observe(viewLifecycleOwner, {
             val adapter = UserAdapter(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
@@ -98,14 +97,14 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
             )
             bind.actvMatVerantwortlich.setAdapter(adapter)
             bind.actvMatVerantwortlich.threshold = 2
-            bind.actvMatVerantwortlich.setOnItemClickListener() { parent, _, position, _ ->
+            bind.actvMatVerantwortlich.setOnItemClickListener { parent, _, position, _ ->
                 selUser = parent.adapter.getItem(position) as TsysUser?
                 bind.actvMatVerantwortlich.setText(selUser?.userKennung)
                 bind.actvMatVerantwortlich.error = null
             }
         })
         // ... und für Hauptlagerauswahl
-        viewModel.lagerListe.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        viewModel.lagerListe.observe(viewLifecycleOwner, {
             val adapter = LagerAdapter(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
@@ -113,14 +112,14 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
             )
             bind.actvMatHauptlager.setAdapter(adapter)
             bind.actvMatHauptlager.threshold = 2
-            bind.actvMatHauptlager.setOnItemClickListener() { parent, _, position, _ ->
+            bind.actvMatHauptlager.setOnItemClickListener { parent, _, position, _ ->
                 selLager = parent.adapter.getItem(position) as TbmvLager?
                 bind.actvMatHauptlager.setText(selLager?.matchcode)
                 bind.actvMatHauptlager.error = null
             }
         })
         inInit = true
-        viewModel.newBarcode.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        viewModel.newBarcode.observe(viewLifecycleOwner, {
             if (viewModel.newBarcode.value == "") {
                 if (inInit) {
                     inInit = false
@@ -144,7 +143,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
                 // eine Neuanlage wird durchgeführt
                 if (verifyNewUiValues()) {
                     Timber.tag(TAG).d("verifyNewUiValues war erfolgreich")
-                    var newBmData = BmData(
+                    val newBmData = BmData(
                         tbmvMat = TbmvMat(
                             "",
                             scancode = bind.etMatScancode.text.toString(),
@@ -168,7 +167,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
                     )
                     viewModel.insertNewBM(newBmData)
                     // und raus aus dem Fragment
-                    getActivity()?.supportFragmentManager?.popBackStack()
+                    activity?.supportFragmentManager?.popBackStack()
                 }
 
             } else {
@@ -182,7 +181,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
 
         bind.tvMatSaveCancel.setOnClickListener {
             // wir verwerfen die komplette Eingaben
-            getActivity()?.supportFragmentManager?.popBackStack()
+            activity?.supportFragmentManager?.popBackStack()
         }
     }
 
@@ -278,7 +277,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
             return mMatGroups.size
         }
 
-        override fun getItem(position: Int): TbmvMatGruppe? {
+        override fun getItem(position: Int): TbmvMatGruppe {
             return mMatGroups[position]
         }
 
@@ -294,7 +293,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
 
                 override fun publishResults(
                     charSequence: CharSequence?,
-                    filterResults: Filter.FilterResults
+                    filterResults: FilterResults
                 ) {
                     mMatGroups = filterResults.values as List<TbmvMatGruppe>
                     notifyDataSetChanged()
@@ -302,7 +301,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
 
                 override fun performFiltering(charSequence: CharSequence?): FilterResults {
                     val queryString = charSequence?.toString()?.lowercase(Locale.getDefault())
-                    val filterResults = Filter.FilterResults()
+                    val filterResults = FilterResults()
                     filterResults.values = if (queryString == null || queryString.isEmpty())
                         allMatGroups
                     else
@@ -330,7 +329,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
             return mUsers.size
         }
 
-        override fun getItem(position: Int): TsysUser? {
+        override fun getItem(position: Int): TsysUser {
             return mUsers[position]
         }
 
@@ -346,7 +345,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
 
                 override fun publishResults(
                     charSequence: CharSequence?,
-                    filterResults: Filter.FilterResults
+                    filterResults: FilterResults
                 ) {
                     mUsers = filterResults.values as List<TsysUser>
                     notifyDataSetChanged()
@@ -354,7 +353,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
 
                 override fun performFiltering(charSequence: CharSequence?): FilterResults {
                     val queryString = charSequence?.toString()?.lowercase(Locale.getDefault())
-                    val filterResults = Filter.FilterResults()
+                    val filterResults = FilterResults()
                     filterResults.values = if (queryString == null || queryString.isEmpty())
                         allUsers
                     else
@@ -385,7 +384,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
             return mLagers.size
         }
 
-        override fun getItem(position: Int): TbmvLager? {
+        override fun getItem(position: Int): TbmvLager {
             return mLagers[position]
         }
 
@@ -401,7 +400,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
 
                 override fun publishResults(
                     charSequence: CharSequence?,
-                    filterResults: Filter.FilterResults
+                    filterResults: FilterResults
                 ) {
                     mLagers = filterResults.values as List<TbmvLager>
                     notifyDataSetChanged()
@@ -409,7 +408,7 @@ class EditMaterialFragment : Fragment(R.layout.fragment_editmaterial) {
 
                 override fun performFiltering(charSequence: CharSequence?): FilterResults {
                     val queryString = charSequence?.toString()?.lowercase(Locale.getDefault())
-                    val filterResults = Filter.FilterResults()
+                    val filterResults = FilterResults()
                     filterResults.values = if (queryString == null || queryString.isEmpty())
                         allLagers
                     else

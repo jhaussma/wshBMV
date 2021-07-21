@@ -28,11 +28,11 @@ class BelegViewModel @Inject constructor(
     private val _belegDataLive = MutableLiveData<BelegData?>()
     val belegDataLive: LiveData<BelegData?> = _belegDataLive
 
-    private val _newBelegId = MutableLiveData<String>("")
+    private val _newBelegId = MutableLiveData("")
     val newBelegId: LiveData<String> = _newBelegId
 
     // Fehlerrückmeldungen für die Barcode-Übertragung:
-    private val _barcodeErrorResponse = MutableLiveData<String>("")
+    private val _barcodeErrorResponse = MutableLiveData("")
     val barcodeErrorResponse: LiveData<String> = _barcodeErrorResponse
 
 
@@ -115,7 +115,7 @@ class BelegViewModel @Inject constructor(
                         "Das Betriebsmittel befindet sich schon im Ziel-Lager!"
                 } else {
                     // prüfe auf Doppelanlage
-                    var access: Boolean = true
+                    var access = true
                     val belegId: String = _belegDataLive.value!!.tbmvBelege!!.id
                     var pos = 1
                     val belegPosListe = mainRepo.getBelegposVonBeleg(belegId)
@@ -133,7 +133,7 @@ class BelegViewModel @Inject constructor(
 
                     if (access) {
                         // nun wird angelegt!!
-                        var tbmvBelegPos = TbmvBelegPos(
+                        val tbmvBelegPos = TbmvBelegPos(
                             belegId = belegId,
                             pos = pos,
                             matGuid = tbmvMat!!.id,
@@ -206,7 +206,7 @@ class BelegViewModel @Inject constructor(
                             isDefault = 1,
                             bestand = 1f
                         )
-                        mainRepo.insertMat_Lager(tbmvMatLager)
+                        mainRepo.insertMatToLager(tbmvMatLager)
                         bestandIsPlaced = true
                     } else {
                         // wir entscheiden je nach aktueller Lager-Belegung...
@@ -221,7 +221,7 @@ class BelegViewModel @Inject constructor(
                                 Timber.tag(TAG)
                                     .d("acknowledgeMaterialByScancode, Bestand im Hauptlager auf 1 gesetzt..")
                                 tbmvMatLager.bestand = 1f
-                                mainRepo.updateMat_Lager(tbmvMatLager)
+                                mainRepo.updateMatToLager(tbmvMatLager)
                                 bestandIsPlaced = true
                             }
                             if (tbmvMat.matStatus == "Vermisst") {
@@ -235,11 +235,11 @@ class BelegViewModel @Inject constructor(
                                 Timber.tag(TAG)
                                     .d("acknowledgeMaterialByScancode, Hauptlagerbestand wird 0 gesetzt...")
                                 tbmvMatLager.bestand = 0f
-                                mainRepo.updateMat_Lager(tbmvMatLager)
+                                mainRepo.updateMatToLager(tbmvMatLager)
                             } else {
                                 Timber.tag(TAG)
                                     .d("acknowledgeMaterialByScancode, NICHT-Hauptlager wird gelöscht")
-                                mainRepo.deleteMat_Lager(tbmvMatLager)
+                                mainRepo.deleteMatToLager(tbmvMatLager)
                             }
                         }
                         // sofern ein 2. Eintrag da ist, sollte das das Hauptlager sein, welches den Bestand 0 hat
@@ -252,7 +252,7 @@ class BelegViewModel @Inject constructor(
                                 Timber.tag(TAG)
                                     .d("acknowledgeMaterialByScancode, 2. Lager ist Ziellager, Bestand auf 1 gesetzt...")
                                 tbmvMatLager.bestand = 1f
-                                mainRepo.updateMat_Lager(tbmvMatLager)
+                                mainRepo.updateMatToLager(tbmvMatLager)
                                 bestandIsPlaced = true
                             }
                         }
@@ -268,7 +268,7 @@ class BelegViewModel @Inject constructor(
                                 isDefault = 0,
                                 bestand = 1f
                             )
-                            mainRepo.insertMat_Lager(newMatLager)
+                            mainRepo.insertMatToLager(newMatLager)
                         } else {
                             Timber.tag(TAG).d("Bestand is Placed")
                         }

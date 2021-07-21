@@ -7,13 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.wsh.wshbmv.db.entities.TbmvLager
-import de.wsh.wshbmv.db.entities.TbmvMat
 import de.wsh.wshbmv.db.entities.TbmvMatGruppe
 import de.wsh.wshbmv.db.entities.TsysUser
 import de.wsh.wshbmv.db.entities.relations.BmData
 import de.wsh.wshbmv.db.entities.relations.TbmvMat_Lager
 import de.wsh.wshbmv.repositories.MainRepository
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -137,7 +135,7 @@ class MaterialViewModel @Inject constructor(
                     isDefault = 1,
                     bestand = 1f
                 )
-                mainRepo.insertMat_Lager(tbmvMatLager)
+                mainRepo.insertMatToLager(tbmvMatLager)
             }
         }
     }

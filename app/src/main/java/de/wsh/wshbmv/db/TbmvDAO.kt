@@ -2,7 +2,6 @@ package de.wsh.wshbmv.db
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.google.android.material.tabs.TabLayout
 import de.wsh.wshbmv.db.entities.*
 import de.wsh.wshbmv.db.entities.relations.*
 import java.util.*
@@ -220,17 +219,17 @@ interface TbmvDAO {
      *  Relation Material - Lager
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMat_Lager(tbmvMat_Lager: TbmvMat_Lager)
+    suspend fun insertMatToLager(tbmvMat_Lager: TbmvMat_Lager)
 
     @Update
-    suspend fun updateMat_Lager(tbmvMat_Lager: TbmvMat_Lager)
+    suspend fun updateMatToLager(tbmvMat_Lager: TbmvMat_Lager)
 
     @Delete
-    suspend fun deleteMat_Lager(tbmvMat_Lager: TbmvMat_Lager)
+    suspend fun deleteMatToLager(tbmvMat_Lager: TbmvMat_Lager)
 
     @Transaction
     @Query("SELECT * FROM TbmvMat_Lager WHERE id = :matLagerId")
-    suspend fun getMat_LagerByID(matLagerId: String): TbmvMat_Lager?
+    suspend fun getMatToLagerByID(matLagerId: String): TbmvMat_Lager?
 
     @Transaction
     @Query("SELECT * FROM TbmvMat_Lager WHERE lagerId LIKE :lagerId")
@@ -282,16 +281,16 @@ interface TbmvDAO {
      *  Relation Material - Service
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMat_Service(tbmvMat_Service: TbmvMat_Service)
+    suspend fun insertMatToService(tbmvMat_Service: TbmvMat_Service)
 
     @Delete
-    suspend fun deleteMat_Service(tbmvMat_Service: TbmvMat_Service)
+    suspend fun deleteMatToService(tbmvMat_Service: TbmvMat_Service)
 
     @Update
-    suspend fun updateMat_Service(tbmvMat_Service: TbmvMat_Service)
+    suspend fun updateMatToService(tbmvMat_Service: TbmvMat_Service)
 
     @Query("SELECT * FROM TbmvMat_Service WHERE id LIKE :matServiceId")
-    suspend fun getMat_ServiceByID(matServiceId : String): TbmvMat_Service?
+    suspend fun getMatToServiceByID(matServiceId : String): TbmvMat_Service?
 
     @Transaction
     @Query("SELECT * FROM TbmvMat_Service WHERE MatID = :materialId ORDER BY NextServiceDatum")
@@ -302,38 +301,38 @@ interface TbmvDAO {
      *  Relation Material/Service - Dokument
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertMatService_Dok(tbmvMatService_Dok: TbmvMatService_Dok)
+    suspend fun upsertMatServiceToDok(tbmvMatService_Dok: TbmvMatService_Dok)
 
     @Delete
-    suspend fun deleteMatService_Dok(tbmvMatService_Dok: TbmvMatService_Dok)
+    suspend fun deleteMatServiceToDok(tbmvMatService_Dok: TbmvMatService_Dok)
 
     @Query("SELECT * FROM TbmvMatService_Dok WHERE id LIKE :matServiceDokId")
-    suspend fun getMatService_DokById(matServiceDokId: String): TbmvMatService_Dok?
+    suspend fun getMatServiceToDokById(matServiceDokId: String): TbmvMatService_Dok?
 
 
     /** ############################################################################################
      *  Relation Material/Service - Historie
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertMatService_Historie(tbmvMatService_Historie: TbmvMatService_Historie)
+    suspend fun upsertMatServiceToHistorie(tbmvMatService_Historie: TbmvMatService_Historie)
 
     @Delete
-    suspend fun deleteMatService_Historie(tbmvMatService_Historie: TbmvMatService_Historie)
+    suspend fun deleteMatServiceToHistorie(tbmvMatService_Historie: TbmvMatService_Historie)
 
     @Query("SELECT * FROM TbmvMatService_Historie WHERE id LIKE :matServiceHistorieId")
-    suspend fun getMatService_HistorieById(matServiceHistorieId: String): TbmvMatService_Historie?
+    suspend fun getMatServiceToHistorieById(matServiceHistorieId: String): TbmvMatService_Historie?
 
     /** ############################################################################################
      *  Relation Service - Dokument
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertService_Dok(tbmvService_Dok: TbmvService_Dok)
+    suspend fun upsertServiceToDok(tbmvService_Dok: TbmvService_Dok)
 
     @Delete
-    suspend fun deleteService_Dok(tbmvService_Dok: TbmvService_Dok)
+    suspend fun deleteServiceToDok(tbmvService_Dok: TbmvService_Dok)
 
     @Query("SELECT * FROM TbmvService_Dok WHERE id LIKE :matServiceDokId")
-    suspend fun getService_DokById(matServiceDokId: String): TbmvService_Dok?
+    suspend fun getServiceToDokById(matServiceDokId: String): TbmvService_Dok?
 
 
     /** ############################################################################################

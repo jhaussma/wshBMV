@@ -350,7 +350,7 @@ class SqlDbFirstInit @Inject constructor(
                 matInLager.isDefault = resultSet.getInt("Default")
                 matInLager.bestand = resultSet.getFloat("Bestand")
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertMat_Lager(matInLager, true)
+                mainRepository.insertMatToLager(matInLager, true)
             }
         }
 
@@ -367,7 +367,7 @@ class SqlDbFirstInit @Inject constructor(
                 matZuService.nextServiceDatum = resultSet.getTimestamp("NextServiceDatum")
                 matZuService.nextInfoDatum = resultSet.getTimestamp("NextInfoDatum")
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertMat_Service(matZuService)
+                mainRepository.insertMatToService(matZuService)
             }
         }
 
@@ -382,7 +382,7 @@ class SqlDbFirstInit @Inject constructor(
                     resultSet.getString("MatServiceID").lowercase(Locale.getDefault())
                 matServiceDok.dokId = resultSet.getString("DokID").lowercase(Locale.getDefault())
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertMatService_Dok(matServiceDok)
+                mainRepository.insertMatServiceToDok(matServiceDok)
             }
         }
 
@@ -401,7 +401,7 @@ class SqlDbFirstInit @Inject constructor(
                 matServiceHistory.abschlussDatum = resultSet.getTimestamp("Abschlussdatum")
                 matServiceHistory.userGuid = resultSet.getString("UserGUID").lowercase(Locale.getDefault())
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertMatService_Historie(matServiceHistory)
+                mainRepository.insertMatServiceToHistorie(matServiceHistory)
             }
         }
 
@@ -416,7 +416,7 @@ class SqlDbFirstInit @Inject constructor(
                     resultSet.getString("ServiceID").lowercase(Locale.getDefault())
                 serviceDok.dokId = resultSet.getString("DokID").lowercase(Locale.getDefault())
                 // füge den Datensatz in die SQLite ein
-                mainRepository.insertService_Dok(serviceDok)
+                mainRepository.insertServiceToDok(serviceDok)
             }
         }
     }
