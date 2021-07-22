@@ -278,7 +278,7 @@ class MainRepository @Inject constructor(
                     timeStamp = System.currentTimeMillis(),
                     datenbank = "TbmvMat_Lager",
                     satzId = tbmvMat_Lager.id,
-                    feldname = "Bestand",
+                    feldname = "bestand",
                     aktion = DB_AKTION_UPDATE_DS
                 )
                 tbmvDao.insertChgProtokoll(chgProtokoll)

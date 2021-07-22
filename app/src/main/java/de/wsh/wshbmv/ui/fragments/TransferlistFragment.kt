@@ -129,7 +129,9 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.transfer_bar_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
-        menu.getItem(0).isVisible = false
+        menu.findItem(R.id.miBarcode).isVisible = false
+        menu.findItem(R.id.miAddMaterial).isVisible = false
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -140,7 +142,8 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
                     requireContext(),
                     object : AddDialogListener {
                         override fun onAddButtonClicked(clickItem: TbmvLager) {
-                            Timber.tag(TAG).d("onOptionsItemSelected meldet Lagerauswahl ${clickItem.matchcode} zurück...")
+                            Timber.tag(TAG)
+                                .d("onOptionsItemSelected meldet Lagerauswahl ${clickItem.matchcode} zurück...")
                             belegViewModel.addNewBeleg(clickItem)
                         }
                     },

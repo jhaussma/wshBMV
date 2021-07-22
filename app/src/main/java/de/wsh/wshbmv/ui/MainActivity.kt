@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Environment
 import android.provider.MediaStore
 import android.provider.Settings
@@ -112,11 +113,18 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             dbSync = SqlDbSync(mainRepo)
         }
 
+        startSyncTimer(60000, 10000)
+
         // Reaktion auf Statusänderungen der SQL-Synchronisierung...
         sqlStatus.observe(this, {
             when (it) {
                 enSqlStatus.INIT -> Timber.tag(TAG).d("sqlStatus meldet INIT")
-                enSqlStatus.IN_ERROR -> Timber.tag(TAG).d("sqlStatus meldet IN_ERROR") // Ausgabe über sqlErrorMessage.Observer
+
+                enSqlStatus.IN_ERROR -> {
+                    // Ausgabe ist bereits über Fehler-Observer erfolgt...
+                    Timber.tag(TAG).d("sqlStatus meldet IN_ERROR")
+                    dbSync = null
+                }
 
                 enSqlStatus.NO_CONTACT -> {
                     Toast.makeText(
@@ -131,13 +139,17 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                         applicationContext, "Synchronisierung erfolgreich beendet!",
                         Toast.LENGTH_SHORT
                     ).show()
+                    dbSync = null
                 }
+
                 enSqlStatus.PROCESS_ABORTED -> {
                     Toast.makeText(
                         applicationContext, "Synchronisierung mit FEHLER abgebrochen!",
                         Toast.LENGTH_SHORT
                     ).show()
+                    dbSync = null
                 }
+
                 enSqlStatus.IN_PROCESS -> {
                     Toast.makeText(
                         applicationContext, "Synchronisierung im Hintergrund gestartet!",
@@ -270,11 +282,20 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             }
 
             R.id.miSync -> {
-                Toast.makeText(
-                    applicationContext,
-                    "Synchronisieren geklickt",
-                    Toast.LENGTH_LONG
-                ).show()
+                if (dbSync == null) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Synchronisierung erfolgt im Hintergrund...",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    dbSync = SqlDbSync(mainRepo)
+                } else if (sqlStatus.value == enSqlStatus.IN_PROCESS) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Synchronisierung ist noch aktiv...",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
 
             R.id.miSettings -> {
@@ -312,6 +333,23 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             ).show()
         }
     }
+
+
+    /** ############################################################################################
+     *  Timer für die automatisch Synchronisierung der Mobil-DB mit dem Server...
+     */
+    fun startSyncTimer(millisInFuture: Long, interval: Long) {
+        object : CountDownTimer(millisInFuture, interval) {
+            override fun onTick(millisUntilFinished: Long) {
+                Timber.tag(TAG).d("startTimer.onTick aufgetreten")
+            }
+
+            override fun onFinish() {
+                Timber.tag(TAG).d("startTimer.onFinish: wir sind durch!")
+            }
+        }.start()
+    }
+
 
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

@@ -73,7 +73,7 @@ class BelegViewModel @Inject constructor(
         viewModelScope.launch {
             val tbmvBeleg = _belegDataLive.value!!.tbmvBelege!!
             tbmvBeleg.notiz = newNotiz
-            mainRepo.updateBeleg(tbmvBeleg, feldnamen = listOf("Notiz"))
+            mainRepo.updateBeleg(tbmvBeleg, feldnamen = listOf("notiz"))
             // nun aktualisieren wir das belegData und somit den Observer im Fragment...
             val belegData = mainRepo.getBelegDatenZuBelegId(tbmvBeleg.id)
             _belegDataLive.value = belegData
@@ -189,7 +189,7 @@ class BelegViewModel @Inject constructor(
                     tbmvBelegPos!!.ackDatum = Date()
                     Timber.tag(TAG)
                         .d("acknowledgeMaterialByScancode, updateBelegPos mit ${tbmvBelegPos.toString()}")
-                    mainRepo.updateBelegPos(tbmvBelegPos!!, feldnamen = listOf("AckDatum"))
+                    mainRepo.updateBelegPos(tbmvBelegPos!!, feldnamen = listOf("ackDatum"))
                     // aktualisiere die Material-Lager-Einträge (Bestand 1 zuerst...)
                     val zielLagerId = _belegDataLive.value!!.zielLager!!.id
                     var bestandIsPlaced = false
@@ -226,7 +226,7 @@ class BelegViewModel @Inject constructor(
                             }
                             if (tbmvMat.matStatus == "Vermisst") {
                                 tbmvMat.matStatus = "Aktiv"
-                                mainRepo.updateMat(tbmvMat, feldname = "MatStatus")
+                                mainRepo.updateMat(tbmvMat, feldname = "matStatus")
                             }
 
                         } else {
@@ -282,7 +282,7 @@ class BelegViewModel @Inject constructor(
                         tbmvBeleg.belegDatum = Date()
                         mainRepo.updateBeleg(
                             tbmvBeleg,
-                            feldnamen = listOf("BelegStatus", "BelegDatum")
+                            feldnamen = listOf("belegStatus", "belegDatum")
                         )
                         _belegDataLive.value = _belegDataLive.value //initiiert den Observer
                     }
@@ -303,7 +303,7 @@ class BelegViewModel @Inject constructor(
             belegPosListe.forEach {
                 if (it.pos > pos) {
                     it.pos -= 1
-                    mainRepo.updateBelegPos(it, feldnamen = listOf("Pos"))
+                    mainRepo.updateBelegPos(it, feldnamen = listOf("pos"))
                 }
             }
 
@@ -321,7 +321,7 @@ class BelegViewModel @Inject constructor(
             val tbmvBeleg = _belegDataLive.value!!.tbmvBelege!!
             tbmvBeleg.belegStatus = "Erfasst"
             tbmvBeleg.belegDatum = Date()
-            mainRepo.updateBeleg(tbmvBeleg, feldnamen = listOf("BelegStatus", "BelegDatum"))
+            mainRepo.updateBeleg(tbmvBeleg, feldnamen = listOf("belegStatus", "belegDatum"))
         }
     }
 

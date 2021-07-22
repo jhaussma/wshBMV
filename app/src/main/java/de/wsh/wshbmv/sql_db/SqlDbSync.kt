@@ -12,6 +12,7 @@ import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars
 import de.wsh.wshbmv.other.GlobalVars.sqlErrorMessage
 import de.wsh.wshbmv.other.GlobalVars.sqlStatus
+import de.wsh.wshbmv.other.GlobalVars.sqlSynchronized
 import de.wsh.wshbmv.other.enSqlStatus
 import de.wsh.wshbmv.repositories.MainRepository
 import kotlinx.coroutines.Dispatchers
@@ -63,8 +64,6 @@ class SqlDbSync @Inject constructor(
                     } else {
                         sqlStatus.postValue(enSqlStatus.PROCESS_ABORTED)
                     }
-
-                    // .....
 
                 }
             } catch (ex: Exception) {
@@ -251,11 +250,10 @@ class SqlDbSync @Inject constructor(
                 errorFlag = 0
             )
             mainRepo.insertSyncReport(newtappSyncReport)
-
         } else {
             Timber.tag(TAG).d("syncDatabase ergab keinen Bedarf zur Synchronisierung")
         }
-
+        sqlSynchronized = true
         return true
     }
 
@@ -1514,7 +1512,7 @@ class SqlDbSync @Inject constructor(
         val tbmvBelegPos = mainRepo.getBelegPosZuBelegPosId(satzId) ?: return null
         var id = 1
         val preparedStatement =
-            myConn!!.prepareStatement("INSERT INTO TbmvBelege (ID, BelegID, Pos, MatGUID, Menge, VonLagerGUID, AckDatum) VALUES(?,?,?,?,?,?,?)")
+            myConn!!.prepareStatement("INSERT INTO TbmvBelegPos (ID, BelegID, Pos, MatGUID, Menge, VonLagerGUID, AckDatum) VALUES(?,?,?,?,?,?,?)")
         preparedStatement.setString(id++, tbmvBelegPos.id)
         preparedStatement.setString(id++, tbmvBelegPos.belegId)
         preparedStatement.setInt(id++, tbmvBelegPos.pos)
@@ -1560,7 +1558,7 @@ class SqlDbSync @Inject constructor(
         val tbmvMatInLager = mainRepo.getMatToLagerByID(satzId) ?: return null
         var id = 1
         val preparedStatement =
-            myConn!!.prepareStatement("INSERT INTO TbmvMat_Lager (ID, MatGUID, LagerGUID, Default, Bestand) VALUES(?,?,?,?,?)")
+            myConn!!.prepareStatement("INSERT INTO TbmvMat_Lager (ID, MatGUID, LagerGUID, [Default], Bestand) VALUES(?,?,?,?,?)")
         preparedStatement.setString(id++, tbmvMatInLager.id)
         preparedStatement.setString(id++, tbmvMatInLager.matId)
         preparedStatement.setString(id++, tbmvMatInLager.lagerId)
@@ -1663,7 +1661,7 @@ class SqlDbSync @Inject constructor(
                 "belegTyp" -> preparedStatement.setString(id++, tbmvBelege.belegTyp)
                 "belegDatum" -> preparedStatement.setTimestamp(
                     id++,
-                    tbmvBelege.belegDatum as Timestamp?
+                    tbmvBelege.belegDatum?.time?.let { it1 -> Timestamp(it1) }
                 )
                 "belegUserGuid" -> preparedStatement.setString(id++, tbmvBelege.belegUserGuid)
                 "zielLagerGuid" -> preparedStatement.setString(id++, tbmvBelege.zielLagerGuid)
@@ -1708,7 +1706,7 @@ class SqlDbSync @Inject constructor(
                 "vonLagerGuid" -> preparedStatement.setString(id++, tbmvBelegPos.vonLagerGuid)
                 "ackDatum" -> preparedStatement.setTimestamp(
                     id++,
-                    tbmvBelegPos.ackDatum as Timestamp?
+                    tbmvBelegPos.ackDatum?.time?.let { it1 -> Timestamp(it1) }
                 )
             }
         }
@@ -1779,7 +1777,7 @@ class SqlDbSync @Inject constructor(
         fieldNames.forEach {
             if (strQuery != "") strQuery += ", "
             when (it) {
-                "isDefault" -> strQuery += "Default = ?"
+                "isDefault" -> strQuery += "[Default] = ?"
                 "bestand" -> strQuery += "Bestand = ?"
             }
         }

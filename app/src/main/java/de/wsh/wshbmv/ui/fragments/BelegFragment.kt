@@ -136,6 +136,8 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
         super.onCreateOptionsMenu(menu, inflater)
         Timber.tag(TAG).d("BelegFragment, OnCreateOptionsMenu...")
         menu.getItem(0).isVisible = false
+        menu.findItem(R.id.miBarcode).isVisible = false
+        menu.findItem(R.id.miAddMaterial).isVisible = false
         scanMenuItem = menu.findItem(R.id.miBarcode)
         scanMenuItem.isVisible = false
         delMenuItem = menu.findItem(R.id.miBelegDel)
