@@ -31,6 +31,8 @@ import de.wsh.wshbmv.databinding.ActivityMainBinding
 import de.wsh.wshbmv.db.TbmvDAO
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_FILTERING
 import de.wsh.wshbmv.other.Constants.PIC_SCALE_HEIGHT
+import de.wsh.wshbmv.other.Constants.SYNCTIMER_INTERVALL
+import de.wsh.wshbmv.other.Constants.SYNCTIMER_LANG_ZYKLUS
 import de.wsh.wshbmv.other.Constants.TAG
 import de.wsh.wshbmv.other.GlobalVars.firstSyncCompleted
 import de.wsh.wshbmv.other.GlobalVars.hasNewBarcode
@@ -97,6 +99,9 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
 
     private var importFragment: Fragment? = null
 
+    // der Synchronisierungstimer für den Datenbankabgleich
+    private var cancelSyncTimer = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,8 +118,6 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
             dbSync = SqlDbSync(mainRepo)
         }
 
-        startSyncTimer(60000, 10000)
-
         // Reaktion auf Statusänderungen der SQL-Synchronisierung...
         sqlStatus.observe(this, {
             when (it) {
@@ -124,6 +127,8 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                     // Ausgabe ist bereits über Fehler-Observer erfolgt...
                     Timber.tag(TAG).d("sqlStatus meldet IN_ERROR")
                     dbSync = null
+                    // starte den Sync-Timer
+                    startSyncTimer(SYNCTIMER_LANG_ZYKLUS, SYNCTIMER_INTERVALL)
                 }
 
                 enSqlStatus.NO_CONTACT -> {
@@ -135,19 +140,25 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                 enSqlStatus.DISCONNECTED -> Timber.tag(TAG).d("sqlStatus meldet DISCONNECTED")
 
                 enSqlStatus.PROCESS_ENDED -> {
+                    Timber.tag(TAG).d("SQL-Status PROCESS_ENDED wurde gemeldet")
                     Toast.makeText(
                         applicationContext, "Synchronisierung erfolgreich beendet!",
                         Toast.LENGTH_SHORT
                     ).show()
                     dbSync = null
+                    // starte den Sync-Timer
+                    startSyncTimer(SYNCTIMER_LANG_ZYKLUS, SYNCTIMER_INTERVALL)
                 }
 
                 enSqlStatus.PROCESS_ABORTED -> {
+                    Timber.tag(TAG).d("SQL-Status PROCESS_ABORTED wurde gemeldet")
                     Toast.makeText(
                         applicationContext, "Synchronisierung mit FEHLER abgebrochen!",
                         Toast.LENGTH_SHORT
                     ).show()
                     dbSync = null
+                    // starte den Sync-Timer
+                    startSyncTimer(SYNCTIMER_LANG_ZYKLUS, SYNCTIMER_INTERVALL)
                 }
 
                 enSqlStatus.IN_PROCESS -> {
@@ -288,6 +299,7 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
                         "Synchronisierung erfolgt im Hintergrund...",
                         Toast.LENGTH_LONG
                     ).show()
+                    cancelSyncTimer = false
                     dbSync = SqlDbSync(mainRepo)
                 } else if (sqlStatus.value == enSqlStatus.IN_PROCESS) {
                     Toast.makeText(
@@ -325,12 +337,18 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
         super.onDestroy()
         Timber.tag(TAG).d("MainActivity, onDestroy")
         when (sqlStatus.value) {
-            enSqlStatus.INIT, enSqlStatus.DISCONNECTED, enSqlStatus.IN_ERROR, enSqlStatus.PROCESS_ABORTED, enSqlStatus.PROCESS_ENDED, enSqlStatus.NO_CONTACT -> exitProcess(0)
-            else -> Toast.makeText(
-                applicationContext,
-                "Synchronisierung läuft noch im Hintergrund...",
-                Toast.LENGTH_SHORT
-            ).show()
+            enSqlStatus.INIT, enSqlStatus.DISCONNECTED, enSqlStatus.IN_ERROR, enSqlStatus.PROCESS_ABORTED, enSqlStatus.PROCESS_ENDED, enSqlStatus.NO_CONTACT -> exitProcess(
+                0
+            )
+            else -> {
+                Toast.makeText(
+                    applicationContext,
+                    "Synchronisierung läuft noch im Hintergrund...",
+                    Toast.LENGTH_SHORT
+                ).show()
+                cancelSyncTimer = true
+            }
+
         }
     }
 
@@ -338,18 +356,23 @@ class MainActivity : AppCompatActivity(), FragCommunicator, EasyPermissions.Perm
     /** ############################################################################################
      *  Timer für die automatisch Synchronisierung der Mobil-DB mit dem Server...
      */
-    fun startSyncTimer(millisInFuture: Long, interval: Long) {
+    private fun startSyncTimer(millisInFuture: Long, interval: Long) {
         object : CountDownTimer(millisInFuture, interval) {
             override fun onTick(millisUntilFinished: Long) {
-                Timber.tag(TAG).d("startTimer.onTick aufgetreten")
+                if (cancelSyncTimer) {
+                    Timber.tag(TAG).d("startSyncTimer wurde abgebrochen")
+                    cancel()
+                    cancelSyncTimer = false
+                }
             }
 
             override fun onFinish() {
-                Timber.tag(TAG).d("startTimer.onFinish: wir sind durch!")
+                Timber.tag(TAG).d("startTimer.onFinish: wir starten den nächsten Update-Zyklus!")
+                // wir starten einen neuen Sync-Zyklus
+                if (sqlStatus.value != enSqlStatus.IN_PROCESS && !cancelSyncTimer) dbSync = SqlDbSync(mainRepo)
             }
         }.start()
     }
-
 
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

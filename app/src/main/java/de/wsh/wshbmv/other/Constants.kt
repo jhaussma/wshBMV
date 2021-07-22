@@ -44,11 +44,11 @@ object Constants {
     const val PIC_SCALE_FILTERING = true
 
     /** xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-     *   Service-Aktivitäten
+     *   Sync-Timer-Aktivitäten
+     *    (alle Zeitangaben in Millisekunden!
      */
-    const val ACTION_START_OR_RESUME_SERVICE = "ACTION_START_OR_RESUME_SERVICE"
-    const val ACTION_PAUSE_SERVICE = "ACTION_PAUSE_SERVICE"
-    const val ACTION_STOP_SERVICE = "ACTION_STOP_SERVICE"
+    const val SYNCTIMER_INTERVALL = 1000L
+    const val SYNCTIMER_LANG_ZYKLUS = 300000L
 
 
 }

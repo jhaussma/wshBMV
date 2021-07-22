@@ -230,6 +230,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                         message = "Okay"
                     }
                 } else {
+                    // TODO Hier passt der Fall eines gelöschten Passworts nicht mehr!!!
                     // neues Passwort wird eintragen, ansonsten ist die Anmeldung okay...
                     myUser!!.passHash = myHash
                     tbmvDAO.updateUser(myUser!!)
