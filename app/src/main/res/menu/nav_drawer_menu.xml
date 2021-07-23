@@ -18,15 +18,16 @@
 
     <item
         android:id="@+id/miTransfer"
-        android:title="Beleglisten"
         android:icon="@drawable/ic_transfer"
+        android:title="Beleglisten"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/miInventur"
-        android:title="Inventur"
         android:icon="@drawable/ic_inventur"
-        app:showAsAction="ifRoom"/>
+        android:title="Inventur"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/miSync"

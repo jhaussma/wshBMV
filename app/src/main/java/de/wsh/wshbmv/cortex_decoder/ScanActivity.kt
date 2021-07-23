@@ -34,22 +34,22 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
 
     private lateinit var binding: ActivityScanBinding
 
-    val PERMISSION_LIST: Array<String> = arrayOf(
+    private val PERMISSION_LIST: Array<String> = arrayOf(
         Manifest.permission.CAMERA,
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.READ_EXTERNAL_STORAGE
     )
-    val PERMISSION_REQUEST = 5678
-    val CAMERA_API = "camera2"
+    private val PERMISSION_REQUEST = 5678
+    private val CAMERA_API = "camera2"
 
     //    var mCortexDecoderLibrary:CortexDecoderLibrary? = null
-    lateinit var mCortexDecoderLibrary: CortexDecoderLibrary
+    private lateinit var mCortexDecoderLibrary: CortexDecoderLibrary
 
 //    val EDK_ACTIVATE_LICENSE_KEY =
 //        "0R71aoAa3FQ3L4pZlzrIs1Be/8Vj6DfYRnDL6zsv0bK6PRkeuftE0yYm99Yvk9/v/B9dRiHnas/FrhtRacNL9/5HJ8Espns8hATFBN4hBoiEvznSMOFSGFla8qWik4fh7n01D69b+vHaF8FQq6xd2BQ9A/imr2aVBFYM7jQo0QC11b1HCGbm2uD1bA7+NlRyHui6ThHRSbQI98mf+4jjryn79mC7u9kNMFsXTGzz95gUU9qCzmkEHs1tuDH9SVJTMaXQ4Ze6dqsBruw1CtW62tal7S4ZO5a3A3UXXi/DQXPz1QhM9SAlkehpENBt+flbIYmNLCDq+edAbJmnqs0X4rE/Ao9ozPxM3ziBvWY0JGjBttQCuNgcJOSnMlqn6NTgsl8t9lU0pCc2dRYc06V06g=="
-    val EDK_ACTIVATE_LICENSE_KEY =
+private val EDK_ACTIVATE_LICENSE_KEY =
         "xJ7GQhezBhfSxhhRY+T0Z1/EUzYs6U1Ns7O9ieO/UswgsaYZ5vaLK/olf2vM77trkw2akaKrOo/YQ8KAzvSGegBvihlLCbHM+wYIpyxB5i/68j3IwYXr4ViZM0Q9XBW2R3SJOX8ijWynRyEZzVdW6yTrSJHRuKxuwlSQsYT5QQdkzK2JK923wTXwanNEqf/Ae8ai11mTomMHTL9rnqYHrRnfelc0HQI6KD+3fu0wguMAb/BLfFNS/b3bFoxTpMUDYHbhG8XaqQqGE2/6exjtmuxyjlqU/4a/9B3GVg6K4ynuu9+v1ZuC24ApbzBW8CHx8ZNMsHcASuKwu5fknrcsx/2vhMkAH3Cy0we4c+TQcs3dMRHHPUgkDe5Py4uxwxUxzeJjbJahvS+N100HiENZ+w=="
-    val EDK_CUSTOMERID = "JOE042620210001"
+    private val EDK_CUSTOMERID = "JOE042620210001"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +62,7 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
                 val uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID)
-                Timber.tag(TAG).d("Uri: ${uri.toString()}")
+                Timber.tag(TAG).d("Uri: $uri")
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
                 startActivity(intent)
             }
@@ -93,7 +93,7 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
         mCortexDecoderLibrary.setCallback(this)
         mCortexDecoderLibrary.setEDKCustomerID(EDK_CUSTOMERID)
         mCortexDecoderLibrary.activateLicense(EDK_ACTIVATE_LICENSE_KEY)
-        binding.activityMainButtonToSdkVersion.setText("SDK Version: " + mCortexDecoderLibrary.sdkVersion)
+        binding.activityMainButtonToSdkVersion.text = "SDK Version: " + mCortexDecoderLibrary.sdkVersion
     }
 
     private fun setSDK() {
@@ -207,7 +207,7 @@ class ScanActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
     override fun receivedDecodedData(barcode: String?, type: SymbologyType?) {
         Timber.tag(TAG).d("receivedDecodedData: $barcode -> Datenübergabe organisieren")
         doStopDecoding()
-        runOnUiThread(Runnable { showBarcodeResult(barcode, type) })
+        runOnUiThread { showBarcodeResult(barcode, type) }
         setNewBarcode(barcode)
         finish()
     }

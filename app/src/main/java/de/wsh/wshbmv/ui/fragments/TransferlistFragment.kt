@@ -9,7 +9,6 @@ import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.R
@@ -112,12 +111,12 @@ class TransferlistFragment : Fragment(R.layout.fragment_transferlist),
             }
 
         // Reaktion auf geänderte Beleglistenübersicht einleiten
-        viewModel.belegliste.observe(viewLifecycleOwner, Observer {
+        viewModel.belegliste.observe(viewLifecycleOwner, {
             tranferlistAdapter.submitList(it)
         })
 
         // Reaktion auf neu angelegten Transfer-Beleg einleiten
-        belegViewModel.newBelegId.observe(viewLifecycleOwner, Observer {
+        belegViewModel.newBelegId.observe(viewLifecycleOwner, {
             if (it != "" && newAddBelegId != it) {
                 newAddBelegId = it
                 belegViewModel.setNewBelegId(newAddBelegId)

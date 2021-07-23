@@ -3,7 +3,6 @@ package de.wsh.wshbmv.ui.fragments
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
@@ -33,7 +32,6 @@ import de.wsh.wshbmv.other.GlobalVars.sqlUserNewPassHash
 import de.wsh.wshbmv.other.HashUtils
 import kotlinx.coroutines.*
 import timber.log.Timber
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -120,7 +118,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             } else {
                 Timber.tag(TAG).d("Die User-Überprüfung startet nun...")
                 // nun erfolgt die User-Überprüfung
-                var message = verifyUserInfo()
+                val message = verifyUserInfo()
                 // die Auswertung...
                 Timber.tag(TAG).d("User-Überprüfung ergab: $message")
                 if (message != "Okay") {
@@ -230,22 +228,28 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                         message = "Okay"
                     }
                 } else {
-                    // TODO Hier passt der Fall eines gelöschten Passworts nicht mehr!!!
-                    // neues Passwort wird eintragen, ansonsten ist die Anmeldung okay...
-                    myUser!!.passHash = myHash
-                    tbmvDAO.updateUser(myUser!!)
-                    sqlUserNewPassHash = true
-                    var tappChgProtokoll = TappChgProtokoll(
-                        timeStamp = System.currentTimeMillis(),
-                        datenbank = "TsysUser",
-                        satzId = myUser!!.id,
-                        feldname = "passHash",
-                        aktion = DB_AKTION_UPDATE_DS
-                    )
-                    tbmvDAO.insertChgProtokoll(tappChgProtokoll)
-                    userName = myUserName
-                    userHash = myHash
-                    message = "Okay"
+
+                    // sofern ich ein Passwort habe, jetzt den neuen passHash in die Datenbank eintragen
+                    if (userPwd != "") {
+                        // neues Passwort wird eintragen, ansonsten ist die Anmeldung okay...
+                        myUser!!.passHash = myHash
+                        tbmvDAO.updateUser(myUser!!)
+                        sqlUserNewPassHash = true
+                        val tappChgProtokoll = TappChgProtokoll(
+                            timeStamp = System.currentTimeMillis(),
+                            datenbank = "TsysUser",
+                            satzId = myUser!!.id,
+                            feldname = "passHash",
+                            aktion = DB_AKTION_UPDATE_DS
+                        )
+                        tbmvDAO.insertChgProtokoll(tappChgProtokoll)
+                        userName = myUserName
+                        userHash = myHash
+                        message = "Okay"
+                    } else {
+                        Timber.tag(TAG).d("neues Passwort wurde angefordert...")
+                        message = "Bitte neues Passwort eingeben..."
+                    }
                 }
             }
         }
@@ -272,7 +276,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             } else {
                 tbmvDAO.getLagerListSorted()
             }
-            if (locLagerList.isEmpty() == true) {
+            if (locLagerList.isEmpty()) {
                 if (myUser!!.bmvAdmin == 0) {
                     // der Benutzer ist keinem Lager zugeordnet und hat keine Admin-Berechtigung
                     message = "Sie sind keinem Lager zugeordnet, fehlende Berechtigung!"
@@ -283,8 +287,8 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             } else {
                 // ist die bisher eingetragene ID noch zugeordnet?
                 val locLagerListFiltered = locLagerList.filter { it.id == lagerId }
-                Timber.tag(TAG).d("Lagerliste ungefiltert: ${locLagerList.toString()}")
-                Timber.tag(TAG).d("Lagerliste gefiltert: ${locLagerListFiltered.toString()}")
+                Timber.tag(TAG).d("Lagerliste ungefiltert: $locLagerList")
+                Timber.tag(TAG).d("Lagerliste gefiltert: $locLagerListFiltered")
                 myLager = if (locLagerListFiltered.isEmpty()) {
                     // wir stellen auf den ersten gefundenen Lagereintrag um
                     locLagerList.first()

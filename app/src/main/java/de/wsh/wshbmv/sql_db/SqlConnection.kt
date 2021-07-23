@@ -1,7 +1,6 @@
 package de.wsh.wshbmv.sql_db
 
 import android.os.StrictMode
-import android.util.Log
 import de.wsh.wshbmv.other.Constants.SQL_CONN_DB
 import de.wsh.wshbmv.other.Constants.SQL_CONN_IP
 import de.wsh.wshbmv.other.Constants.SQL_USER_NAME
@@ -24,18 +23,17 @@ class SqlConnection {
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
         var conn : Connection? = null
-        var connString: String?
+        val connString: String?
         try {
             Class.forName("net.sourceforge.jtds.jdbc.Driver")
             connString = "jdbc:jtds:sqlserver://$ip/$db;instance=SQLEXPRESS;encrypt=false;user=$username;password=$password;"
             conn = DriverManager.getConnection(connString)
         } catch (ex : SQLException) {
-
-            Log.e(TAG, ex.message ?:"")
+            Timber.tag(TAG).e(ex.message ?:"")
         } catch (ex1 : ClassNotFoundException) {
-            Log.e(TAG, ex1.message ?:"")
+            Timber.tag(TAG).e(ex1.message ?:"")
         } catch (ex2 : Exception) {
-            Log.e(TAG, ex2.message ?:"")
+            Timber.tag(TAG).e( ex2.message ?:"")
         }
         return  conn
     }

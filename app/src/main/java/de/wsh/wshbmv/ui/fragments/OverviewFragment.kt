@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import de.wsh.wshbmv.R
@@ -123,11 +122,11 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
             }
         }
 
-        listViewModel.materials.observe(viewLifecycleOwner, Observer {
+        listViewModel.materials.observe(viewLifecycleOwner, {
             overviewAdapter.submitList(it)
         })
 
-        listViewModel.newTbmvMatFromBarcode.observe(viewLifecycleOwner, Observer {
+        listViewModel.newTbmvMatFromBarcode.observe(viewLifecycleOwner, {
             Timber.tag(TAG).d("OverviewFragment, listViewModel.newTbmvMatFromBarcode.observe...")
             if (hasNewBarcode) {
                 if (it == null) {
@@ -149,9 +148,9 @@ class OverviewFragment : Fragment(R.layout.fragment_overview), OverviewAdapter.O
 
     private fun setupLagerFilter() {
         val spLager: Spinner = bind.spLager
-        var lagerNames = arrayListOf<String>()
+        val lagerNames = arrayListOf<String>()
         var myLagerPos = -1
-        myLagers.forEach() { item ->
+        myLagers.forEach { item ->
             lagerNames.add("${item.typ.first()}: ${item.matchcode}")
             if (item.id == lagerId) {
                 myLagerPos = lagerNames.size - 1

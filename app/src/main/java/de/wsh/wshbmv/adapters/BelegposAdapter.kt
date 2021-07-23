@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import de.wsh.wshbmv.R
 import de.wsh.wshbmv.databinding.ItemBelegposBinding
-import de.wsh.wshbmv.databinding.ItemTransferlistBinding
 import de.wsh.wshbmv.db.entities.relations.BelegposAndMaterialAndLager
 import de.wsh.wshbmv.other.Constants.TAG
 import timber.log.Timber
@@ -15,7 +14,7 @@ import java.util.*
 
 class BelegposAdapter(
     var belegPosn: List<BelegposAndMaterialAndLager>,
-    private val listener: BelegposAdapter.OnItemClickListener
+    private val listener: OnItemClickListener
 ) : RecyclerView.Adapter<BelegposAdapter.BelegposViewHolder>() {
 
     inner class BelegposViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
@@ -74,7 +73,7 @@ class BelegposAdapter(
 
     // deutsche Datumsformatierung
     private fun Date.formatedDateDE(): String {
-        var simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        val simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         return simpleDateFormat.format(this)
     }
 

@@ -136,7 +136,7 @@ class MaterialFragment : Fragment(R.layout.fragment_material)  {
 
     // deutsche Datumsformatierung
     private fun Date.formatedDateDE(): String {
-        var simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        val simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         return simpleDateFormat.format(this)
     }
 }

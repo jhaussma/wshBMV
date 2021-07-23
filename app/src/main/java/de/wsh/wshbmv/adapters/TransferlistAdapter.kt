@@ -16,7 +16,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class TransferlistAdapter(
-    private val listener: TransferlistAdapter.OnItemClickListener
+    private val listener: OnItemClickListener
 ) : RecyclerView.Adapter<TransferlistAdapter.TransferlistViewHolder>() {
 
     inner class TransferlistViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
@@ -101,7 +101,7 @@ class TransferlistAdapter(
 
     // deutsche Datumsformatierung
     private fun Date.formatedDateDE(): String {
-        var simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        val simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         return simpleDateFormat.format(this)
     }
 

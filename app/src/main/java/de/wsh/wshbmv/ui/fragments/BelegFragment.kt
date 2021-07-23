@@ -10,7 +10,6 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DiffUtil.DiffResult.NO_POSITION
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -87,7 +86,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
             }
         })
 
-        belegViewModel.getBelegposVonBeleg(belegId!!).observe(viewLifecycleOwner, Observer {
+        belegViewModel.getBelegposVonBeleg(belegId!!).observe(viewLifecycleOwner, {
             belegposAdapter.belegPosn = it
             belegposAdapter.notifyDataSetChanged()
         })
@@ -112,7 +111,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
             bind.etBelegNotiz.setText(belegViewModel.belegDataLive.value!!.tbmvBelege!!.notiz)
         }
 
-        belegViewModel.barcodeErrorResponse.observe(viewLifecycleOwner, Observer {
+        belegViewModel.barcodeErrorResponse.observe(viewLifecycleOwner, {
             if (it != "") {
                 Toast.makeText(
                     requireContext(), it,
@@ -156,7 +155,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
             R.id.miBelegRelease -> {
                 // wir ändern den Status auf Erfasst und raus aus dem Fragment
                 belegViewModel.setBelegStatusToReleased()
-                Toast.makeText(requireContext(), "Beleg wurde nun versendet.", Toast.LENGTH_SHORT)
+                Toast.makeText(requireContext(), "Beleg wurde nun versendet.", Toast.LENGTH_SHORT).show()
                 parentFragmentManager.popBackStack()
             }
 
@@ -227,12 +226,16 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
                 }
             }
             "Erfasst" -> {
-                belegFragStatus = if (belegData.zielLager?.id == GlobalVars.myLager?.id) {
-                    BelegStatus.ZIELACK
-                } else if (belegData.tbmvBelege?.belegUserGuid == myUser!!.id) {
-                    BelegStatus.USERDELETE
-                } else {
-                    BelegStatus.READONLY
+                belegFragStatus = when {
+                    belegData.zielLager?.id == GlobalVars.myLager?.id -> {
+                        BelegStatus.ZIELACK
+                    }
+                    belegData.tbmvBelege?.belegUserGuid == myUser!!.id -> {
+                        BelegStatus.USERDELETE
+                    }
+                    else -> {
+                        BelegStatus.READONLY
+                    }
                 }
             }
             "Fertig" -> belegFragStatus = BelegStatus.READONLY
@@ -293,7 +296,7 @@ class BelegFragment : Fragment(R.layout.fragment_beleg), BelegposAdapter.OnItemC
 
     // deutsche Datumsformatierung
     private fun Date.formatedDateDE(): String {
-        var simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        val simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         return simpleDateFormat.format(this)
     }
 
