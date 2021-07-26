@@ -1601,18 +1601,11 @@ class SqlDbSync @Inject constructor(
         preparedStatement.setString(3, satzId)
         preparedStatement.setString(4, null)
         preparedStatement.setInt(5, DB_AKTION_UPDATE_DS)
-//        sqlQuery = "INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) "
-//        sqlQuery += "VALUES(${chgDate.formatedDateToSQL()},'$datenbank','$satzId',NULL,$DB_AKTION_UPDATE_DS)"
         try {
             fieldNames.forEach {
-                preparedStatement.setString(4, it)
+                preparedStatement.setString(4, it.firstSignToUpper())
                 Timber.tag(TAG).d("editDsOnSqlServer, Feld $it: $preparedStatement")
                 preparedStatement.execute()
-//                sqlQuery =
-//                    "INSERT INTO TsysChgProtokoll (Zeitstempel,Datenbank,SatzID,Feldname,Aktion) "
-//                sqlQuery += "VALUES(${chgDate.formatedDateToSQL()},'$datenbank','$satzId','$it',$DB_AKTION_UPDATE_DS)"
-//                Timber.tag(TAG).d("editDsOnSqlServer: $sqlQuery")
-//                statement.execute(sqlQuery)
             }
         } catch (ex: Exception) {
             //Fehlermeldung und -behandlung...
@@ -1838,5 +1831,10 @@ class SqlDbSync @Inject constructor(
     private fun Date.formatedDateToSQL(): String {
         val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.GERMANY)
         return "CONVERT(DATETIME, '" + simpleDateFormat.format(this) + "',102)"
+    }
+
+    // formatiert das erste Zeichen eines Strings groß
+    private fun String.firstSignToUpper(): String {
+        return this.replaceFirstChar { it.uppercase() }
     }
 }
