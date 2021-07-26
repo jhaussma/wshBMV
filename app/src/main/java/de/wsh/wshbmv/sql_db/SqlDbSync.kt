@@ -174,18 +174,13 @@ class SqlDbSync @Inject constructor(
                         }
                     if (filteredProtokoll.isEmpty()) {
                         //..ermittle alle Feldnamen, deren Inhalte geändert wurden..
-                        val mobilChgProtokollFilterd = mainRepo.getChgProtokollsFiltered(
+                        val fieldnameList = mainRepo.getChgProtokollFeldnames(
                             dtSyncToServer,
                             dtChgToServer,
                             mobilChangeDS.datenbank!!,
                             mobilChangeDS.satzId!!
                         )
-                        Timber.tag(TAG).d(".. ergibt: $mobilChgProtokollFilterd")
-                        //.. sammle alle geänderten Feldnamen ein..
-                        val fieldnameList = mutableListOf<String>()
-                        mobilChgProtokollFilterd.forEach {
-                            it.feldname?.let { feldname -> fieldnameList.add(feldname) }
-                        }
+
                         // Übergabe des Änderungsbefehls an den SQL-Server
                         Timber.tag(TAG)
                             .d("syncDatabase, UPDATE to Server gefunden, ${mobilChangeDS.datenbank} mit ${mobilChangeDS.satzId}, ${fieldnameList}...")
@@ -311,6 +306,7 @@ class SqlDbSync @Inject constructor(
                 feldnamen.add(resultSet.getString("Feldname"))
             }
         }
+        Timber.tag(TAG).d("alle Feldnamen: $feldnamen")
         return feldnamen
     }
 

@@ -653,13 +653,12 @@ class MainRepository @Inject constructor(
     suspend fun getChgProtokollGroupedList(startTime: Date, endTime: Date) =
         tbmvDao.getChgProtokollGroupedList(startTime, endTime)
 
-    suspend fun getChgProtokollsFiltered(
+    suspend fun getChgProtokollFeldnames(
         startTime: Date,
         endTime: Date,
         datenbank: String,
         satzId: String
-    ) = tbmvDao.getChgProtokollsFiltered(startTime, endTime, datenbank, satzId)
-
+    ) = tbmvDao.getChgProtokollFeldnames(startTime, endTime, datenbank, satzId)
 
     /** ############################################################################################
      *  Protokollierung der Synchronisierungen

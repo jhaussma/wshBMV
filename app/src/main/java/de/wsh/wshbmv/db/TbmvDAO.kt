@@ -361,13 +361,13 @@ interface TbmvDAO {
     suspend fun getChgProtokollGroupedList(startTime: Date, endTime: Date): MutableList<ChangeProtokoll>
 
     @Transaction
-    @Query("SELECT * FROM TappChgProtokoll WHERE (timeStamp BETWEEN :startTime AND :endTime) AND (datenbank = :datenbank) AND (satzId = :satzId)")
-    suspend fun getChgProtokollsFiltered(
+    @Query("SELECT feldname FROM TappChgProtokoll WHERE (timeStamp BETWEEN :startTime AND :endTime) AND (datenbank = :datenbank) AND (satzId = :satzId) GROUP BY feldname")
+    suspend fun getChgProtokollFeldnames(
         startTime: Date,
         endTime: Date,
         datenbank: String,
         satzId: String
-    ): List<TappChgProtokoll>
+    ): List<String>
 
     /** ############################################################################################
      *  Änderungsverwaltung, Sync-Reports...
