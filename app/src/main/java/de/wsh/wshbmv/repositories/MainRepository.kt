@@ -253,7 +253,7 @@ class MainRepository @Inject constructor(
      *  Relation Material - Lager
      */
     suspend fun insertMatToLager(tbmvMat_Lager: TbmvMat_Lager, noProtokoll: Boolean = false) {
-        val matLagerId: String = UUID.randomUUID().toString()
+        val matLagerId: String = UUID.randomUUID().toString().lowercase()
         withContext(Dispatchers.IO) {
             if (!noProtokoll) tbmvMat_Lager.id = matLagerId
             tbmvDao.insertMatToLager(tbmvMat_Lager)
@@ -390,7 +390,7 @@ class MainRepository @Inject constructor(
 
     // Neuanlage eines Transfer-Belegs mit Ziellager
     suspend fun insertBelegTransfer(tbmvLager: TbmvLager, noProtokoll: Boolean = false): String {
-        val belegId: String = UUID.randomUUID().toString()
+        val belegId: String = UUID.randomUUID().toString().lowercase()
         withContext(Dispatchers.IO) {
             val belegTyp = "Transfer"
             val belegDatum = Date()
@@ -425,7 +425,7 @@ class MainRepository @Inject constructor(
 
     // Neuanlage eines Betriebsmittels in BelegPos
     suspend fun insertBelegPos(tbmvBelegPos: TbmvBelegPos, noProtokoll: Boolean = false) {
-        val belegPosId: String = UUID.randomUUID().toString()
+        val belegPosId: String = UUID.randomUUID().toString().lowercase()
         withContext(Dispatchers.IO) {
             if (!noProtokoll) tbmvBelegPos.id = belegPosId
             tbmvDao.insertBelegPos(tbmvBelegPos)

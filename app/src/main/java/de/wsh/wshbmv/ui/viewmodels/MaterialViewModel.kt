@@ -124,12 +124,12 @@ class MaterialViewModel @Inject constructor(
      */
     fun insertNewBM(bmData: BmData) {
         viewModelScope.launch {
-            val materialId: String = UUID.randomUUID().toString()
+            val materialId: String = UUID.randomUUID().toString().lowercase()
             bmData.tbmvMat!!.id = materialId
             mainRepo.insertMat(bmData.tbmvMat!!)
             if (bmData.matHautpLager != null) {
                 var tbmvMatLager = TbmvMat_Lager(
-                    id = UUID.randomUUID().toString(),
+                    id = UUID.randomUUID().toString().lowercase(),
                     matId = materialId,
                     lagerId = bmData.matHautpLager!!.id,
                     isDefault = 1,

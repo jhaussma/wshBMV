@@ -104,7 +104,7 @@ class SqlDbSync @Inject constructor(
                     sqlChangeProtokoll.add(
                         ChangeProtokoll(
                             datenbank = resultSet.getString("Datenbank"),
-                            satzId = resultSet.getString("SatzID"),
+                            satzId = resultSet.getString("SatzID").lowercase(),
                             maxZeitstempel = resultSet.getTimestamp("MaxZeitstempel"),
                             addDS = resultSet.getInt("AddDS"),
                             editDS = resultSet.getInt("EditDS"),
@@ -364,7 +364,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvBelege WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -399,7 +399,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvBelegPos WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -430,7 +430,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvDokumente WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -470,7 +470,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvLager WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -501,7 +501,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvMat WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -537,7 +537,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvMat_Lager WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -566,7 +566,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvMat_Service WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -595,7 +595,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvMatGruppen WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -621,7 +621,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvMatService_Dok WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -649,7 +649,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvMatService_Historie WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -681,7 +681,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvService_Dok WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -708,7 +708,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TbmvService_Dok WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -739,7 +739,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TsysUser WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -790,7 +790,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TsysUser_Gruppe WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -818,7 +818,7 @@ class SqlDbSync @Inject constructor(
             val statement = myConn!!.createStatement()
             val resultSet = statement.executeQuery(
                 "SELECT * FROM TsysUser_Gruppe WHERE (ID LIKE '${
-                    satzId.uppercase(Locale.getDefault())
+                    satzId.lowercase(Locale.getDefault())
                 }')"
             )
             if (resultSet != null) {
@@ -896,7 +896,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvBelege WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvBelege = mainRepo.getBelegZuBelegId(satzId)
@@ -933,7 +933,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvBelegPos WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvBelegPos = mainRepo.getBelegPosZuBelegPosId(satzId)
@@ -968,7 +968,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvDokumente WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvDokument = mainRepo.getDokumentById(satzId)
@@ -1010,7 +1010,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvLager WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvLager = mainRepo.getLagerById(satzId)
@@ -1041,7 +1041,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvMat WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvMat = mainRepo.getMaterialByMatID(satzId)
@@ -1080,7 +1080,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvMat_Lager WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvMat_Lager = mainRepo.getMatToLagerByID(satzId)
@@ -1112,7 +1112,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvMat_Service WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvMat_Service = mainRepo.getMatToServiceById(satzId)
@@ -1145,7 +1145,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvMatGruppen WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvMatGruppe = mainRepo.getMatGruppeById(satzId)
@@ -1173,7 +1173,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvMatService_Dok WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvMatService_Dok = mainRepo.getMatServiceToDokById(satzId)
@@ -1203,7 +1203,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvMatService_Historie WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvMatService_Historie = mainRepo.getMatServiceToHistorieById(satzId)
@@ -1239,7 +1239,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvService_Dok WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvService_Dok = mainRepo.getServiceToDokById(satzId)
@@ -1269,7 +1269,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TbmvServices WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tbmvService = mainRepo.getServiceById(satzId)
@@ -1299,7 +1299,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TsysUser WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tsysUser = mainRepo.getUserByID(satzId)
@@ -1352,7 +1352,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TsysUser_Gruppe WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tsysUserToGruppe = mainRepo.getUserToGruppeById(satzId)
@@ -1382,7 +1382,7 @@ class SqlDbSync @Inject constructor(
         val statement = myConn!!.createStatement()
         val resultSet = statement.executeQuery(
             "SELECT * FROM TsysUserGruppe WHERE (ID LIKE '${
-                satzId.uppercase(Locale.getDefault())
+                satzId.lowercase(Locale.getDefault())
             }')"
         )
         val tsysUserGruppe = mainRepo.getUserGruppeById(satzId)
