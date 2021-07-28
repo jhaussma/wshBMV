@@ -1,10 +1,12 @@
 package de.wsh.wshbmv.db.entities.relations
 
 import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 
-@Entity(primaryKeys = ["matServiceId","dokId"])
+@Entity(indices = [Index(value = ["matServiceId", "dokId"], unique = true)])
 data class TbmvMatService_Dok(
-    var id: String = "",
+    @PrimaryKey(autoGenerate = false) var id: String = "",
     var matServiceId: String = "",
     var dokId: String = ""
 )
